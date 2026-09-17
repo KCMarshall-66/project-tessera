@@ -14,6 +14,7 @@ Tessera is a cybersecurity SaaS platform that uses AI to help large enterprises 
 - [`design-system/`](design-system) — Tessera's design system: tokens, components, patterns.
 - [`brand/`](brand) — Brand identity assets, including [`brand/logos/`](brand/logos).
 - [`company-profile/`](company-profile) — Fictional company profile for Tessera (mission, market, product suite, org chart, etc.).
+- [`compliance/`](compliance) — Reference on real-world AI, cybersecurity, privacy, and third-party risk regulations (EU, Canada, US) that ground the product's use cases and features.
 - [`research/`](research) — Supporting research artifacts (interview notes, competitive analysis, etc.) that inform the above.
 
 ## Status

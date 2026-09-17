@@ -25,3 +25,11 @@ Tessera is a **fictional** AI-assisted cybersecurity SaaS company used as the su
 - Keep artifacts consistent with each other: persona names, roles, and pain points introduced in `personas/` should be reflected in `empathy-maps/` and referenced in `prototypes/` and `design-system/` where relevant.
 - When generating design assets (logos, mockups, prototypes), treat this as original creative work for a fictional brand — do not imitate any real company's branding.
 - Favor artifacts as Markdown docs, SVG/HTML, or images checked into the relevant folder so history is trackable via git.
+
+## Compliance & regulatory grounding
+
+Ground product logic, persona pain points, and use cases in the **real** compliance landscape for AI, cybersecurity, privacy, and third-party/vendor risk — across the **EU, Canada, and the United States**. See [`compliance/README.md`](compliance/README.md) for the reference framework list (EU AI Act, NIST AI RMF, DORA, NIS2, GDPR, OSFI B-10/B-13, US interagency TPRM guidance, PIPEDA, ISO 27001/27701/42001, SOC 2, etc.).
+
+- New personas, prototypes, and design-system features involving risk scoring, monitoring, or AI-assisted decisions should be traceable back to a specific framework in `compliance/`.
+- Because Tessera's own AI assists in risk decisions, product surfaces should reflect human-in-the-loop review, explainability, and audit trails, consistent with EU AI Act / NIST AI RMF expectations for high-risk AI use — this is itself a design/marketing differentiator for the fictional product, not just a constraint.
+- This is grounding for realism, not legal advice — don't present `compliance/` content as authoritative guidance for a real company.
