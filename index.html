@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tessera — Prototypes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@200;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue-dark: #255292;
+    --blue-primary: #2F62AA;
+    --blue-accent: #689AE2;
+    --blue-tint: #C6D9F4;
+    --ink: #26313D;
+    --muted: #5B6B7C;
+    --canvas: #F6F8FB;
+    --surface: #FFFFFF;
+    --surface-border: #E5E9EF;
+    --nav-bg: #131929;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--canvas);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    background: var(--nav-bg);
+    padding: 56px 24px 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .brand-mark { width: 64px; height: auto; margin-bottom: 20px; }
+  .brand-wordmark { height: 34px; width: auto; margin-bottom: 10px; }
+  .brand-tagline { height: 13px; width: auto; opacity: 0.85; }
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+  main > p.intro {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0 0 40px;
+  }
+  h2.section-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 16px;
+  }
+  .proto-card {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .proto-card:hover {
+    border-color: var(--blue-accent);
+    box-shadow: 0 12px 24px -12px rgba(37, 82, 146, 0.25);
+    transform: translateY(-1px);
+  }
+  .proto-card__title {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .proto-card__title .arrow { color: var(--blue-primary); font-weight: 400; }
+  .proto-card__desc { font-size: 14px; color: var(--muted); line-height: 1.55; margin: 0 0 12px; }
+  .proto-card__tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--blue-tint);
+    color: var(--blue-dark);
+  }
+  .proto-list { display: flex; flex-direction: column; gap: 16px; }
+  footer {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px 64px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  footer a { color: var(--blue-primary); }
+</style>
+</head>
+<body>
+  <header>
+    <img class="brand-mark" src="brand/logos/tessera-mark.svg" alt="">
+    <img class="brand-wordmark" src="brand/logos/tessera-wordmark.svg" alt="TESSERA">
+    <img class="brand-tagline" src="brand/logos/tessera-tagline.svg" alt="Intelligent Third-party Governance">
+  </header>
+
+  <main>
+    <p class="intro">Project Tessera is a design/UX portfolio project for a fictional AI-assisted cybersecurity SaaS platform. This page indexes the coded UI prototypes as they're built — see the repo <a href="https://github.com/KCMarshall-66/project-tessera">README</a> for the full set of design artifacts (personas, empathy maps, design system, brand, compliance grounding).</p>
+
+    <h2 class="section-label">Prototypes</h2>
+    <div class="proto-list">
+      <a class="proto-card" href="prototypes/app-shell/index.html">
+        <div class="proto-card__title">App Shell <span class="arrow">→</span></div>
+        <p class="proto-card__desc">The core application shell: a floating, collapsible left-hand navigation (pixel-matched to the Figma nav component) plus a persona-driven dashboard for Dana Vasquez, built for a 600+ vendor portfolio.</p>
+        <div class="proto-card__tags">
+          <span class="tag">Navigation</span>
+          <span class="tag">Dashboard</span>
+        </div>
+      </a>
+    </div>
+  </main>
+
+  <footer>
+    More prototypes will be added here as they're built — see <a href="prototypes/README.md">prototypes/README.md</a> for notes on each.
+  </footer>
+</body>
+</html>
