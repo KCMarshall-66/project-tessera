@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vendors — Tessera</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@200;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shell.css">
+<style>
+  /* Tier filter chips */
+  .chip-row { display: flex; gap: var(--space-2); margin: var(--space-5) 0 var(--space-4); flex-wrap: wrap; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    padding: 7px 14px; border-radius: 999px; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--surface-border); color: var(--muted);
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .chip__dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .chip:hover { border-color: var(--blue-light); }
+  .chip.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .chip.active .chip__dot { box-shadow: 0 0 0 2px rgba(255,255,255,0.35); }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap;
+    margin-bottom: var(--space-4);
+  }
+  .toolbar .search { max-width: 320px; }
+  .toolbar select {
+    font-family: inherit; font-size: 13.5px; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--surface-border); border-radius: var(--radius-md);
+    padding: 9px 30px 9px 12px; cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235B6B7C' stroke-width='1.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center;
+  }
+  .toolbar .results-count { margin-left: auto; font-size: 13px; color: var(--muted); }
+
+  /* Bulk action bar */
+  .bulk-bar {
+    display: none; align-items: center; gap: var(--space-4);
+    background: var(--ink); color: #fff; border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4);
+    font-size: 13.5px;
+  }
+  .bulk-bar.show { display: flex; }
+  .bulk-bar strong { font-weight: 600; }
+  .bulk-bar .spacer { margin-left: auto; display: flex; gap: var(--space-3); }
+  .bulk-bar button {
+    font-family: inherit; font-size: 13px; font-weight: 600; color: #fff;
+    background: rgba(255,255,255,0.12); border: none; border-radius: var(--radius-sm);
+    padding: 6px 12px; cursor: pointer;
+  }
+  .bulk-bar button:hover { background: rgba(255,255,255,0.2); }
+  .bulk-bar button.clear { background: none; color: #B8C4D6; padding: 6px 4px; }
+
+  /* Table extras */
+  table.vendor-table th.checkbox-col, table.vendor-table td.checkbox-col { width: 36px; padding-right: 0; }
+  table.vendor-table input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--blue-primary); cursor: pointer; }
+  table.vendor-table tr { cursor: default; }
+  .region-tag { color: var(--muted); }
+
+  .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink); }
+  .status-pill .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .status-pill.active .dot { background: var(--status-low); }
+  .status-pill.review .dot { background: var(--status-medium); }
+  .status-pill.remediation .dot { background: var(--status-critical); }
+  .status-pill.pending .dot { background: var(--blue-accent); }
+  .status-pill.offboarding .dot { background: var(--gray); }
+  .status-pill.offboarding { color: var(--muted); }
+
+  .row-link { color: var(--blue-primary); font-size: 13px; font-weight: 600; text-decoration: none; }
+  .row-link:hover { text-decoration: underline; }
+
+  .pager { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); }
+  .pager span { font-size: 13px; color: var(--muted); }
+  .pager .pager-btns { display: flex; gap: var(--space-2); }
+  .pager button {
+    font-family: inherit; font-size: 13px; font-weight: 600; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--surface-border); border-radius: var(--radius-sm);
+    padding: 6px 12px; cursor: not-allowed; opacity: 0.5;
+  }
+
+  .empty-state { padding: var(--space-7) var(--space-5); text-align: center; color: var(--muted); font-size: 14px; display: none; }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="nav-brand">
+      <div class="nav-mark-slot">
+        <img class="mark-default" src="../../brand/logos/tessera-mark.svg" alt="Tessera">
+        <img class="mark-condensed" src="../../brand/logos/tessera-mark-condensed.svg" alt="">
+      </div>
+      <img class="nav-wordmark" src="../../brand/logos/tessera-wordmark.svg" alt="TESSERA">
+      <img class="nav-tagline" src="../../brand/logos/tessera-tagline.svg" alt="Intelligent Third-party Governance">
+      <button class="nav-toggle" id="navToggle" aria-label="Collapse navigation">
+        <img class="icon-shrink" src="assets/nav-icon-collapse-shrink.svg" alt="">
+        <img class="icon-expand" src="assets/nav-icon-collapse-expand.svg" alt="">
+      </button>
+    </div>
+
+    <nav class="nav-scroll">
+      <div class="nav-group">
+        <a class="nav-item" href="index.html">
+          <svg viewBox="0 0 20 20" fill="none"><rect x="2.5" y="2.5" width="6.5" height="6.5" rx="1.3" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2.5" width="6.5" height="6.5" rx="1.3" stroke="currentColor" stroke-width="1.5"/><rect x="2.5" y="11" width="6.5" height="6.5" rx="1.3" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="6.5" height="6.5" rx="1.3" stroke="currentColor" stroke-width="1.5"/></svg>
+          <span class="label">Dashboard</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group__label">RISK &amp; VENDORS</div>
+        <a class="nav-item active" href="vendors.html">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M3 17V6.5L10 3l7 3.5V17" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7.5 17v-5h5v5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M3 8.5h14" stroke="currentColor" stroke-width="1.5"/></svg>
+          <span class="label">Vendors</span>
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 20 20" fill="none"><rect x="5" y="3" width="10" height="14" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M7.5 2.5h5v2h-5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 9.5l1.8 1.8L13 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 14h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span class="label">Assessments</span>
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 20 20" fill="none"><circle cx="4" cy="5" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="16" cy="5" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="15" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M5.6 6.3L9 13.3M14.4 6.3L11 13.3M6 5h8" stroke="currentColor" stroke-width="1.5"/></svg>
+          <span class="label">Data Mapping</span>
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M10 3a7 7 0 100 14 7 7 0 000-14z" stroke="currentColor" stroke-width="1.5"/><path d="M7 10.2l2 2 4-4.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="label">Remediation &amp; Tasks</span>
+          <span class="nav-badge">15</span>
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M2.5 11l2.8-6 2.7 9 2.4-11 2.3 8h4.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="label">Monitoring &amp; Alerts</span>
+          <span class="nav-badge">7</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group__label">GOVERNANCE</div>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M5.5 2.5h6l3 3v12h-9z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11.5 2.5v3h3" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7.5 10.5h5M7.5 13.5h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span class="label">Policies</span>
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M3 17V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="5.5" y="10" width="2.6" height="7" rx="0.6" stroke="currentColor" stroke-width="1.5"/><rect x="10.2" y="6.5" width="2.6" height="10.5" rx="0.6" stroke="currentColor" stroke-width="1.5"/><rect x="14.9" y="3" width="2.6" height="14" rx="0.6" stroke="currentColor" stroke-width="1.5"/></svg>
+          <span class="label">Reports</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group__label">SYSTEM</div>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.4" stroke="currentColor" stroke-width="1.5"/><path d="M10 2.8v2M10 15.2v2M17.2 10h-2M4.8 10h-2M15.1 4.9l-1.4 1.4M6.3 13.7l-1.4 1.4M15.1 15.1l-1.4-1.4M6.3 6.3L4.9 4.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span class="label">Setup &amp; Configuration</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="nav-footer">
+      <div class="nav-user">
+        <img src="../../personas/dana-vasquez.png" alt="Dana Vasquez">
+        <div class="nav-user__meta">
+          <div class="nav-user__name">Dana Vasquez</div>
+          <div class="nav-user__role">Sr. Vendor Risk Manager</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="main">
+    <header class="topbar">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="M13 13l-2.5-2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <input type="text" placeholder="Search 612 vendors, policies, assessments…">
+        <kbd>&#8984;K</kbd>
+      </div>
+      <div class="topbar-actions">
+        <div class="icon-btn">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2.5a4 4 0 00-4 4v2.4l-1.3 2.6h10.6L13 8.9V6.5a4 4 0 00-4-4z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M7.2 14a1.8 1.8 0 003.6 0" stroke="currentColor" stroke-width="1.4"/></svg>
+          <span class="dot"></span>
+        </div>
+        <img class="topbar-avatar" src="../../personas/dana-vasquez.png" alt="Dana Vasquez">
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="page-heading">
+        <div>
+          <h1>Vendors</h1>
+          <p>612 active vendors across the US, EU &amp; Canada portfolio</p>
+        </div>
+        <button class="btn-primary" type="button">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5v11M1.5 7h11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          Add Vendor
+        </button>
+      </div>
+
+      <div class="chip-row" id="tierChips">
+        <button class="chip active" data-tier="all">All <span id="countAll">612</span></button>
+        <button class="chip" data-tier="critical"><span class="chip__dot" style="background:var(--status-critical)"></span>Critical <span id="countCritical">24</span></button>
+        <button class="chip" data-tier="high"><span class="chip__dot" style="background:var(--status-high)"></span>High <span id="countHigh">118</span></button>
+        <button class="chip" data-tier="medium"><span class="chip__dot" style="background:var(--status-medium)"></span>Medium <span id="countMedium">302</span></button>
+        <button class="chip" data-tier="low"><span class="chip__dot" style="background:var(--status-low)"></span>Low <span id="countLow">168</span></button>
+      </div>
+
+      <div class="toolbar">
+        <div class="search" style="background:var(--surface)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="M13 13l-2.5-2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input type="text" id="nameFilter" placeholder="Filter by vendor name…">
+        </div>
+        <select id="regionFilter">
+          <option value="all">All regions</option>
+          <option value="US">US</option>
+          <option value="EU">EU</option>
+          <option value="Canada">Canada</option>
+        </select>
+        <select id="ownerFilter">
+          <option value="all">All owners</option>
+          <option value="DV">Dana Vasquez</option>
+          <option value="PN">Priya Nair</option>
+          <option value="MC">Marcus Chen</option>
+        </select>
+        <select id="statusFilter">
+          <option value="all">All statuses</option>
+          <option value="active">Active</option>
+          <option value="review">Under Review</option>
+          <option value="remediation">In Remediation</option>
+          <option value="pending">Pending Intake</option>
+          <option value="offboarding">Offboarding</option>
+        </select>
+        <span class="results-count" id="resultsCount"></span>
+      </div>
+
+      <div class="bulk-bar" id="bulkBar">
+        <span><strong id="selectedCount">0</strong> selected</span>
+        <div class="spacer">
+          <button type="button">Assign owner</button>
+          <button type="button">Export</button>
+          <button type="button">Tag</button>
+          <button type="button" class="clear" id="clearSelection">Clear</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <table class="vendor-table">
+          <thead>
+            <tr>
+              <th class="checkbox-col"><input type="checkbox" id="selectAll" aria-label="Select all"></th>
+              <th>Vendor</th>
+              <th>Tier</th>
+              <th>Status</th>
+              <th>Owner</th>
+              <th>Next Review</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="vendorRows"></tbody>
+        </table>
+        <div class="empty-state" id="emptyState">No vendors match these filters. Try clearing one.</div>
+        <div class="pager">
+          <span id="pagerText">Showing 24 of 612 vendors</span>
+          <div class="pager-btns">
+            <button type="button" disabled>← Previous</button>
+            <button type="button" disabled>Next →</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  document.getElementById('navToggle').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
+
+  // Representative sample of the 612-vendor portfolio. A real build would
+  // page this server-side; this prototype demonstrates the filtering/bulk
+  // interactions a 600+ row register actually needs.
+  const OWNERS = { DV: 'Dana Vasquez', PN: 'Priya Nair', MC: 'Marcus Chen' };
+  const STATUS_LABEL = {
+    active: 'Active', review: 'Under Review', remediation: 'In Remediation',
+    pending: 'Pending Intake', offboarding: 'Offboarding'
+  };
+  const vendors = [
+    { name: 'Ironclad Identity', cat: 'Identity & Access', region: 'EU · US', tier: 'critical', status: 'active', owner: 'PN', review: 'Overdue' },
+    { name: 'Northwind AI Labs', cat: 'AI / ML Vendor', region: 'EU', tier: 'critical', status: 'review', owner: 'DV', review: 'Overdue' },
+    { name: 'Harborlight Cloud', cat: 'Infrastructure', region: 'US', tier: 'critical', status: 'review', owner: 'DV', review: 'Overdue' },
+    { name: 'Glasswing Contract AI', cat: 'AI / ML Vendor', region: 'EU', tier: 'critical', status: 'pending', owner: 'PN', review: 'Pending intake' },
+    { name: 'Solace Payments API', cat: 'Payments', region: 'US', tier: 'high', status: 'active', owner: 'PN', review: '2 days' },
+    { name: 'Cascade CRM', cat: 'Sales Tooling', region: 'Canada', tier: 'high', status: 'remediation', owner: 'MC', review: '3 days' },
+    { name: 'Fortify Endpoint Security', cat: 'Security Tooling', region: 'US · EU', tier: 'high', status: 'active', owner: 'PN', review: '9 days' },
+    { name: 'Keystone Payroll', cat: 'HR Tech', region: 'Canada', tier: 'high', status: 'remediation', owner: 'MC', review: '1 day' },
+    { name: 'Onyx Fraud Detection', cat: 'AI / ML Vendor', region: 'US', tier: 'high', status: 'active', owner: 'PN', review: '14 days' },
+    { name: 'Vantage Identity Verify', cat: 'Identity & Access', region: 'US · EU', tier: 'high', status: 'active', owner: 'PN', review: '11 days' },
+    { name: 'Vertex Analytics', cat: 'Data Platform', region: 'US', tier: 'medium', status: 'active', owner: 'MC', review: '5 days' },
+    { name: 'Nimbus Cloud Storage', cat: 'Infrastructure', region: 'EU', tier: 'medium', status: 'active', owner: 'DV', review: '6 days' },
+    { name: 'Aurora HR Suite', cat: 'HR Tech', region: 'US · Canada', tier: 'medium', status: 'active', owner: 'MC', review: '12 days' },
+    { name: 'Meridian Comms', cat: 'Communications', region: 'EU', tier: 'medium', status: 'pending', owner: 'PN', review: 'Pending intake' },
+    { name: 'Lattice Data Warehouse', cat: 'Data Platform', region: 'US', tier: 'medium', status: 'active', owner: 'DV', review: '22 days' },
+    { name: 'Sentinel Background Checks', cat: 'HR Tech', region: 'US · Canada', tier: 'medium', status: 'active', owner: 'MC', review: '19 days' },
+    { name: 'Coppermill Payments', cat: 'Payments', region: 'Canada', tier: 'medium', status: 'active', owner: 'MC', review: '27 days' },
+    { name: 'Foundry DevOps Platform', cat: 'Infrastructure', region: 'US', tier: 'medium', status: 'active', owner: 'DV', review: '33 days' },
+    { name: 'Beacon Legal Docs', cat: 'Legal / Contract Mgmt', region: 'US', tier: 'low', status: 'active', owner: 'MC', review: '41 days' },
+    { name: 'Pulsecheck Support Desk', cat: 'Customer Support', region: 'US', tier: 'low', status: 'active', owner: 'MC', review: '58 days' },
+    { name: 'Driftwood Marketing Suite', cat: 'Marketing Tooling', region: 'US', tier: 'low', status: 'active', owner: 'MC', review: '63 days' },
+    { name: 'Quartzline Analytics', cat: 'Data Platform', region: 'EU', tier: 'low', status: 'active', owner: 'DV', review: '77 days' },
+    { name: 'Bramblecore Ticketing', cat: 'Customer Support', region: 'US', tier: 'low', status: 'active', owner: 'MC', review: '48 days' },
+    { name: 'Wren Legal Research', cat: 'Legal / Contract Mgmt', region: 'US', tier: 'low', status: 'offboarding', owner: 'MC', review: '—' }
+  ];
+
+  const state = { tier: 'all', region: 'all', owner: 'all', status: 'all', name: '' };
+  const selected = new Set();
+
+  // Entry point from the Dashboard's "Attention needed" panel: ?filter=attention
+  // means critical-or-high, which no single tier chip represents on its own.
+  if (new URLSearchParams(location.search).get('filter') === 'attention') {
+    state.tier = 'attention';
+  }
+
+  function filteredVendors() {
+    return vendors.filter(v => {
+      if (state.tier === 'attention') {
+        if (v.tier !== 'critical' && v.tier !== 'high') return false;
+      } else if (state.tier !== 'all' && v.tier !== state.tier) {
+        return false;
+      }
+      if (state.region !== 'all' && !v.region.includes(state.region)) return false;
+      if (state.owner !== 'all' && v.owner !== state.owner) return false;
+      if (state.status !== 'all' && v.status !== state.status) return false;
+      if (state.name && !v.name.toLowerCase().includes(state.name.toLowerCase())) return false;
+      return true;
+    });
+  }
+
+  function render() {
+    const rows = filteredVendors();
+    const tbody = document.getElementById('vendorRows');
+    tbody.innerHTML = rows.map(v => `
+      <tr>
+        <td class="checkbox-col"><input type="checkbox" class="rowCheck" data-name="${v.name}" ${selected.has(v.name) ? 'checked' : ''}></td>
+        <td>
+          <div class="vendor-name">${v.name}</div>
+          <div class="vendor-sub">${v.cat} · <span class="region-tag">${v.region}</span></div>
+        </td>
+        <td><span class="pill ${v.tier}">${v.tier}</span></td>
+        <td><span class="status-pill ${v.status}"><span class="dot"></span>${STATUS_LABEL[v.status]}</span></td>
+        <td><span class="avatar-chip">${v.owner}</span></td>
+        <td>${v.review}</td>
+        <td><a class="row-link" href="#">View →</a></td>
+      </tr>
+    `).join('');
+
+    document.getElementById('emptyState').style.display = rows.length ? 'none' : 'block';
+    document.querySelector('table.vendor-table').style.display = rows.length ? 'table' : 'none';
+    document.getElementById('resultsCount').textContent = `${rows.length} shown`;
+    document.getElementById('pagerText').textContent = `Showing ${rows.length} of 612 vendors`;
+
+    tbody.querySelectorAll('.rowCheck').forEach(cb => {
+      cb.addEventListener('change', () => {
+        if (cb.checked) selected.add(cb.dataset.name); else selected.delete(cb.dataset.name);
+        updateBulkBar();
+      });
+    });
+  }
+
+  function updateBulkBar() {
+    const bar = document.getElementById('bulkBar');
+    document.getElementById('selectedCount').textContent = selected.size;
+    bar.classList.toggle('show', selected.size > 0);
+    const allVisible = document.querySelectorAll('.rowCheck');
+    const allChecked = allVisible.length > 0 && [...allVisible].every(cb => cb.checked);
+    document.getElementById('selectAll').checked = allChecked;
+  }
+
+  document.getElementById('tierChips').addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    state.tier = chip.dataset.tier;
+    document.querySelectorAll('#tierChips .chip').forEach(c => c.classList.toggle('active', c === chip));
+    render();
+    updateBulkBar();
+  });
+
+  document.getElementById('nameFilter').addEventListener('input', (e) => { state.name = e.target.value; render(); updateBulkBar(); });
+  document.getElementById('regionFilter').addEventListener('change', (e) => { state.region = e.target.value; render(); updateBulkBar(); });
+  document.getElementById('ownerFilter').addEventListener('change', (e) => { state.owner = e.target.value; render(); updateBulkBar(); });
+  document.getElementById('statusFilter').addEventListener('change', (e) => { state.status = e.target.value; render(); updateBulkBar(); });
+
+  document.getElementById('selectAll').addEventListener('change', (e) => {
+    document.querySelectorAll('.rowCheck').forEach(cb => {
+      cb.checked = e.target.checked;
+      if (e.target.checked) selected.add(cb.dataset.name); else selected.delete(cb.dataset.name);
+    });
+    updateBulkBar();
+  });
+
+  document.getElementById('clearSelection').addEventListener('click', () => {
+    selected.clear();
+    document.querySelectorAll('.rowCheck').forEach(cb => cb.checked = false);
+    updateBulkBar();
+  });
+
+  if (state.tier === 'attention') {
+    document.querySelectorAll('#tierChips .chip').forEach(c => c.classList.remove('active'));
+  }
+  render();
+</script>
+</body>
+</html>
