@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vendors — Tessera</title>
+<title>Assessments — Tessera</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@200;400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shell.css">
 <style>
-  /* Tier filter chips */
+  /* Type filter chips */
   .chip-row { display: flex; gap: var(--space-2); margin: var(--space-5) 0 var(--space-4); flex-wrap: wrap; }
   .chip {
     display: inline-flex; align-items: center; gap: 6px;
@@ -18,17 +18,12 @@
     background: var(--surface); border: 1px solid var(--surface-border); color: var(--muted);
     transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   }
-  .chip__dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
   .chip:hover { border-color: var(--blue-light); }
   .chip.active { background: var(--ink); border-color: var(--ink); color: #fff; }
-  .chip.active .chip__dot { box-shadow: 0 0 0 2px rgba(255,255,255,0.35); }
 
   /* Toolbar */
-  .toolbar {
-    display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap;
-    margin-bottom: var(--space-4);
-  }
-  .toolbar .search { max-width: 320px; }
+  .toolbar { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
+  .toolbar .search { max-width: 300px; }
   .toolbar select {
     font-family: inherit; font-size: 13.5px; color: var(--ink);
     background: var(--surface); border: 1px solid var(--surface-border); border-radius: var(--radius-md);
@@ -47,7 +42,6 @@
     font-size: 13.5px;
   }
   .bulk-bar.show { display: flex; }
-  .bulk-bar strong { font-weight: 600; }
   .bulk-bar .spacer { margin-left: auto; display: flex; gap: var(--space-3); }
   .bulk-bar button {
     font-family: inherit; font-size: 13px; font-weight: 600; color: #fff;
@@ -60,17 +54,27 @@
   /* Table extras */
   table.vendor-table th.checkbox-col, table.vendor-table td.checkbox-col { width: 36px; padding-right: 0; }
   table.vendor-table input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--blue-primary); cursor: pointer; }
-  table.vendor-table tr { cursor: default; }
-  .region-tag { color: var(--muted); }
+
+  .type-tag {
+    display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.02em;
+    padding: 3px 9px; border-radius: 999px; background: var(--blue-tint); color: var(--blue-dark);
+    white-space: nowrap;
+  }
 
   .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink); }
   .status-pill .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
-  .status-pill.active .dot { background: var(--status-low); }
-  .status-pill.review .dot { background: var(--status-medium); }
-  .status-pill.remediation .dot { background: var(--status-critical); }
-  .status-pill.pending .dot { background: var(--blue-accent); }
-  .status-pill.offboarding .dot { background: var(--gray); }
-  .status-pill.offboarding { color: var(--muted); }
+  .status-pill.not_started .dot { background: var(--gray); }
+  .status-pill.not_started { color: var(--muted); }
+  .status-pill.in_progress .dot { background: var(--blue-accent); }
+  .status-pill.in_review .dot { background: var(--status-medium); }
+  .status-pill.escalated .dot { background: var(--status-critical); }
+  .status-pill.complete .dot { background: var(--status-low); }
+
+  .due { font-size: 13.5px; }
+  .due.overdue { color: var(--status-critical); font-weight: 600; }
+  .due.soon { color: #93791f; font-weight: 600; }
+  .due.normal { color: var(--ink); }
+  .due.done { color: var(--status-low); }
 
   .row-link { color: var(--blue-primary); font-size: 13px; font-weight: 600; text-decoration: none; }
   .row-link:hover { text-decoration: underline; }
@@ -115,11 +119,11 @@
 
       <div class="nav-group">
         <div class="nav-group__label">RISK &amp; VENDORS</div>
-        <a class="nav-item active" href="vendors.html">
+        <a class="nav-item" href="vendors.html">
           <svg viewBox="0 0 20 20" fill="none"><path d="M3 17V6.5L10 3l7 3.5V17" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7.5 17v-5h5v5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M3 8.5h14" stroke="currentColor" stroke-width="1.5"/></svg>
           <span class="label">Vendors</span>
         </a>
-        <a class="nav-item" href="assessments.html">
+        <a class="nav-item active" href="assessments.html">
           <svg viewBox="0 0 20 20" fill="none"><rect x="5" y="3" width="10" height="14" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M7.5 2.5h5v2h-5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 9.5l1.8 1.8L13 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 14h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           <span class="label">Assessments</span>
         </a>
@@ -191,21 +195,46 @@
     <main class="content">
       <div class="page-heading">
         <div>
-          <h1>Vendors</h1>
-          <p>612 active vendors across the US, EU &amp; Canada portfolio</p>
+          <h1>Assessments</h1>
+          <p>Vendor security reviews, RoPA entries, DPIAs, EU AI Act screenings, and criticality tiering — across the US, EU &amp; Canada portfolio</p>
         </div>
         <button class="btn-primary" type="button">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5v11M1.5 7h11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-          Add Vendor
+          New Assessment
         </button>
       </div>
 
-      <div class="chip-row" id="tierChips">
-        <button class="chip active" data-tier="all">All <span id="countAll">612</span></button>
-        <button class="chip" data-tier="critical"><span class="chip__dot" style="background:var(--status-critical)"></span>Critical <span id="countCritical">24</span></button>
-        <button class="chip" data-tier="high"><span class="chip__dot" style="background:var(--status-high)"></span>High <span id="countHigh">118</span></button>
-        <button class="chip" data-tier="medium"><span class="chip__dot" style="background:var(--status-medium)"></span>Medium <span id="countMedium">302</span></button>
-        <button class="chip" data-tier="low"><span class="chip__dot" style="background:var(--status-low)"></span>Low <span id="countLow">168</span></button>
+      <section class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-card__label">Active Assessments</div>
+          <div class="stat-card__value">17</div>
+          <div class="stat-card__delta">Across 128 in the full portfolio</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Overdue</div>
+          <div class="stat-card__value">3</div>
+          <div class="stat-card__delta up">▲ Needs escalation review</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Due This Week</div>
+          <div class="stat-card__value">6</div>
+          <div class="stat-card__delta">Not yet overdue</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">RoPA Entries</div>
+          <div class="stat-card__value">5</div>
+          <div class="stat-card__delta">GDPR Art. 30 · this sample</div>
+        </div>
+      </section>
+
+      <div class="chip-row" id="typeChips">
+        <button class="chip active" data-type="all">All Types</button>
+        <button class="chip" data-type="Vendor Security Assessment">Vendor Security</button>
+        <button class="chip" data-type="RoPA Entry Review">RoPA</button>
+        <button class="chip" data-type="DPIA">DPIA</button>
+        <button class="chip" data-type="EU AI Act Screening">EU AI Act Screening</button>
+        <button class="chip" data-type="Criticality Tiering Review">Criticality Tiering</button>
+        <button class="chip" data-type="Penetration Test Review">Pen Test Review</button>
       </div>
 
       <div class="toolbar">
@@ -227,11 +256,11 @@
         </select>
         <select id="statusFilter">
           <option value="all">All statuses</option>
-          <option value="active">Active</option>
-          <option value="review">Under Review</option>
-          <option value="remediation">In Remediation</option>
-          <option value="pending">Pending Intake</option>
-          <option value="offboarding">Offboarding</option>
+          <option value="not_started">Not Started</option>
+          <option value="in_progress">In Progress</option>
+          <option value="in_review">In Review</option>
+          <option value="escalated">Escalated</option>
+          <option value="complete">Complete</option>
         </select>
         <span class="results-count" id="resultsCount"></span>
       </div>
@@ -240,8 +269,8 @@
         <span><strong id="selectedCount">0</strong> selected</span>
         <div class="spacer">
           <button type="button">Assign owner</button>
+          <button type="button">Escalate</button>
           <button type="button">Export</button>
-          <button type="button">Tag</button>
           <button type="button" class="clear" id="clearSelection">Clear</button>
         </div>
       </div>
@@ -251,19 +280,19 @@
           <thead>
             <tr>
               <th class="checkbox-col"><input type="checkbox" id="selectAll" aria-label="Select all"></th>
-              <th>Vendor</th>
-              <th>Tier</th>
+              <th>Assessment</th>
+              <th>Type</th>
               <th>Status</th>
               <th>Owner</th>
-              <th>Next Review</th>
+              <th>Due</th>
               <th></th>
             </tr>
           </thead>
-          <tbody id="vendorRows"></tbody>
+          <tbody id="assessmentRows"></tbody>
         </table>
-        <div class="empty-state" id="emptyState">No vendors match these filters. Try clearing one.</div>
+        <div class="empty-state" id="emptyState">No assessments match these filters. Try clearing one.</div>
         <div class="pager">
-          <span id="pagerText">Showing 24 of 612 vendors</span>
+          <span id="pagerText">Showing 24 of 128 assessments</span>
           <div class="pager-btns">
             <button type="button" disabled>← Previous</button>
             <button type="button" disabled>Next →</button>
@@ -278,79 +307,68 @@
   const sidebar = document.getElementById('sidebar');
   document.getElementById('navToggle').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
 
-  // Representative sample of the 612-vendor portfolio. A real build would
-  // page this server-side; this prototype demonstrates the filtering/bulk
-  // interactions a 600+ row register actually needs.
-  const OWNERS = { DV: 'Dana Vasquez', PN: 'Priya Nair', MC: 'Marcus Chen' };
+  // Representative sample of the 128-assessment portfolio (same vendor set as
+  // vendors.html, so owners/regions stay consistent across pages). A real
+  // build would page this server-side.
   const STATUS_LABEL = {
-    active: 'Active', review: 'Under Review', remediation: 'In Remediation',
-    pending: 'Pending Intake', offboarding: 'Offboarding'
+    not_started: 'Not Started', in_progress: 'In Progress', in_review: 'In Review',
+    escalated: 'Escalated', complete: 'Complete'
   };
-  const vendors = [
-    { name: 'Ironclad Identity', cat: 'Identity & Access', region: 'EU · US', tier: 'critical', status: 'active', owner: 'PN', review: 'Overdue' },
-    { name: 'Northwind AI Labs', cat: 'AI / ML Vendor', region: 'EU', tier: 'critical', status: 'review', owner: 'DV', review: 'Overdue' },
-    { name: 'Harborlight Cloud', cat: 'Infrastructure', region: 'US', tier: 'critical', status: 'review', owner: 'DV', review: 'Overdue' },
-    { name: 'Glasswing Contract AI', cat: 'AI / ML Vendor', region: 'EU', tier: 'critical', status: 'pending', owner: 'PN', review: 'Pending intake' },
-    { name: 'Solace Payments API', cat: 'Payments', region: 'US', tier: 'high', status: 'active', owner: 'PN', review: '2 days' },
-    { name: 'Cascade CRM', cat: 'Sales Tooling', region: 'Canada', tier: 'high', status: 'remediation', owner: 'MC', review: '3 days' },
-    { name: 'Fortify Endpoint Security', cat: 'Security Tooling', region: 'US · EU', tier: 'high', status: 'active', owner: 'PN', review: '9 days' },
-    { name: 'Keystone Payroll', cat: 'HR Tech', region: 'Canada', tier: 'high', status: 'remediation', owner: 'MC', review: '1 day' },
-    { name: 'Onyx Fraud Detection', cat: 'AI / ML Vendor', region: 'US', tier: 'high', status: 'active', owner: 'PN', review: '14 days' },
-    { name: 'Vantage Identity Verify', cat: 'Identity & Access', region: 'US · EU', tier: 'high', status: 'active', owner: 'PN', review: '11 days' },
-    { name: 'Vertex Analytics', cat: 'Data Platform', region: 'US', tier: 'medium', status: 'active', owner: 'MC', review: '5 days' },
-    { name: 'Nimbus Cloud Storage', cat: 'Infrastructure', region: 'EU', tier: 'medium', status: 'active', owner: 'DV', review: '6 days' },
-    { name: 'Aurora HR Suite', cat: 'HR Tech', region: 'US · Canada', tier: 'medium', status: 'active', owner: 'MC', review: '12 days' },
-    { name: 'Meridian Comms', cat: 'Communications', region: 'EU', tier: 'medium', status: 'pending', owner: 'PN', review: 'Pending intake' },
-    { name: 'Lattice Data Warehouse', cat: 'Data Platform', region: 'US', tier: 'medium', status: 'active', owner: 'DV', review: '22 days' },
-    { name: 'Sentinel Background Checks', cat: 'HR Tech', region: 'US · Canada', tier: 'medium', status: 'active', owner: 'MC', review: '19 days' },
-    { name: 'Coppermill Payments', cat: 'Payments', region: 'Canada', tier: 'medium', status: 'active', owner: 'MC', review: '27 days' },
-    { name: 'Foundry DevOps Platform', cat: 'Infrastructure', region: 'US', tier: 'medium', status: 'active', owner: 'DV', review: '33 days' },
-    { name: 'Beacon Legal Docs', cat: 'Legal / Contract Mgmt', region: 'US', tier: 'low', status: 'active', owner: 'MC', review: '41 days' },
-    { name: 'Pulsecheck Support Desk', cat: 'Customer Support', region: 'US', tier: 'low', status: 'active', owner: 'MC', review: '58 days' },
-    { name: 'Driftwood Marketing Suite', cat: 'Marketing Tooling', region: 'US', tier: 'low', status: 'active', owner: 'MC', review: '63 days' },
-    { name: 'Quartzline Analytics', cat: 'Data Platform', region: 'EU', tier: 'low', status: 'active', owner: 'DV', review: '77 days' },
-    { name: 'Bramblecore Ticketing', cat: 'Customer Support', region: 'US', tier: 'low', status: 'active', owner: 'MC', review: '48 days' },
-    { name: 'Wren Legal Research', cat: 'Legal / Contract Mgmt', region: 'US', tier: 'low', status: 'offboarding', owner: 'MC', review: '—' }
+  const assessments = [
+    { vendor: 'Ironclad Identity', region: 'EU · US', owner: 'PN', type: 'Vendor Security Assessment', framework: 'SOC 2 Type II', status: 'escalated', due: 'Overdue · 4 days', dueClass: 'overdue' },
+    { vendor: 'Northwind AI Labs', region: 'EU', owner: 'DV', type: 'EU AI Act Screening', framework: 'EU AI Act', status: 'escalated', due: 'Overdue · 6 days', dueClass: 'overdue' },
+    { vendor: 'Harborlight Cloud', region: 'US', owner: 'DV', type: 'Criticality Tiering Review', framework: 'DORA', status: 'in_review', due: 'Due today', dueClass: 'soon' },
+    { vendor: 'Glasswing Contract AI', region: 'EU', owner: 'PN', type: 'EU AI Act Screening', framework: 'EU AI Act', status: 'not_started', due: 'Due in 2 days', dueClass: 'soon' },
+    { vendor: 'Solace Payments API', region: 'US', owner: 'PN', type: 'Vendor Security Assessment', framework: 'SOC 2 Type II', status: 'in_progress', due: 'Due in 3 days', dueClass: 'soon' },
+    { vendor: 'Cascade CRM', region: 'Canada', owner: 'MC', type: 'RoPA Entry Review', framework: 'GDPR Art. 30', status: 'in_progress', due: 'Due in 5 days', dueClass: 'normal' },
+    { vendor: 'Fortify Endpoint Security', region: 'US · EU', owner: 'PN', type: 'Penetration Test Review', framework: 'SOC 2 Type II', status: 'in_review', due: 'Due in 1 day', dueClass: 'soon' },
+    { vendor: 'Keystone Payroll', region: 'Canada', owner: 'MC', type: 'DPIA', framework: 'GDPR', status: 'escalated', due: 'Overdue · 2 days', dueClass: 'overdue' },
+    { vendor: 'Onyx Fraud Detection', region: 'US', owner: 'PN', type: 'EU AI Act Screening', framework: 'EU AI Act', status: 'in_progress', due: 'Due in 8 days', dueClass: 'normal' },
+    { vendor: 'Vantage Identity Verify', region: 'US · EU', owner: 'PN', type: 'Vendor Security Assessment', framework: 'ISO 27001', status: 'in_review', due: 'Due in 4 days', dueClass: 'normal' },
+    { vendor: 'Vertex Analytics', region: 'US', owner: 'MC', type: 'RoPA Entry Review', framework: 'GDPR Art. 30', status: 'not_started', due: 'Due in 12 days', dueClass: 'normal' },
+    { vendor: 'Nimbus Cloud Storage', region: 'EU', owner: 'DV', type: 'Criticality Tiering Review', framework: 'NIS2', status: 'complete', due: 'Completed Aug 22', dueClass: 'done' },
+    { vendor: 'Aurora HR Suite', region: 'US · Canada', owner: 'MC', type: 'DPIA', framework: 'GDPR / PIPEDA', status: 'in_progress', due: 'Due in 15 days', dueClass: 'normal' },
+    { vendor: 'Meridian Comms', region: 'EU', owner: 'PN', type: 'RoPA Entry Review', framework: 'GDPR Art. 30', status: 'not_started', due: 'Due in 18 days', dueClass: 'normal' },
+    { vendor: 'Lattice Data Warehouse', region: 'US', owner: 'DV', type: 'Vendor Security Assessment', framework: 'SOC 2 Type II', status: 'complete', due: 'Completed Sep 1', dueClass: 'done' },
+    { vendor: 'Sentinel Background Checks', region: 'US · Canada', owner: 'MC', type: 'DPIA', framework: 'GLBA / PIPEDA', status: 'in_progress', due: 'Due in 9 days', dueClass: 'normal' },
+    { vendor: 'Coppermill Payments', region: 'Canada', owner: 'MC', type: 'Vendor Security Assessment', framework: 'SOC 2 Type II', status: 'not_started', due: 'Due in 21 days', dueClass: 'normal' },
+    { vendor: 'Foundry DevOps Platform', region: 'US', owner: 'DV', type: 'Penetration Test Review', framework: 'NIST SP 800-161', status: 'complete', due: 'Completed Aug 18', dueClass: 'done' },
+    { vendor: 'Beacon Legal Docs', region: 'US', owner: 'MC', type: 'Vendor Security Assessment', framework: 'SOC 2 Type II', status: 'complete', due: 'Completed Jul 30', dueClass: 'done' },
+    { vendor: 'Pulsecheck Support Desk', region: 'US', owner: 'MC', type: 'RoPA Entry Review', framework: 'GDPR Art. 30', status: 'not_started', due: 'Due in 34 days', dueClass: 'normal' },
+    { vendor: 'Driftwood Marketing Suite', region: 'US', owner: 'MC', type: 'Vendor Security Assessment', framework: 'SOC 2 Type II', status: 'complete', due: 'Completed Jul 12', dueClass: 'done' },
+    { vendor: 'Quartzline Analytics', region: 'EU', owner: 'DV', type: 'RoPA Entry Review', framework: 'GDPR Art. 30', status: 'complete', due: 'Completed Jun 28', dueClass: 'done' },
+    { vendor: 'Bramblecore Ticketing', region: 'US', owner: 'MC', type: 'Vendor Security Assessment', framework: 'SOC 2 Type II', status: 'not_started', due: 'Due in 44 days', dueClass: 'normal' },
+    { vendor: 'Wren Legal Research', region: 'US', owner: 'MC', type: 'Vendor Security Assessment', framework: 'SOC 2 Type II', status: 'complete', due: 'Completed May 20', dueClass: 'done' }
   ];
 
-  const state = { tier: 'all', region: 'all', owner: 'all', status: 'all', name: '' };
+  const state = { type: 'all', region: 'all', owner: 'all', status: 'all', name: '' };
   const selected = new Set();
 
-  // Entry point from the Dashboard's "Attention needed" panel: ?filter=attention
-  // means critical-or-high, which no single tier chip represents on its own.
-  if (new URLSearchParams(location.search).get('filter') === 'attention') {
-    state.tier = 'attention';
-  }
-
-  function filteredVendors() {
-    return vendors.filter(v => {
-      if (state.tier === 'attention') {
-        if (v.tier !== 'critical' && v.tier !== 'high') return false;
-      } else if (state.tier !== 'all' && v.tier !== state.tier) {
-        return false;
-      }
-      if (state.region !== 'all' && !v.region.includes(state.region)) return false;
-      if (state.owner !== 'all' && v.owner !== state.owner) return false;
-      if (state.status !== 'all' && v.status !== state.status) return false;
-      if (state.name && !v.name.toLowerCase().includes(state.name.toLowerCase())) return false;
+  function filteredAssessments() {
+    return assessments.filter(a => {
+      if (state.type !== 'all' && a.type !== state.type) return false;
+      if (state.region !== 'all' && !a.region.includes(state.region)) return false;
+      if (state.owner !== 'all' && a.owner !== state.owner) return false;
+      if (state.status !== 'all' && a.status !== state.status) return false;
+      if (state.name && !a.vendor.toLowerCase().includes(state.name.toLowerCase())) return false;
       return true;
     });
   }
 
   function render() {
-    const rows = filteredVendors();
-    const tbody = document.getElementById('vendorRows');
-    tbody.innerHTML = rows.map(v => `
+    const rows = filteredAssessments();
+    const tbody = document.getElementById('assessmentRows');
+    tbody.innerHTML = rows.map(a => `
       <tr>
-        <td class="checkbox-col"><input type="checkbox" class="rowCheck" data-name="${v.name}" ${selected.has(v.name) ? 'checked' : ''}></td>
+        <td class="checkbox-col"><input type="checkbox" class="rowCheck" data-key="${a.vendor}|${a.type}" ${selected.has(a.vendor + '|' + a.type) ? 'checked' : ''}></td>
         <td>
-          <div class="vendor-name">${v.name}</div>
-          <div class="vendor-sub">${v.cat} · <span class="region-tag">${v.region}</span></div>
+          <div class="vendor-name">${a.vendor}</div>
+          <div class="vendor-sub">${a.framework} · ${a.region}</div>
         </td>
-        <td><span class="pill ${v.tier}">${v.tier}</span></td>
-        <td><span class="status-pill ${v.status}"><span class="dot"></span>${STATUS_LABEL[v.status]}</span></td>
-        <td><span class="avatar-chip">${v.owner}</span></td>
-        <td>${v.review}</td>
+        <td><span class="type-tag">${a.type}</span></td>
+        <td><span class="status-pill ${a.status}"><span class="dot"></span>${STATUS_LABEL[a.status]}</span></td>
+        <td><span class="avatar-chip">${a.owner}</span></td>
+        <td><span class="due ${a.dueClass}">${a.due}</span></td>
         <td><a class="row-link" href="#">View →</a></td>
       </tr>
     `).join('');
@@ -358,11 +376,11 @@
     document.getElementById('emptyState').style.display = rows.length ? 'none' : 'block';
     document.querySelector('table.vendor-table').style.display = rows.length ? 'table' : 'none';
     document.getElementById('resultsCount').textContent = `${rows.length} shown`;
-    document.getElementById('pagerText').textContent = `Showing ${rows.length} of 612 vendors`;
+    document.getElementById('pagerText').textContent = `Showing ${rows.length} of 128 assessments`;
 
     tbody.querySelectorAll('.rowCheck').forEach(cb => {
       cb.addEventListener('change', () => {
-        if (cb.checked) selected.add(cb.dataset.name); else selected.delete(cb.dataset.name);
+        if (cb.checked) selected.add(cb.dataset.key); else selected.delete(cb.dataset.key);
         updateBulkBar();
       });
     });
@@ -377,11 +395,11 @@
     document.getElementById('selectAll').checked = allChecked;
   }
 
-  document.getElementById('tierChips').addEventListener('click', (e) => {
+  document.getElementById('typeChips').addEventListener('click', (e) => {
     const chip = e.target.closest('.chip');
     if (!chip) return;
-    state.tier = chip.dataset.tier;
-    document.querySelectorAll('#tierChips .chip').forEach(c => c.classList.toggle('active', c === chip));
+    state.type = chip.dataset.type;
+    document.querySelectorAll('#typeChips .chip').forEach(c => c.classList.toggle('active', c === chip));
     render();
     updateBulkBar();
   });
@@ -394,7 +412,7 @@
   document.getElementById('selectAll').addEventListener('change', (e) => {
     document.querySelectorAll('.rowCheck').forEach(cb => {
       cb.checked = e.target.checked;
-      if (e.target.checked) selected.add(cb.dataset.name); else selected.delete(cb.dataset.name);
+      if (e.target.checked) selected.add(cb.dataset.key); else selected.delete(cb.dataset.key);
     });
     updateBulkBar();
   });
@@ -405,9 +423,6 @@
     updateBulkBar();
   });
 
-  if (state.tier === 'attention') {
-    document.querySelectorAll('#tierChips .chip').forEach(c => c.classList.remove('active'));
-  }
   render();
 </script>
 </body>

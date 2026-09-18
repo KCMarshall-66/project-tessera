@@ -35,10 +35,17 @@ Two sections were added beyond the original brief, both directly justified by th
 - The Dashboard's "Attention needed → View all" link deep-links to `vendors.html?filter=attention`, which shows critical-**or**-high vendors together — a case the single-select tier chips can't express on their own, handled as a one-time entry-point mode rather than a new persistent filter control.
 - Status (lifecycle: Active / Under Review / In Remediation / Pending Intake / Offboarding) is deliberately a separate visual language from risk tier (Critical/High/Medium/Low), since conflating "how risky" with "where it is in its lifecycle" was a real gap in the personas' pre-Tessera spreadsheets.
 
+**`assessments.html` (2026-09-18):** the assessment queue — explicitly covers RoPA per the original brief, alongside the other assessment types the personas' compliance grounding calls for:
+- **Type filter chips** (All / Vendor Security / RoPA / DPIA / EU AI Act Screening / Criticality Tiering / Pen Test Review) — RoPA is a first-class, directly filterable category here, not buried in a subtitle. Backed by [`../compliance/README.md`](../compliance/README.md): RoPA and DPIA map to GDPR, EU AI Act Screening to the EU AI Act, Criticality Tiering to DORA/NIS2.
+- Same toolbar pattern as `vendors.html` (search + Region/Owner/Status selects) and the same bulk-selection mechanics (here: Assign owner / Escalate / Export), reusing the pattern rather than inventing a new one.
+- **Due-date urgency is color-coded** (overdue in red, due-soon in amber, complete in green with a completion date) — a direct answer to Marcus's "invisible SLA math" pain point and Dana's "point-in-time blind spots."
+- Status here is *assessment* lifecycle (Not Started / In Progress / In Review / Escalated / Complete) — a different lifecycle from `vendors.html`'s *vendor* status, intentionally not reused as the same enum since they answer different questions ("where is this assessment" vs. "where is this vendor relationship").
+- Sample data reuses the same 24 vendors from `vendors.html` (same owners/regions) so the two pages read as one coherent portfolio rather than disconnected mock data.
+
 **Open work:**
-- Formalize the semantic status colors (critical/high/medium/low) and the vendor lifecycle-status colors introduced here into `design-system/colors.md`.
-- Build out the remaining section views (Assessments, Data Mapping, Remediation queue, Monitoring feed, Policies, Reports, Setup) and wire their nav items (still `href="#"` placeholders).
-- A real vendor detail page — every row's "View →" link is currently a placeholder.
+- Formalize the semantic status colors (critical/high/medium/low), vendor lifecycle-status colors, and assessment lifecycle-status colors introduced here into `design-system/colors.md`.
+- Build out the remaining section views (Data Mapping, Remediation queue, Monitoring feed, Policies, Reports, Setup) and wire their nav items (still `href="#"` placeholders).
+- Real vendor and assessment detail pages — every row's "View →" link is currently a placeholder.
 - Analyst-specific dashboard variants for Priya and Marcus (this shell currently only shows Dana's view).
 - If Figma ever exposes exact spring constants for "Quick" (e.g. via a future API or manual inspection in the desktop app's Interaction panel), swap the approximated `linear()` easing for the precise one.
 
