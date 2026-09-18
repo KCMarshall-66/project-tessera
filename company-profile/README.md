@@ -5,6 +5,7 @@ Fictional company profile for **Tessera**, used to ground the rest of the design
 ## Overview
 
 - **Name**: Tessera
+- **Tagline**: *"Intelligent Third-party Governance."* (surfaced via the nav lockup in Figma; see [`../brand/logos/README.md`](../brand/logos/README.md))
 - **Category**: AI-assisted cybersecurity SaaS — third-party vendor risk management (TPRM)
 - **What it does**: Tessera helps large enterprises and their privacy/security teams manage, assess, and continuously monitor the cybersecurity and privacy risk posed by their third-party vendors. AI replaces slow, manual, point-in-time vendor questionnaires with continuous risk signals, automated evidence review, and proactive alerts.
 - **Customers**: Large enterprises with dedicated Privacy, Security/GRC, and Vendor Risk Management functions — typically companies managing hundreds to thousands of third-party vendor relationships.
