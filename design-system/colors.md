@@ -14,12 +14,16 @@ Seeded from [`../brand/logos/tessera-color-logo.png`](../brand/logos/tessera-col
 
 ## Neutrals
 
-| Token | Hex | Source in logo |
+| Token | Hex | Source |
 |---|---|---|
-| `--tessera-gray` | `#C9C9C9` | Wordmark color. Works as a secondary/muted text or icon color — likely too light for body text; needs a darker neutral (e.g. `#4A4A4A`–`#2A2A2A`) added for accessible body copy once typography is chosen. |
+| `--tessera-ink` | `#26313D` | Body text color — a dark blue-gray (not pure black) that stays in the brand's blue family. Used for headings/body text in `personas/` Figma artifacts. |
+| `--tessera-muted` | `#5B6B7C` | Secondary text (subtitles, metadata, captions). |
+| `--tessera-gray` | `#C9C9C9` | Wordmark color. Too light for body text — use `--tessera-ink`/`--tessera-muted` instead; reserve this one for disabled states, dividers, or icon-only contexts. |
+
+`--tessera-ink` and `--tessera-muted` were introduced while building the first persona card graphics (see [`../personas/`](../personas), Figma file) and fill the gap flagged below.
 
 ## Notes / open work
 
-- This is a **brand palette**, not yet a full **UI color system** — still needed: a neutral gray scale (10 steps), semantic colors (success/warning/danger/info), and dark-mode surface colors.
+- This is a **brand palette**, not yet a full **UI color system** — still needed: a full neutral gray scale (10 steps) built out from `--tessera-ink`/`--tessera-muted`, semantic colors (success/warning/danger/info), and dark-mode surface colors.
 - Given Tessera positions itself on trust/compliance (see [`../compliance/`](../compliance)), verify all text/background pairings meet WCAG 2.1 AA contrast (4.5:1 for body text) before use in `prototypes/`.
 - `--tessera-blue-primary` (#2F62AA) on white measures ~6.1:1 contrast — passes WCAG AA for normal text (needs 4.5:1) and AA for large text/UI components, though not quite AAA normal text (7:1). Re-check against the final UI background, not just white.
