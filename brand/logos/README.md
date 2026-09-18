@@ -9,8 +9,9 @@ Logo files and identity assets for the Tessera brand.
 - **`tessera-mark-condensed.svg`** — a simplified/re-drawn variant of the cube mark, purpose-built for small icon-only contexts (e.g. a collapsed nav rail). Not a CSS crop of `tessera-mark.svg` — a distinct asset with fewer facets, exported from Figma node 7:372 ("condensed" variant). Use whenever the mark renders below ~90px.
 - **`tessera-wordmark.svg`** — the "TESSERA" wordmark alone, vector (exported from Figma node 7:306).
 - **`tessera-tagline.svg`** — the tagline lockup, vector: **"Intelligent Third-party Governance."** This is the first appearance of official tagline copy for the product (surfaced via the nav component in Figma, node 7:314) — see the note in [`../../company-profile/README.md`](../../company-profile/README.md).
+- **`balanced-cube.svg`** — an evenly-balanced variant of the full mark (cube + all six radiating node connections), 469×563. Used as the central hub icon in [`../../prototypes/app-shell/data-mapping.html`](../../prototypes/app-shell/data-mapping.html)'s flow diagram, where a perfectly symmetric node layout reads better at small size than `tessera-mark.svg`'s original asymmetric one.
 
-All four SVGs above are dark-on-transparent by default reference (as authored for a dark nav rail) — check contrast before reusing on a light surface.
+All five SVGs above are dark-on-transparent by default reference (as authored for a dark nav rail) — check contrast before reusing on a light surface.
 
 ## Still needed
 
