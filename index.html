@@ -95,6 +95,40 @@
     color: var(--blue-dark);
   }
   .proto-list { display: flex; flex-direction: column; gap: 16px; }
+
+  h2.section-label.with-space { margin-top: 40px; }
+  .persona-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .persona-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    padding: 24px 16px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .persona-card:hover {
+    border-color: var(--blue-accent);
+    box-shadow: 0 12px 24px -12px rgba(37, 82, 146, 0.25);
+    transform: translateY(-1px);
+  }
+  .persona-card img {
+    width: 64px; height: 64px; border-radius: 50%; margin-bottom: 12px;
+  }
+  .persona-card__name { font-size: 15px; font-weight: 600; margin: 0 0 2px; }
+  .persona-card__role { font-size: 12px; color: var(--muted); line-height: 1.4; margin: 0; }
+  @media (max-width: 600px) {
+    .persona-list { grid-template-columns: 1fr; }
+  }
+
   footer {
     max-width: 760px;
     margin: 0 auto;
@@ -124,6 +158,25 @@
           <span class="tag">Navigation</span>
           <span class="tag">Dashboard</span>
         </div>
+      </a>
+    </div>
+
+    <h2 class="section-label with-space">Personas</h2>
+    <div class="persona-list">
+      <a class="persona-card" href="prototypes/personas/dana-vasquez.html">
+        <img src="personas/dana-vasquez.png" alt="">
+        <p class="persona-card__name">Dana Vasquez</p>
+        <p class="persona-card__role">Sr. Vendor Risk Manager</p>
+      </a>
+      <a class="persona-card" href="prototypes/personas/priya-nair.html">
+        <img src="personas/priya-nair.png" alt="">
+        <p class="persona-card__name">Priya Nair</p>
+        <p class="persona-card__role">Vendor Risk Analyst II</p>
+      </a>
+      <a class="persona-card" href="prototypes/personas/marcus-chen.html">
+        <img src="personas/marcus-chen.png" alt="">
+        <p class="persona-card__name">Marcus Chen</p>
+        <p class="persona-card__role">Vendor Risk Analyst I</p>
       </a>
     </div>
   </main>

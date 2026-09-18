@@ -32,3 +32,13 @@ Two sections were added beyond the original brief, both directly justified by th
 - Build out the individual section views (Vendors list, Assessments, Data Mapping, Remediation queue, Monitoring feed, Policies, Reports, Setup).
 - Analyst-specific dashboard variants for Priya and Marcus (this shell currently only shows Dana's view).
 - If Figma ever exposes exact spring constants for "Quick" (e.g. via a future API or manual inspection in the desktop app's Interaction panel), swap the approximated `linear()` easing for the precise one.
+
+## `personas/`
+
+Standalone HTML persona artifacts — one page per persona, transcribed in full from the [`../personas/`](../personas) Markdown docs (snapshot, goals, a day in the life, responsibilities, pain points, motivations, tools, compliance frameworks, quote, and "how Tessera helps"), for sharing/viewing as a page rather than reading Markdown. Share `persona.css` for consistent styling; each page is otherwise self-contained. Linked from the root [`../../index.html`](../../index.html) under "Personas," and cross-link to each other via a switcher in the top bar.
+
+- [`dana-vasquez.html`](personas/dana-vasquez.html)
+- [`priya-nair.html`](personas/priya-nair.html)
+- [`marcus-chen.html`](personas/marcus-chen.html)
+
+**Open work:** the broader Privacy Management persona suite (privacy ops manager, privacy engineer, CISO-overlap, vendor, consumer) still needs both a Markdown doc and a matching artifact page once drafted.

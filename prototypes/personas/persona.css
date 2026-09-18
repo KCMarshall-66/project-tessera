@@ -1,0 +1,152 @@
+/* Shared stylesheet for Tessera persona artifact pages.
+   Tokens mirror ../../design-system/colors.md, typography.md, spacing.md. */
+
+:root {
+  --blue-dark: #255292;
+  --blue-primary: #2F62AA;
+  --blue-accent: #689AE2;
+  --blue-light: #B0CAEF;
+  --blue-tint: #C6D9F4;
+  --ink: #26313D;
+  --muted: #5B6B7C;
+  --gray: #C9C9C9;
+
+  --canvas: #F6F8FB;
+  --surface: #FFFFFF;
+  --surface-border: #E5E9EF;
+  --nav-bg: #131929;
+
+  --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px;
+  --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--canvas);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Topbar: brand + crumb + persona switcher */
+.topbar {
+  background: var(--nav-bg);
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+.topbar__brand { display: flex; align-items: center; gap: var(--space-2); text-decoration: none; }
+.topbar__brand img { width: 26px; height: auto; }
+.topbar__brand span {
+  color: #F3F6FC; font-weight: 600; font-size: 14px; letter-spacing: 0.02em;
+}
+.topbar__crumb { color: var(--gray); font-size: 13px; text-decoration: none; }
+.topbar__crumb:hover { color: #fff; }
+.topbar__switcher { display: flex; gap: var(--space-2); margin-left: auto; }
+.switcher-pill {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 12px 5px 6px; border-radius: 999px;
+  background: rgba(255,255,255,0.06); color: #96A7C2;
+  text-decoration: none; font-size: 13px; font-weight: 600;
+  border: 1px solid transparent;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.switcher-pill img { width: 22px; height: 22px; border-radius: 50%; }
+.switcher-pill:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.switcher-pill.current { background: var(--blue-primary); color: #fff; }
+
+/* Hero */
+.hero {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--space-7) var(--space-6) var(--space-6);
+  text-align: center;
+}
+.hero__avatar {
+  width: 120px; height: 120px; border-radius: 50%;
+  box-shadow: 0 0 0 6px var(--surface), 0 12px 28px -12px rgba(37,82,146,0.35);
+  margin-bottom: var(--space-5);
+}
+.hero__name { font-size: 34px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 6px; }
+.hero__title { font-size: 16px; color: var(--blue-primary); font-weight: 600; margin: 0 0 4px; }
+.hero__meta { font-size: 14px; color: var(--muted); margin: 0 0 var(--space-4); }
+.hero__tags { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.tag {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
+  padding: 4px 11px; border-radius: 999px; background: var(--blue-tint); color: var(--blue-dark);
+}
+
+/* Pull quote */
+.pull-quote {
+  max-width: 720px; margin: 0 auto var(--space-7);
+  padding: 0 var(--space-6);
+  text-align: center;
+}
+.pull-quote p {
+  font-weight: 200; font-size: 26px; line-height: 1.45; color: var(--blue-dark);
+  margin: 0;
+}
+.pull-quote p::before { content: "\201C"; }
+.pull-quote p::after { content: "\201D"; }
+
+main { max-width: 720px; margin: 0 auto; padding: 0 var(--space-6) var(--space-7); }
+
+/* Snapshot card */
+.snapshot {
+  background: var(--surface); border: 1px solid var(--surface-border); border-radius: var(--radius-lg);
+  padding: var(--space-5); margin-bottom: var(--space-6);
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4) var(--space-5);
+}
+.snapshot dt { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px; }
+.snapshot dd { font-size: 14px; margin: 0; line-height: 1.5; }
+.snapshot .span-2 { grid-column: 1 / -1; }
+
+/* Section blocks */
+section.block { margin-bottom: var(--space-7); }
+section.block h2 {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--blue-primary); margin: 0 0 var(--space-4);
+}
+section.block p.intro { color: var(--muted); font-size: 14px; margin: -8px 0 var(--space-4); }
+
+ul.bullets { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+ul.bullets li { display: flex; gap: var(--space-3); font-size: 15px; line-height: 1.55; }
+ul.bullets li::before { content: "\2014"; color: var(--blue-accent); flex: none; }
+ul.bullets li strong { color: var(--ink); }
+
+/* Day in the life timeline */
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline li {
+  display: grid; grid-template-columns: 92px 1fr; gap: var(--space-4);
+  padding: var(--space-3) 0; border-top: 1px solid var(--surface-border);
+}
+.timeline li:first-child { border-top: none; }
+.timeline time { font-size: 13px; font-weight: 600; color: var(--blue-primary); }
+.timeline p { margin: 0; font-size: 14.5px; line-height: 1.55; }
+
+/* Compliance frameworks */
+ul.frameworks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+ul.frameworks li { font-size: 15px; line-height: 1.55; }
+ul.frameworks strong { display: inline-block; margin-bottom: 2px; color: var(--blue-dark); }
+.frameworks-note { font-size: 13px; color: var(--muted); margin: var(--space-3) 0 0; }
+.frameworks-note a { color: var(--blue-primary); }
+
+/* How Tessera helps — closing panel */
+.resolution {
+  background: linear-gradient(180deg, var(--blue-tint), #EDF3FC);
+  border-radius: var(--radius-lg); padding: var(--space-6);
+}
+.resolution h2 { color: var(--blue-dark); }
+.resolution ul.bullets li::before { color: var(--blue-dark); }
+
+footer {
+  max-width: 720px; margin: 0 auto; padding: 0 var(--space-6) var(--space-7);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3);
+  font-size: 13px; color: var(--muted);
+}
+footer a { color: var(--blue-primary); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
