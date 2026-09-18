@@ -3,6 +3,8 @@
 **Senior Vendor Risk Manager, Third-Party Risk Management (TPRM)**
 Primary persona for Project Tessera.
 
+![Dana Vasquez](dana-vasquez.png)
+
 ## Snapshot
 
 | | |
@@ -12,7 +14,7 @@ Primary persona for Project Tessera.
 | **Company** | Northbridge Financial Group *(fictional multinational financial services company; operations in the US, EU, and Canada)* |
 | **Title** | Senior Vendor Risk Manager, Third-Party Risk Management, Privacy & Security Office |
 | **Reports to** | VP, Third-Party & Operational Risk |
-| **Team** | Leads 2 risk analysts — *Priya Nair* and *Marcus Chen* (reserved names; full analyst personas to be drafted separately in `personas/`) |
+| **Team** | Leads 2 risk analysts — [Priya Nair](priya-nair.md) and [Marcus Chen](marcus-chen.md) |
 | **Education** | B.S. Information Systems; CTPRP (Certified Third-Party Risk Professional); studying for CISSP |
 | **Tech comfort** | High — power user of GRC/spreadsheet tooling, comfortable evaluating vendor security evidence, not a coder |
 
