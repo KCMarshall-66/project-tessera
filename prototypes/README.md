@@ -42,10 +42,16 @@ Two sections were added beyond the original brief, both directly justified by th
 - Status here is *assessment* lifecycle (Not Started / In Progress / In Review / Escalated / Complete) — a different lifecycle from `vendors.html`'s *vendor* status, intentionally not reused as the same enum since they answer different questions ("where is this assessment" vs. "where is this vendor relationship").
 - Sample data reuses the same 24 vendors from `vendors.html` (same owners/regions) so the two pages read as one coherent portfolio rather than disconnected mock data.
 
+**`data-mapping.html` (2026-09-18):** the brand mark used as the page's literal, functioning centerpiece, per the user's direction to make it "the central theme" — not a decorative header icon. Traced from the Figma reference at node `19:1165` (a large render of the "single-tesseract" mark: a central cube with six radiating node-and-line connections):
+- The hero diagram reproduces that exact hub-and-spoke *shape* — one central hub, six evenly-spaced spokes — as **live, interactive markup**: an inline SVG for the six dashed connector lines (animated to suggest flow) plus six real `<button>` nodes, not a static export of the Figma asset. The center hub reuses the actual `tessera-mark.svg` cube inside a glowing dark badge, labeled with the org whose data is being mapped (Northbridge), so the whole diagram literally reads as "Tessera at the center of Northbridge's data."
+- Each of the six spokes is one data category (Customer PII & KYC, Financial & Payment, Employee & HR, Security & Authentication, Marketing & Behavioral, Special Category) with a live vendor count. **Clicking a node is a real filter**, not a static illustration: it highlights that spoke, dims the rest, and filters the register below — and the reverse also works, via the Category `<select>` in the toolbar, so the diagram and the data stay in sync either direction.
+- The register below follows the same pattern as `vendors.html`/`assessments.html` (search + selects, bulk-selection bar), with columns specific to data mapping: data category, direction (Inbound/Outbound/Bidirectional), cross-border transfer (with the jurisdiction pair, e.g. "EU → US"), and GDPR Art. 6 legal basis.
+- Sample data extends the same 24-vendor set from `vendors.html`/`assessments.html` with a data category, direction, cross-border flag, and legal basis per vendor, keeping all three section pages reading as one portfolio.
+
 **Open work:**
 - Formalize the semantic status colors (critical/high/medium/low), vendor lifecycle-status colors, and assessment lifecycle-status colors introduced here into `design-system/colors.md`.
-- Build out the remaining section views (Data Mapping, Remediation queue, Monitoring feed, Policies, Reports, Setup) and wire their nav items (still `href="#"` placeholders).
-- Real vendor and assessment detail pages — every row's "View →" link is currently a placeholder.
+- Build out the remaining section views (Remediation queue, Monitoring feed, Policies, Reports, Setup) and wire their nav items (still `href="#"` placeholders).
+- Real vendor, assessment, and data-flow detail pages — every row's "View →" link is currently a placeholder.
 - Analyst-specific dashboard variants for Priya and Marcus (this shell currently only shows Dana's view).
 - If Figma ever exposes exact spring constants for "Quick" (e.g. via a future API or manual inspection in the desktop app's Interaction panel), swap the approximated `linear()` easing for the precise one.
 

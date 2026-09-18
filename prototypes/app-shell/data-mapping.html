@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Mapping — Tessera</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@200;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shell.css">
+<style>
+  /* ---------- Hero flow diagram ---------- */
+  .flow-panel {
+    background: var(--nav-bg);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin: var(--space-6) 0;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 40px -18px rgba(16, 27, 48, 0.4);
+  }
+  .flow-panel::before {
+    content: "";
+    position: absolute; inset: 0; pointer-events: none;
+    background-image: radial-gradient(circle, rgba(150,167,194,0.14) 1px, transparent 1.4px);
+    background-size: 26px 26px;
+    mask-image: radial-gradient(circle at 50% 50%, black, transparent 72%);
+  }
+  .flow-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: var(--space-4); position: relative; z-index: 1; margin-bottom: var(--space-2);
+  }
+  .flow-head h2 { color: #fff; font-size: 17px; font-weight: 600; margin: 0 0 4px; }
+  .flow-head p { color: var(--nav-text); font-size: 13.5px; margin: 0; max-width: 440px; line-height: 1.5; }
+  .flow-reset {
+    font-family: inherit; font-size: 12.5px; font-weight: 600; color: var(--nav-text);
+    background: rgba(255,255,255,0.06); border: 1px solid var(--nav-border); border-radius: 999px;
+    padding: 6px 14px; cursor: pointer; white-space: nowrap;
+    transition: opacity 0.15s ease;
+    opacity: 0; pointer-events: none;
+  }
+  .flow-reset.show { opacity: 1; pointer-events: auto; }
+  .flow-reset:hover { color: #fff; border-color: var(--blue-accent); }
+
+  .flow-stage {
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    aspect-ratio: 1 / 1;
+    margin: 0 auto;
+    z-index: 1;
+  }
+  .flow-lines line {
+    stroke: var(--nav-text);
+    stroke-width: 1.5;
+    opacity: 0.35;
+    stroke-dasharray: 5 6;
+    transition: stroke 0.2s ease, opacity 0.2s ease, stroke-width 0.2s ease;
+    animation: flowdash 2.4s linear infinite;
+  }
+  .flow-lines line.active { stroke: var(--blue-accent); opacity: 1; stroke-width: 2.25; }
+  .flow-lines.dimmed line:not(.active) { opacity: 0.12; }
+  @keyframes flowdash { to { stroke-dashoffset: -22; } }
+
+  .flow-center {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    width: 168px;
+  }
+  .flow-center__badge {
+    width: 108px; height: 108px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #1D2740, #0C1424);
+    border: 1px solid var(--nav-border);
+    box-shadow: 0 0 0 10px rgba(104,154,226,0.05), 0 12px 28px -10px rgba(0,0,0,0.6);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .flow-center__badge img { width: 58px; height: auto; }
+  .flow-center__label { color: #fff; font-size: 13px; font-weight: 600; text-align: center; line-height: 1.35; }
+  .flow-center__sub { color: var(--nav-text); font-size: 11.5px; text-align: center; }
+
+  .flow-node {
+    position: absolute; transform: translate(-50%, -50%);
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    background: none; border: none; cursor: pointer; font-family: inherit;
+    padding: 8px; width: 128px;
+  }
+  .flow-node__dot {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--blue-primary);
+    box-shadow: 0 0 0 5px rgba(104,154,226,0.12);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  }
+  .flow-node__dot svg { width: 20px; height: 20px; color: #fff; }
+  .flow-node__label { color: var(--nav-text-active); font-size: 12.5px; font-weight: 600; text-align: center; line-height: 1.3; }
+  .flow-node__count { color: var(--nav-text); font-size: 11px; text-align: center; }
+  .flow-node:hover .flow-node__dot { transform: scale(1.08); }
+  .flow-node.active .flow-node__dot {
+    background: var(--blue-accent);
+    box-shadow: 0 0 0 7px rgba(104,154,226,0.22);
+    transform: scale(1.12);
+  }
+  .flow-stage.dimmed .flow-node:not(.active) { opacity: 0.4; }
+  .flow-stage.dimmed .flow-node:not(.active) .flow-node__dot { box-shadow: none; }
+
+  .flow-legend {
+    position: relative; z-index: 1; margin-top: var(--space-5);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    color: var(--nav-text); font-size: 12px;
+  }
+  .flow-legend .line-sample { width: 20px; height: 0; border-top: 1.5px dashed var(--nav-text); opacity: 0.5; }
+
+  /* ---------- Toolbar / table (shared pattern) ---------- */
+  .toolbar { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
+  .toolbar .search { max-width: 300px; }
+  .toolbar select {
+    font-family: inherit; font-size: 13.5px; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--surface-border); border-radius: var(--radius-md);
+    padding: 9px 30px 9px 12px; cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235B6B7C' stroke-width='1.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center;
+  }
+  .toolbar .results-count { margin-left: auto; font-size: 13px; color: var(--muted); }
+
+  .bulk-bar {
+    display: none; align-items: center; gap: var(--space-4);
+    background: var(--ink); color: #fff; border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4); font-size: 13.5px;
+  }
+  .bulk-bar.show { display: flex; }
+  .bulk-bar .spacer { margin-left: auto; display: flex; gap: var(--space-3); }
+  .bulk-bar button {
+    font-family: inherit; font-size: 13px; font-weight: 600; color: #fff;
+    background: rgba(255,255,255,0.12); border: none; border-radius: var(--radius-sm);
+    padding: 6px 12px; cursor: pointer;
+  }
+  .bulk-bar button:hover { background: rgba(255,255,255,0.2); }
+  .bulk-bar button.clear { background: none; color: #B8C4D6; padding: 6px 4px; }
+
+  table.vendor-table th.checkbox-col, table.vendor-table td.checkbox-col { width: 36px; padding-right: 0; }
+  table.vendor-table input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--blue-primary); cursor: pointer; }
+
+  .type-tag {
+    display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.02em;
+    padding: 3px 9px; border-radius: 999px; background: var(--blue-tint); color: var(--blue-dark);
+    white-space: nowrap;
+  }
+  .dir { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; color: var(--ink); }
+  .dir svg { width: 13px; height: 13px; color: var(--blue-primary); flex: none; }
+  .xborder { font-size: 12.5px; font-weight: 600; }
+  .xborder.yes { color: var(--status-high); }
+  .xborder.no { color: var(--muted); font-weight: 400; }
+
+  .row-link { color: var(--blue-primary); font-size: 13px; font-weight: 600; text-decoration: none; }
+  .row-link:hover { text-decoration: underline; }
+
+  .pager { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); }
+  .pager span { font-size: 13px; color: var(--muted); }
+  .pager .pager-btns { display: flex; gap: var(--space-2); }
+  .pager button {
+    font-family: inherit; font-size: 13px; font-weight: 600; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--surface-border); border-radius: var(--radius-sm);
+    padding: 6px 12px; cursor: not-allowed; opacity: 0.5;
+  }
+  .empty-state { padding: var(--space-7) var(--space-5); text-align: center; color: var(--muted); font-size: 14px; display: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flow-lines line { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="nav-brand">
+      <div class="nav-mark-slot">
+        <img class="mark-default" src="../../brand/logos/tessera-mark.svg" alt="Tessera">
+        <img class="mark-condensed" src="../../brand/logos/tessera-mark-condensed.svg" alt="">
+      </div>
+      <img class="nav-wordmark" src="../../brand/logos/tessera-wordmark.svg" alt="TESSERA">
+      <img class="nav-tagline" src="../../brand/logos/tessera-tagline.svg" alt="Intelligent Third-party Governance">
+      <button class="nav-toggle" id="navToggle" aria-label="Collapse navigation">
+        <img class="icon-shrink" src="assets/nav-icon-collapse-shrink.svg" alt="">
+        <img class="icon-expand" src="assets/nav-icon-collapse-expand.svg" alt="">
+      </button>
+    </div>
+
+    <nav class="nav-scroll">
+      <div class="nav-group">
+        <a class="nav-item" href="index.html">
+          <svg viewBox="0 0 20 20" fill="none"><rect x="2.5" y="2.5" width="6.5" height="6.5" rx="1.3" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2.5" width="6.5" height="6.5" rx="1.3" stroke="currentColor" stroke-width="1.5"/><rect x="2.5" y="11" width="6.5" height="6.5" rx="1.3" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="6.5" height="6.5" rx="1.3" stroke="currentColor" stroke-width="1.5"/></svg>
+          <span class="label">Dashboard</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group__label">RISK &amp; VENDORS</div>
+        <a class="nav-item" href="vendors.html">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M3 17V6.5L10 3l7 3.5V17" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7.5 17v-5h5v5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M3 8.5h14" stroke="currentColor" stroke-width="1.5"/></svg>
+          <span class="label">Vendors</span>
+        </a>
+        <a class="nav-item" href="assessments.html">
+          <svg viewBox="0 0 20 20" fill="none"><rect x="5" y="3" width="10" height="14" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M7.5 2.5h5v2h-5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 9.5l1.8 1.8L13 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 14h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span class="label">Assessments</span>
+        </a>
+        <a class="nav-item active" href="data-mapping.html">
+          <svg viewBox="0 0 20 20" fill="none"><circle cx="4" cy="5" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="16" cy="5" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="15" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M5.6 6.3L9 13.3M14.4 6.3L11 13.3M6 5h8" stroke="currentColor" stroke-width="1.5"/></svg>
+          <span class="label">Data Mapping</span>
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M10 3a7 7 0 100 14 7 7 0 000-14z" stroke="currentColor" stroke-width="1.5"/><path d="M7 10.2l2 2 4-4.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="label">Remediation &amp; Tasks</span>
+          <span class="nav-badge">15</span>
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M2.5 11l2.8-6 2.7 9 2.4-11 2.3 8h4.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="label">Monitoring &amp; Alerts</span>
+          <span class="nav-badge">7</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group__label">GOVERNANCE</div>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M5.5 2.5h6l3 3v12h-9z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11.5 2.5v3h3" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7.5 10.5h5M7.5 13.5h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span class="label">Policies</span>
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M3 17V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="5.5" y="10" width="2.6" height="7" rx="0.6" stroke="currentColor" stroke-width="1.5"/><rect x="10.2" y="6.5" width="2.6" height="10.5" rx="0.6" stroke="currentColor" stroke-width="1.5"/><rect x="14.9" y="3" width="2.6" height="14" rx="0.6" stroke="currentColor" stroke-width="1.5"/></svg>
+          <span class="label">Reports</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group__label">SYSTEM</div>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.4" stroke="currentColor" stroke-width="1.5"/><path d="M10 2.8v2M10 15.2v2M17.2 10h-2M4.8 10h-2M15.1 4.9l-1.4 1.4M6.3 13.7l-1.4 1.4M15.1 15.1l-1.4-1.4M6.3 6.3L4.9 4.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span class="label">Setup &amp; Configuration</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="nav-footer">
+      <div class="nav-user">
+        <img src="../../personas/dana-vasquez.png" alt="Dana Vasquez">
+        <div class="nav-user__meta">
+          <div class="nav-user__name">Dana Vasquez</div>
+          <div class="nav-user__role">Sr. Vendor Risk Manager</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="main">
+    <header class="topbar">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="M13 13l-2.5-2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <input type="text" placeholder="Search 612 vendors, policies, assessments…">
+        <kbd>&#8984;K</kbd>
+      </div>
+      <div class="topbar-actions">
+        <div class="icon-btn">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2.5a4 4 0 00-4 4v2.4l-1.3 2.6h10.6L13 8.9V6.5a4 4 0 00-4-4z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M7.2 14a1.8 1.8 0 003.6 0" stroke="currentColor" stroke-width="1.4"/></svg>
+          <span class="dot"></span>
+        </div>
+        <img class="topbar-avatar" src="../../personas/dana-vasquez.png" alt="Dana Vasquez">
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="page-heading">
+        <div>
+          <h1>Data Mapping</h1>
+          <p>How personal and sensitive data flows between Northbridge and its vendor ecosystem</p>
+        </div>
+        <button class="btn-primary" type="button">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5v11M1.5 7h11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          New Data Flow
+        </button>
+      </div>
+
+      <section class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-card__label">Data Flows Mapped</div>
+          <div class="stat-card__value">612</div>
+          <div class="stat-card__delta">100% of the active vendor portfolio</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Cross-Border Transfers</div>
+          <div class="stat-card__value">256</div>
+          <div class="stat-card__delta">42% of mapped flows</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Special Category Flows</div>
+          <div class="stat-card__value">72</div>
+          <div class="stat-card__delta">Highest scrutiny under GDPR Art. 9</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Unmapped Vendors</div>
+          <div class="stat-card__value">18</div>
+          <div class="stat-card__delta up">▲ Review needed</div>
+        </div>
+      </section>
+
+      <!-- Hero: the brand mark as a live, clickable data-flow hub -->
+      <div class="flow-panel">
+        <div class="flow-head">
+          <div>
+            <h2>Northbridge's data flow map</h2>
+            <p>Each connection is a category of data moving between Northbridge and its vendors. Select one to filter the register below — same shape as the Tessera mark itself.</p>
+          </div>
+          <button class="flow-reset" id="flowReset" type="button">Reset view</button>
+        </div>
+
+        <div class="flow-stage" id="flowStage">
+          <svg class="flow-lines" id="flowLines" viewBox="0 0 560 560" preserveAspectRatio="xMidYMid meet">
+            <line data-category="pii" x1="280" y1="280" x2="280" y2="70"></line>
+            <line data-category="financial" x1="280" y1="280" x2="461.9" y2="175"></line>
+            <line data-category="marketing" x1="280" y1="280" x2="461.9" y2="385"></line>
+            <line data-category="security" x1="280" y1="280" x2="280" y2="490"></line>
+            <line data-category="hr" x1="280" y1="280" x2="98.1" y2="385"></line>
+            <line data-category="special" x1="280" y1="280" x2="98.1" y2="175"></line>
+          </svg>
+
+          <div class="flow-center">
+            <div class="flow-center__badge"><img src="../../brand/logos/tessera-mark.svg" alt=""></div>
+            <div class="flow-center__label">Northbridge Financial Group</div>
+            <div class="flow-center__sub">Data controller</div>
+          </div>
+
+          <button class="flow-node" data-category="pii" style="left:50%; top:12.5%;">
+            <span class="flow-node__dot"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M4 16c1-3 3.5-4.5 6-4.5S15 13 16 16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+            <span class="flow-node__label">Customer PII &amp; KYC</span>
+            <span class="flow-node__count">198 flows</span>
+          </button>
+
+          <button class="flow-node" data-category="financial" style="left:82.48%; top:31.25%;">
+            <span class="flow-node__dot"><svg viewBox="0 0 20 20" fill="none"><rect x="3" y="6" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.6"/><path d="M3 9h14" stroke="currentColor" stroke-width="1.6"/></svg></span>
+            <span class="flow-node__label">Financial &amp; Payment Data</span>
+            <span class="flow-node__count">104 flows</span>
+          </button>
+
+          <button class="flow-node" data-category="marketing" style="left:82.48%; top:68.75%;">
+            <span class="flow-node__dot"><svg viewBox="0 0 20 20" fill="none"><path d="M2.5 11l2.8-6 2.7 9 2.4-11 2.3 8h4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="flow-node__label">Marketing &amp; Behavioral Data</span>
+            <span class="flow-node__count">128 flows</span>
+          </button>
+
+          <button class="flow-node" data-category="security" style="left:50%; top:87.5%;">
+            <span class="flow-node__dot"><svg viewBox="0 0 20 20" fill="none"><path d="M10 3l6 2.5v4c0 4-2.6 6.8-6 7.5-3.4-.7-6-3.5-6-7.5v-4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
+            <span class="flow-node__label">Security &amp; Authentication</span>
+            <span class="flow-node__count">58 flows</span>
+          </button>
+
+          <button class="flow-node" data-category="hr" style="left:17.52%; top:68.75%;">
+            <span class="flow-node__dot"><svg viewBox="0 0 20 20" fill="none"><rect x="4" y="4" width="12" height="13" rx="1.5" stroke="currentColor" stroke-width="1.6"/><path d="M7 8h6M7 11h6M7 14h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+            <span class="flow-node__label">Employee &amp; HR Data</span>
+            <span class="flow-node__count">52 flows</span>
+          </button>
+
+          <button class="flow-node" data-category="special" style="left:17.52%; top:31.25%;">
+            <span class="flow-node__dot"><svg viewBox="0 0 20 20" fill="none"><path d="M10 2.5a7.5 7.5 0 100 15 7.5 7.5 0 000-15z" stroke="currentColor" stroke-width="1.6"/><path d="M10 6v4l2.6 2.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="flow-node__label">Special Category Data</span>
+            <span class="flow-node__count">72 flows</span>
+          </button>
+        </div>
+
+        <div class="flow-legend"><span class="line-sample"></span> dashed line = data flow · click a node to trace it through the register below</div>
+      </div>
+
+      <div class="toolbar">
+        <div class="search" style="background:var(--surface)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="M13 13l-2.5-2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input type="text" id="nameFilter" placeholder="Filter by vendor name…">
+        </div>
+        <select id="categoryFilter">
+          <option value="all">All categories</option>
+          <option value="pii">Customer PII &amp; KYC</option>
+          <option value="financial">Financial &amp; Payment Data</option>
+          <option value="hr">Employee &amp; HR Data</option>
+          <option value="security">Security &amp; Authentication</option>
+          <option value="marketing">Marketing &amp; Behavioral Data</option>
+          <option value="special">Special Category Data</option>
+        </select>
+        <select id="directionFilter">
+          <option value="all">All directions</option>
+          <option value="Inbound">Inbound</option>
+          <option value="Outbound">Outbound</option>
+          <option value="Bidirectional">Bidirectional</option>
+        </select>
+        <select id="crossBorderFilter">
+          <option value="all">Cross-border: all</option>
+          <option value="yes">Cross-border only</option>
+          <option value="no">Domestic only</option>
+        </select>
+        <span class="results-count" id="resultsCount"></span>
+      </div>
+
+      <div class="bulk-bar" id="bulkBar">
+        <span><strong id="selectedCount">0</strong> selected</span>
+        <div class="spacer">
+          <button type="button">Assign owner</button>
+          <button type="button">Link to RoPA</button>
+          <button type="button">Export</button>
+          <button type="button" class="clear" id="clearSelection">Clear</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <table class="vendor-table">
+          <thead>
+            <tr>
+              <th class="checkbox-col"><input type="checkbox" id="selectAll" aria-label="Select all"></th>
+              <th>Vendor</th>
+              <th>Data Category</th>
+              <th>Direction</th>
+              <th>Cross-Border</th>
+              <th>Legal Basis</th>
+              <th>Owner</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="flowRows"></tbody>
+        </table>
+        <div class="empty-state" id="emptyState">No data flows match these filters. Try clearing one.</div>
+        <div class="pager">
+          <span id="pagerText">Showing 24 of 612 data flows</span>
+          <div class="pager-btns">
+            <button type="button" disabled>← Previous</button>
+            <button type="button" disabled>Next →</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  document.getElementById('navToggle').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
+
+  const CATEGORY_LABEL = {
+    pii: 'Customer PII & KYC', financial: 'Financial & Payment Data', hr: 'Employee & HR Data',
+    security: 'Security & Authentication', marketing: 'Marketing & Behavioral Data', special: 'Special Category Data'
+  };
+  const DIR_ICON = {
+    Inbound: '<path d="M10 4v10M6 10l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
+    Outbound: '<path d="M10 16V6M6 10l4-4 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
+    Bidirectional: '<path d="M4 8h10M11 5l3 3-3 3M16 12H6M9 9l-3 3 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'
+  };
+
+  // Same 24-vendor sample used in vendors.html / assessments.html, so all
+  // three pages read as one coherent portfolio.
+  const flows = [
+    { vendor: 'Ironclad Identity', region: 'EU · US', owner: 'PN', category: 'pii', direction: 'Bidirectional', crossBorder: 'EU → US', basis: 'Contract' },
+    { vendor: 'Northwind AI Labs', region: 'EU', owner: 'DV', category: 'pii', direction: 'Outbound', crossBorder: 'US → EU', basis: 'Legitimate Interest' },
+    { vendor: 'Harborlight Cloud', region: 'US', owner: 'DV', category: 'financial', direction: 'Bidirectional', crossBorder: null, basis: 'Contract' },
+    { vendor: 'Glasswing Contract AI', region: 'EU', owner: 'PN', category: 'pii', direction: 'Outbound', crossBorder: 'US → EU', basis: 'Legitimate Interest' },
+    { vendor: 'Solace Payments API', region: 'US', owner: 'PN', category: 'financial', direction: 'Bidirectional', crossBorder: null, basis: 'Contract' },
+    { vendor: 'Cascade CRM', region: 'Canada', owner: 'MC', category: 'marketing', direction: 'Outbound', crossBorder: 'US → Canada', basis: 'Legitimate Interest' },
+    { vendor: 'Fortify Endpoint Security', region: 'US · EU', owner: 'PN', category: 'security', direction: 'Bidirectional', crossBorder: 'US ↔ EU', basis: 'Legal Obligation' },
+    { vendor: 'Keystone Payroll', region: 'Canada', owner: 'MC', category: 'hr', direction: 'Outbound', crossBorder: null, basis: 'Contract' },
+    { vendor: 'Onyx Fraud Detection', region: 'US', owner: 'PN', category: 'special', direction: 'Bidirectional', crossBorder: null, basis: 'Legitimate Interest' },
+    { vendor: 'Vantage Identity Verify', region: 'US · EU', owner: 'PN', category: 'special', direction: 'Bidirectional', crossBorder: 'US ↔ EU', basis: 'Consent' },
+    { vendor: 'Vertex Analytics', region: 'US', owner: 'MC', category: 'marketing', direction: 'Outbound', crossBorder: null, basis: 'Legitimate Interest' },
+    { vendor: 'Nimbus Cloud Storage', region: 'EU', owner: 'DV', category: 'pii', direction: 'Bidirectional', crossBorder: 'US → EU', basis: 'Contract' },
+    { vendor: 'Aurora HR Suite', region: 'US · Canada', owner: 'MC', category: 'hr', direction: 'Bidirectional', crossBorder: 'US ↔ Canada', basis: 'Contract' },
+    { vendor: 'Meridian Comms', region: 'EU', owner: 'PN', category: 'marketing', direction: 'Outbound', crossBorder: 'US → EU', basis: 'Legitimate Interest' },
+    { vendor: 'Lattice Data Warehouse', region: 'US', owner: 'DV', category: 'financial', direction: 'Bidirectional', crossBorder: null, basis: 'Contract' },
+    { vendor: 'Sentinel Background Checks', region: 'US · Canada', owner: 'MC', category: 'special', direction: 'Outbound', crossBorder: 'US ↔ Canada', basis: 'Legal Obligation' },
+    { vendor: 'Coppermill Payments', region: 'Canada', owner: 'MC', category: 'financial', direction: 'Bidirectional', crossBorder: 'US → Canada', basis: 'Contract' },
+    { vendor: 'Foundry DevOps Platform', region: 'US', owner: 'DV', category: 'security', direction: 'Bidirectional', crossBorder: null, basis: 'Legitimate Interest' },
+    { vendor: 'Beacon Legal Docs', region: 'US', owner: 'MC', category: 'pii', direction: 'Outbound', crossBorder: null, basis: 'Legitimate Interest' },
+    { vendor: 'Pulsecheck Support Desk', region: 'US', owner: 'MC', category: 'pii', direction: 'Bidirectional', crossBorder: null, basis: 'Consent' },
+    { vendor: 'Driftwood Marketing Suite', region: 'US', owner: 'MC', category: 'marketing', direction: 'Outbound', crossBorder: null, basis: 'Consent' },
+    { vendor: 'Quartzline Analytics', region: 'EU', owner: 'DV', category: 'marketing', direction: 'Outbound', crossBorder: 'US → EU', basis: 'Legitimate Interest' },
+    { vendor: 'Bramblecore Ticketing', region: 'US', owner: 'MC', category: 'pii', direction: 'Bidirectional', crossBorder: null, basis: 'Consent' },
+    { vendor: 'Wren Legal Research', region: 'US', owner: 'MC', category: 'pii', direction: 'Outbound', crossBorder: null, basis: 'Legitimate Interest' }
+  ];
+
+  const state = { category: 'all', direction: 'all', crossBorder: 'all', name: '' };
+  const selected = new Set();
+
+  function filteredFlows() {
+    return flows.filter(f => {
+      if (state.category !== 'all' && f.category !== state.category) return false;
+      if (state.direction !== 'all' && f.direction !== state.direction) return false;
+      if (state.crossBorder === 'yes' && !f.crossBorder) return false;
+      if (state.crossBorder === 'no' && f.crossBorder) return false;
+      if (state.name && !f.vendor.toLowerCase().includes(state.name.toLowerCase())) return false;
+      return true;
+    });
+  }
+
+  function render() {
+    const rows = filteredFlows();
+    const tbody = document.getElementById('flowRows');
+    tbody.innerHTML = rows.map(f => `
+      <tr>
+        <td class="checkbox-col"><input type="checkbox" class="rowCheck" data-key="${f.vendor}" ${selected.has(f.vendor) ? 'checked' : ''}></td>
+        <td>
+          <div class="vendor-name">${f.vendor}</div>
+          <div class="vendor-sub">${f.region}</div>
+        </td>
+        <td><span class="type-tag">${CATEGORY_LABEL[f.category]}</span></td>
+        <td><span class="dir"><svg viewBox="0 0 20 20" fill="none">${DIR_ICON[f.direction]}</svg>${f.direction}</span></td>
+        <td>${f.crossBorder ? `<span class="xborder yes">${f.crossBorder}</span>` : '<span class="xborder no">No</span>'}</td>
+        <td>${f.basis}</td>
+        <td><span class="avatar-chip">${f.owner}</span></td>
+        <td><a class="row-link" href="#">View →</a></td>
+      </tr>
+    `).join('');
+
+    document.getElementById('emptyState').style.display = rows.length ? 'none' : 'block';
+    document.querySelector('table.vendor-table').style.display = rows.length ? 'table' : 'none';
+    document.getElementById('resultsCount').textContent = `${rows.length} shown`;
+    document.getElementById('pagerText').textContent = `Showing ${rows.length} of 612 data flows`;
+
+    tbody.querySelectorAll('.rowCheck').forEach(cb => {
+      cb.addEventListener('change', () => {
+        if (cb.checked) selected.add(cb.dataset.key); else selected.delete(cb.dataset.key);
+        updateBulkBar();
+      });
+    });
+  }
+
+  function updateBulkBar() {
+    const bar = document.getElementById('bulkBar');
+    document.getElementById('selectedCount').textContent = selected.size;
+    bar.classList.toggle('show', selected.size > 0);
+    const allVisible = document.querySelectorAll('.rowCheck');
+    document.getElementById('selectAll').checked = allVisible.length > 0 && [...allVisible].every(cb => cb.checked);
+  }
+
+  function setCategory(cat) {
+    state.category = cat;
+    document.getElementById('categoryFilter').value = cat;
+
+    const stage = document.getElementById('flowStage');
+    const lines = document.getElementById('flowLines');
+    const isFiltered = cat !== 'all';
+    stage.classList.toggle('dimmed', isFiltered);
+    lines.classList.toggle('dimmed', isFiltered);
+    document.getElementById('flowReset').classList.toggle('show', isFiltered);
+
+    document.querySelectorAll('.flow-node').forEach(n => n.classList.toggle('active', n.dataset.category === cat));
+    document.querySelectorAll('.flow-lines line').forEach(l => l.classList.toggle('active', l.dataset.category === cat));
+
+    render();
+    updateBulkBar();
+  }
+
+  document.querySelectorAll('.flow-node').forEach(node => {
+    node.addEventListener('click', () => {
+      setCategory(state.category === node.dataset.category ? 'all' : node.dataset.category);
+    });
+  });
+  document.getElementById('flowReset').addEventListener('click', () => setCategory('all'));
+  document.getElementById('categoryFilter').addEventListener('change', (e) => setCategory(e.target.value));
+
+  document.getElementById('nameFilter').addEventListener('input', (e) => { state.name = e.target.value; render(); updateBulkBar(); });
+  document.getElementById('directionFilter').addEventListener('change', (e) => { state.direction = e.target.value; render(); updateBulkBar(); });
+  document.getElementById('crossBorderFilter').addEventListener('change', (e) => { state.crossBorder = e.target.value; render(); updateBulkBar(); });
+
+  document.getElementById('selectAll').addEventListener('change', (e) => {
+    document.querySelectorAll('.rowCheck').forEach(cb => {
+      cb.checked = e.target.checked;
+      if (e.target.checked) selected.add(cb.dataset.key); else selected.delete(cb.dataset.key);
+    });
+    updateBulkBar();
+  });
+
+  document.getElementById('clearSelection').addEventListener('click', () => {
+    selected.clear();
+    document.querySelectorAll('.rowCheck').forEach(cb => cb.checked = false);
+    updateBulkBar();
+  });
+
+  render();
+</script>
+</body>
+</html>
