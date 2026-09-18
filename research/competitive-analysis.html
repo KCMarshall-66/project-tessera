@@ -115,6 +115,17 @@
   table.also td { padding: var(--space-3); border-bottom: 1px solid var(--surface-border); vertical-align: top; }
   table.also tr:last-child td { border-bottom: none; }
 
+  .added-label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+                 padding: var(--space-3) 0 0; margin-top: var(--space-2); border-top: 2px dashed var(--surface-border); }
+  ol.ranks li.added-li { border-top: none; padding-top: var(--space-2); }
+  .chip.added { background: #ECEFF3; color: var(--muted); }
+  table.glance { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 980px; }
+  table.glance th { text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted);
+                    padding: var(--space-3); border-bottom: 1px solid var(--surface-border); background: #FBFCFE; vertical-align: bottom; }
+  table.glance th.hl, table.glance td.hl { background: #F3F7FD; }
+  table.glance td { padding: var(--space-3); border-bottom: 1px solid var(--surface-border); vertical-align: top; }
+  table.glance tr:last-child td { border-bottom: none; }
+  table.glance td.rl { font-weight: 600; white-space: nowrap; color: var(--ink); }
   .implications { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
   .impl { background: var(--surface); border: 1px solid var(--surface-border); border-radius: var(--radius-lg); padding: var(--space-5); }
   .impl h3 { margin: 0 0 var(--space-2); font-size: 15px; }
@@ -159,7 +170,7 @@
       <h2>How this was built (read before trusting the ranks)</h2>
       <div class="card method">
         <p><b>Two lenses.</b> <b>Industry</b> = 2026 analyst reports: the Gartner Magic Quadrant for Third-Party Risk Management Tools (its first, published April 6, 2026), The Forrester Wave for TPRM Platforms (Q1 2026), and The Forrester Wave for Cybersecurity Risk Ratings Platforms (Q2 2026). <b>Consumer</b> = peer-review sites (G2, Gartner Peer Insights).</p>
-        <p><b>Choosing five.</b> At least nine vendors hold a 2026 analyst Leader placement in one of those reports (the count could be higher, since the Gartner quadrant is not fully visible to me). I picked the five with the strongest combination of analyst standing, a verifiable customer-review footprint, and direct overlap with Tessera (AI-assisted, cyber-focused TPRM for large enterprises with a privacy overlap). <b>If you weight analysts alone,</b> Diligent, Certa, and LogicGate belong ahead of UpGuard; they sit in "Also considered" because I found no usable review data for them.</p>
+        <p><b>Choosing five.</b> At least nine vendors hold a 2026 analyst Leader placement in one of those reports (the count could be higher, since the Gartner quadrant is not fully visible to me). I picked the five with the strongest combination of analyst standing, a verifiable customer-review footprint, and direct overlap with Tessera (AI-assisted, cyber-focused TPRM for large enterprises with a privacy overlap). <b>If you weight analysts alone,</b> Diligent, Certa, and LogicGate belong ahead of UpGuard; they sit in "Also considered" because I found no usable review data for them. <b>SecurityScorecard</b> was not in the original five (no 2026 Leader placement found, lowest G2 rating of the group). It has since been added as a sixth profile and ranked by the same rules, shown below a dashed line so the original top-five selection stays intact.</p>
         <p><b>Rank rules.</b> Industry: Leader in a TPRM-wide report ranks above Leader in the narrower ratings-only report, which ranks above no Leader placement; ties are shown as ties rather than forced apart. Consumer: sorted by G2 rating, then review volume. Ratings within 0.1 stars are not meaningfully different, so volume is what carries confidence.</p>
         <p><b>Known gaps.</b> The Gartner MQ is paywalled: I confirmed four Leaders from vendor announcements but could not see the full quadrant, so other vendors may have placed too. G2 and Gartner Peer Insights blocked direct access, so review numbers come from secondary sources.</p>
         <p><b>Provenance tags on every claim:</b>
@@ -181,7 +192,9 @@
             <li><div class="rk">1<small>tie</small></div><div><div class="rk-name">OneTrust</div><div class="rk-basis">Gartner MQ TPRM Leader <span class="badge v">Vendor-announced</span></div></div></li>
             <li><div class="rk">1<small>tie</small></div><div><div class="rk-name">ProcessUnity</div><div class="rk-basis">Forrester TPRM Wave Leader, top scores in Current Offering and Strategy <span class="badge v">Vendor-announced</span></div></div></li>
             <li><div class="rk">4</div><div><div class="rk-name">Bitsight</div><div class="rk-basis">Forrester Cyber Risk Ratings Wave Leader (narrower, ratings-only market); highest Current Offering score <span class="badge v">Vendor-announced</span></div></div></li>
-            <li><div class="rk">5</div><div><div class="rk-name">UpGuard</div><div class="rk-basis">No 2026 Leader placement found. Forrester rated it a Contender in the 2024 ratings wave <span class="badge i">Independent</span></div></div></li>
+            <li><div class="rk">5<small>tie</small></div><div><div class="rk-name">UpGuard</div><div class="rk-basis">No 2026 Leader placement found. Forrester rated it a Contender in the 2024 ratings wave <span class="badge i">Independent</span></div></div></li>
+            <li class="added-li" style="display:block"><span class="added-label">Added for comparison</span></li>
+            <li class="added-li"><div class="rk">5<small>tie</small></div><div><div class="rk-name">SecurityScorecard</div><div class="rk-basis">Included in the 2026 Forrester ratings wave, but no Leader placement confirmed (the scorecard is paywalled). It was the top-placed Leader in the 2024 wave <span class="badge i">Independent</span></div></div></li>
           </ol>
         </div>
         <div class="card rank-card">
@@ -193,6 +206,8 @@
             <li><div class="rk">3</div><div><div class="rk-name">Bitsight</div><div class="rk-basis">4.5 stars, 76 reviews <span class="badge c">Competitor-published</span></div></div></li>
             <li><div class="rk">4</div><div><div class="rk-name">ProcessUnity</div><div class="rk-basis">4.5 stars, 54 G2 reviews; 160 reviews on Gartner Peer Insights (rating not retrievable) <span class="badge c">Competitor-published</span></div></div></li>
             <li><div class="rk">5*</div><div><div class="rk-name">OneTrust</div><div class="rk-basis">4.5 stars, but only 5 reviews on this G2 listing, too few to rank with confidence; its reviews are likely spread across other listings <span class="badge c">Competitor-published</span></div></div></li>
+            <li class="added-li" style="display:block"><span class="added-label">Added for comparison</span></li>
+            <li class="added-li"><div class="rk">6</div><div><div class="rk-name">SecurityScorecard</div><div class="rk-basis">4.3 stars, 92 G2 reviews <span class="badge c">Competitor-published</span>. Other sites agree it is lower: 4.3 on Capterra (11 reviews), 4.1 on PeerSpot (13) <span class="badge i">Independent</span></div></div></li>
           </ol>
           <div class="bars">
             <h4>G2 review volume: how much to trust each rating</h4>
@@ -201,6 +216,7 @@
             <div class="bar-row"><span>Bitsight</span><div class="bar-track"><div class="bar-fill" style="width:5.1%"></div></div><span class="bar-val">76</span></div>
             <div class="bar-row"><span>ProcessUnity</span><div class="bar-track"><div class="bar-fill" style="width:3.6%"></div></div><span class="bar-val">54</span></div>
             <div class="bar-row"><span>OneTrust</span><div class="bar-track"><div class="bar-fill" style="width:0.3%"></div></div><span class="bar-val">5</span></div>
+            <div class="bar-row"><span>SecurityScorecard</span><div class="bar-track"><div class="bar-fill" style="width:6.1%"></div></div><span class="bar-val">92</span></div>
           </div>
         </div>
       </div>
@@ -254,6 +270,13 @@
               <td class="none">Not among the 3 Leaders</td>
               <td class="none">No 2026 Leader placement found (Contender in 2024)</td>
               <td>4.5 (732) <span class="badge c">Competitor-published</span></td>
+            </tr>
+            <tr>
+              <td class="vn">SecurityScorecard<span class="note">added for comparison</span></td>
+              <td class="none">Has a Gartner Peer Insights listing; MQ placement not found</td>
+              <td class="none">Not among the 3 Leaders</td>
+              <td class="none">Included in the wave; Leader placement not confirmed (a Leader in 2024)</td>
+              <td>4.3 (92) <span class="badge c">Competitor-published</span></td>
             </tr>
           </tbody>
         </table>
@@ -344,7 +367,7 @@
       </div>
 
       <div class="card vendor">
-        <div class="vendor-head"><h3>5. UpGuard</h3><span class="chip">Industry 5</span><span class="chip alt">Consumer 2</span></div>
+        <div class="vendor-head"><h3>5. UpGuard</h3><span class="chip">Industry 5 (tie)</span><span class="chip alt">Consumer 2</span></div>
         <p class="what">The review-site favorite: vendor monitoring plus exposed-data discovery, with unusually transparent published pricing.</p>
         <div class="sw">
           <div class="s"><h4>Strengths</h4><ul>
@@ -362,6 +385,73 @@
         </div>
         <div class="vs"><b>Versus Tessera:</b> the price-and-usability pressure from below. Its published pricing sets a buyer expectation that enterprise quotes get compared against, even if UpGuard lacks enterprise-scale depth.</div>
       </div>
+
+      <div class="card vendor">
+        <div class="vendor-head"><h3>6. SecurityScorecard</h3><span class="chip">Industry 5 (tie)</span><span class="chip alt">Consumer 6</span><span class="chip added">Added for comparison</span></div>
+        <p class="what">An outside-in security ratings pioneer (A to F grades for 12M+ companies) that is now pushing up into AI-run third-party risk workflows. It launched TITAN AI in March 2026 and bought internet-scanning startup Driftnet in May 2026.</p>
+        <div class="sw">
+          <div class="s"><h4>Strengths</h4><ul>
+            <li>Simple A to F letter grades and a ten-factor scoring model that make risk easy to communicate to non-technical stakeholders and boards <span class="badge i">Independent</span></li>
+            <li>Very broad coverage: rates 12M+ companies with continuous monitoring across ten risk-factor groups <span class="badge i">Independent</span></li>
+            <li>Low barrier to entry: a free tier for up to 5 suppliers, self-directed setup, and integrations with ServiceNow, Jira, and Splunk <span class="badge i">Independent</span></li>
+            <li>Notable 2026 momentum: TITAN AI (Watch, Assess, Secure) plus Driftnet scanning, with claims of up to 95% less manual effort and 99.9% accurate attribution <span class="badge v">Vendor-announced</span></li>
+          </ul></div>
+          <div class="w"><h4>Weaknesses</h4><ul>
+            <li>Focused on external monitoring rather than full vendor lifecycle management; lighter workflows and limited custom reporting <span class="badge i">Independent</span> <span class="badge c">Competitor-published</span></li>
+            <li>False positives take time to dispute, and reviewers cite vulnerabilities attributed to the wrong company and unclear reasons for score changes <span class="badge i">Independent</span></li>
+            <li>Breach notifications can lag public news <span class="badge i">Independent</span>; some reviewers report alert fatigue <span class="badge u">Unverified</span></li>
+            <li>Lowest consumer score of the six (4.3 on G2, 4.3 on Capterra, 4.1 on PeerSpot), and its 2026 analyst placement is unconfirmed. Its AI performance claims have no independent verification I could find</li>
+          </ul></div>
+        </div>
+        <div class="price">Pricing: free tier up to 5 suppliers; paid plans are quote-based, with one independent estimate of enterprise plans from about $25K a year <span class="badge i">Independent</span></div>
+        <div class="vs"><b>Versus Tessera:</b> both a competitor and a potential data source. Its TITAN Assess module (AI questionnaire automation) is the clearest example of a ratings vendor moving into Tessera's AI-assisted assessment territory, so watch it closely, but its claims are still unproven.</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>SecurityScorecard against the field</h2>
+      <p class="inference">Where it sits relative to the other five, side by side, then head to head. Facts I couldn't find are marked "not found" rather than guessed; the head-to-head notes mix sourced facts with my read of them.</p>
+      <div class="card table-scroll">
+        <table class="glance">
+          <thead>
+            <tr>
+              <th></th><th class="hl">SecurityScorecard</th><th>Optro</th><th>OneTrust</th><th>ProcessUnity</th><th>Bitsight</th><th>UpGuard</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="rl">Core approach</td><td class="hl">Outside-in ratings, expanding into AI-run TPRM</td><td>Broad AI-powered GRC suite</td><td>Privacy, GRC, and TPRM on one data model</td><td>Dedicated TPRM workflow platform</td><td>Outside-in ratings and exposure management</td><td>Monitoring, exposed-data discovery, questionnaires</td>
+            </tr>
+            <tr>
+              <td class="rl">Outside-in monitoring</td><td class="hl">Native: 12M+ companies rated; Driftnet scanning added May 2026</td><td>New vulnerability risk monitoring <span class="badge v">Vendor-announced</span></td><td>Draws on third-party cyber feeds <span class="badge c">Competitor-published</span></td><td>Via integrations, including Bitsight and SecurityScorecard</td><td>Native: daily scores on 40M+ organizations</td><td>Native: daily scans plus dark web exposure</td>
+            </tr>
+            <tr>
+              <td class="rl">Assessment and lifecycle workflow</td><td class="hl">Lighter lifecycle; TITAN Assess adds AI questionnaires <span class="badge v">Vendor-announced</span></td><td>Strong; automated vendor assessments</td><td>Strong; 6,000+ pre-completed assessments</td><td>Deepest configurable workflow; assessment exchange</td><td>Questionnaire-free by design; can miss internal controls</td><td>Questionnaire automation reuses past answers</td>
+            </tr>
+            <tr>
+              <td class="rl">Privacy suite (RoPA, DPIA, data mapping)</td><td class="hl">Not found</td><td>Not found</td><td>Yes, on the same data model</td><td>Not found</td><td>Not found</td><td>Not found</td>
+            </tr>
+            <tr>
+              <td class="rl">Entry price (estimates)</td><td class="hl">Free tier (5 suppliers); enterprise from about $25K</td><td>$75K to $1M+ <span class="badge u">Unverified</span></td><td>$50K to $250K+</td><td>Quote-based</td><td>$40K to $200K+</td><td>From about $5,999 (up to 20 vendors), published</td>
+            </tr>
+            <tr>
+              <td class="rl">G2 rating (reviews)</td><td class="hl">4.3 (92)</td><td>4.6 (1,500+) <span class="badge u">Unverified</span></td><td>4.5 (5)</td><td>4.5 (54)</td><td>4.5 (76)</td><td>4.5 (732)</td>
+            </tr>
+            <tr>
+              <td class="rl">2026 analyst standing</td><td class="hl">In Forrester Ratings wave; placement unconfirmed</td><td>Gartner MQ Leader</td><td>Gartner MQ Leader</td><td>Forrester TPRM Leader</td><td>Forrester Ratings Leader</td><td>None found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="implications" style="margin-top: var(--space-4);">
+        <div class="impl"><h3>Versus Bitsight: the direct rival</h3><p>Same category. In Forrester's 2024 ratings wave SecurityScorecard held the top spot with Bitsight second; in 2026 Bitsight is a named Leader while SecurityScorecard's placement can't be confirmed (paywalled). Bitsight also rates higher on G2 (4.5 vs 4.3). SecurityScorecard's counters are a lower entry price, a free tier, and its TITAN AI push. Bitsight's own comparison page says SecurityScorecard's ROI figures rest on internal testing; that is a competitor's claim.</p></div>
+        <div class="impl"><h3>Versus UpGuard: the closest on price and simplicity</h3><p>Both sell fast adoption and outside-in monitoring, and neither has a 2026 analyst Leader placement I could find. UpGuard has about eight times the G2 reviews (732 vs 92), a higher rating, and published pricing. SecurityScorecard claims the larger rated-company database and a free tier.</p></div>
+        <div class="impl"><h3>Versus ProcessUnity: partner as much as rival</h3><p>ProcessUnity integrates SecurityScorecard to supply outside-in signals, so today they are complementary: workflow on one side, signals on the other. The risk to ProcessUnity is TITAN Assess pulling SecurityScorecard into the workflow layer.</p></div>
+        <div class="impl"><h3>Versus OneTrust and Optro: a different weight class</h3><p>Those are full suites; SecurityScorecard is a signal provider that independent reviewers say focuses on external monitoring rather than the whole vendor lifecycle. It competes with them as a feature or data feed (its ServiceNow, Jira, and Splunk integrations point the same way), not as a replacement.</p></div>
+      </div>
+      <div class="card" style="margin-top: var(--space-4);">
+        <p style="margin:0;font-size:14px;"><b>Overall:</b> SecurityScorecard sits mid-pack. It is strong on simplicity, coverage, and low-cost entry, and weakest of the six on customer ratings, with a 2026 analyst placement I could not confirm. Its most interesting move is upmarket: TITAN AI (March 2026) and Driftnet (May 2026) are an attempt to become an AI-run TPRM platform rather than a scoring service. Those performance claims are the company's own, and the one independent write-up I found says it contains no customer counts or verification.</p>
+      </div>
     </section>
 
     <section>
@@ -375,7 +465,6 @@
             <tr><td><b>LogicGate</b></td><td>Forrester TPRM Leader with the highest possible scores on 11 criteria <span class="badge v">Vendor-announced</span>. Praised for a no-code workflow builder; reviewers say reporting lacks polish for boards. No usable peer-review data found.</td></tr>
             <tr><td><b>Archer</b></td><td>Forrester TPRM Leader <span class="badge v">Vendor-announced</span>, but the weakest consumer score here (3.6 stars, 20 reviews <span class="badge c">Competitor-published</span>); reviewers call the UI dated and note mandatory upgrades.</td></tr>
             <tr><td><b>Panorays</b></td><td>Forrester Ratings Wave Leader, "above-average customer feedback" <span class="badge v">Vendor-announced</span>; 4.3 stars on 52 G2 reviews <span class="badge c">Competitor-published</span>. Narrower ratings-plus-questionnaire scope.</td></tr>
-            <tr><td><b>SecurityScorecard</b></td><td>4.3 stars on 92 G2 reviews <span class="badge c">Competitor-published</span>. A Forrester Ratings Wave Leader in 2024; I found no 2026 Leader placement.</td></tr>
             <tr><td><b>Mitratech Prevalent</b></td><td>4.5 stars on 21 G2 reviews <span class="badge c">Competitor-published</span>. A dedicated TPRM platform with optional managed services; no 2026 Leader placement found.</td></tr>
           </tbody>
         </table>
@@ -390,6 +479,7 @@
         <div class="impl"><h3>The AI gap is real but open</h3><p>Forrester says buyers want AI agents that execute workflows, yet most firms lack that ambition. Tessera's human-in-the-loop, auditable AI (also what the EU AI Act expects) can be a differentiator rather than a constraint.</p></div>
         <div class="impl"><h3>UX is the recurring complaint</h3><p>Steep learning curves, confusing navigation, dated UIs, and configuration overhead appear across OneTrust, Archer, ProcessUnity, and UpGuard. The persona-driven design work in this repo targets exactly that.</p></div>
         <div class="impl"><h3>Content networks are a moat to answer</h3><p>OneTrust's 6,000+ pre-completed vendor assessments and ProcessUnity's exchange cut effort at 600+ vendor scale. Tessera needs a credible answer to shared assessment content.</p></div>
+        <div class="impl"><h3>Ratings vendors are moving up-stack</h3><p>SecurityScorecard's TITAN Assess is the clearest live example of the shift Forrester describes, from scores toward AI-run workflows. It squeezes Tessera's AI-assisted positioning from the monitoring side, though its claims are unverified. It is also a plausible data partner.</p></div>
       </div>
     </section>
 
@@ -412,6 +502,10 @@
           <li>Expert Insights, <a href="https://expertinsights.com/compliance/the-top-third-party-and-supplier-risk-management-software">Best 10 Third-Party Risk Management Software For Business (2026)</a></li>
           <li>G2, <a href="https://learn.g2.com/best-third-party-risk-management-software">Best Third-Party Risk Management Software</a> (editorial, June 2026)</li>
           <li>Gartner Peer Insights, <a href="https://www.gartner.com/reviews/market/third-party-risk-management-technology-solutions">Third-Party Risk Management Technology Solutions</a> (used only to confirm product listings and review counts)</li>
+          <li>SecurityScorecard: <a href="https://securityscorecard.com/blog/securityscorecard-named-a-leader-in-the-forrester-wave-for-cybersecurity-risk-ratings/">named a Leader in the Forrester Wave for Cybersecurity Risk Ratings</a> (2024); <a href="https://siliconangle.com/2026/03/23/securityscorecard-debuts-titan-ai-reduce-supply-chain-breaches-streamline-vendor-risk-workflows/">TITAN AI launch coverage</a> (SiliconANGLE, March 2026); <a href="https://siliconangle.com/2026/05/14/securityscorecard-acquires-internet-scanning-startup-driftnet-bolster-third-party-risk-platform/">Driftnet acquisition</a> (SiliconANGLE, May 2026)</li>
+          <li>BankInfoSecurity, <a href="https://www.bankinfosecurity.com/bitsight-securityscorecard-panorays-lead-risk-ratings-tech-a-25326">Bitsight, SecurityScorecard, Panorays Lead Risk Ratings Tech</a> (Forrester's 2024 ratings wave; used only for the 2024 placements)</li>
+          <li>Bitsight, <a href="https://www.bitsight.com/compare/bitsight-vs-security-scorecard">Bitsight vs. SecurityScorecard</a> (competitor-authored; used only to confirm SecurityScorecard was included in the 2026 ratings wave)</li>
+          <li>Capterra, <a href="https://www.capterra.com/p/172806/SecurityScorecard/reviews/">SecurityScorecard reviews</a> (4.3 stars, 11 reviews) and PeerSpot, <a href="https://www.peerspot.com/products/securityscorecard-pros-and-cons">SecurityScorecard pros and cons</a> (4.1 stars, 13 reviews)</li>
         </ol>
       </div>
     </section>
