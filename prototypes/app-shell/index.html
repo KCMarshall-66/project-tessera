@@ -152,31 +152,6 @@
         </div>
       </div>
 
-      <section class="scan-panel" id="scanPanel" aria-label="Continuous scanning of the public internet">
-        <div class="scan-head">
-          <div>
-            <span class="scan-eyebrow"><i class="scan-live"></i>Scanning the public internet</span>
-            <div class="scan-headline"><b id="scanCount">7</b><span>critical signals open across 612 monitored vendors</span></div>
-          </div>
-          <button type="button" class="scan-demo" id="scanDemo" title="Prototype control: replays a scripted signal">Simulate a signal</button>
-        </div>
-        <div class="scan-panel__grid">
-          <div>
-            <div class="mosaic" id="mosaicView" role="img" aria-label="Grid of 612 tiles, one per monitored vendor, with a scan line moving across. Red tiles have a critical signal open; amber tiles have an open finding."></div>
-            <div class="scan-legend">
-              <span><i style="background:var(--nav-bg-raised);border:1px solid var(--nav-border)"></i>Monitored, clear</span>
-              <span><i style="background:#8A6B22"></i>Open finding</span>
-              <span><i style="background:var(--status-critical)"></i>Critical signal</span>
-              <span>Hover a tile for the vendor</span>
-            </div>
-          </div>
-          <aside class="scan-queue" aria-live="polite">
-            <div class="scan-queue__head"><span>Investigation tasks</span><a href="monitoring.html">View all →</a></div>
-            <div class="scan-queue__list" id="scanQueue"></div>
-          </aside>
-        </div>
-      </section>
-
       <section class="stat-grid">
         <div class="stat-card">
           <div class="stat-card__label">Active Vendors</div>
@@ -205,6 +180,32 @@
           <div class="stat-card__delta">9 are DORA-critical renewals</div>
         </a>
       </section>
+
+      <section class="scan-panel scan-panel--open" id="scanPanel" aria-label="Continuous scanning of the public internet">
+        <div class="scan-head">
+          <div>
+            <span class="scan-eyebrow"><i class="scan-live"></i>Scanning the public internet</span>
+            <div class="scan-headline"><b id="scanCount">7</b><span>critical signals open across 612 monitored vendors</span></div>
+          </div>
+          <button type="button" class="scan-demo" id="scanDemo" title="Prototype control: replays a scripted signal">Simulate a signal</button>
+        </div>
+        <div class="scan-panel__grid">
+          <div>
+            <div class="mosaic" id="mosaicView" role="img" aria-label="Grid of 612 tiles, one per monitored vendor, with a scan line moving across. Red tiles have a critical signal open; amber tiles have an open finding."></div>
+            <div class="scan-legend">
+              <span><i style="background:var(--tile-clear)"></i>Monitored, clear</span>
+              <span><i style="background:var(--tile-open)"></i>Open finding</span>
+              <span><i style="background:var(--tile-critical)"></i>Critical signal</span>
+              <span>Hover a tile for the vendor</span>
+            </div>
+          </div>
+          <aside class="scan-queue" aria-live="polite">
+            <div class="scan-queue__head"><span>Investigation tasks</span><a href="monitoring.html">View all →</a></div>
+            <div class="scan-queue__list" id="scanQueue"></div>
+          </aside>
+        </div>
+      </section>
+
 
       <div class="grid-2">
         <!-- Left column -->

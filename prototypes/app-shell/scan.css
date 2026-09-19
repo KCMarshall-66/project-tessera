@@ -6,6 +6,11 @@
 :root {
   --scan-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --scan-pass: 5s;   /* mosaic scan line, one pass. Must match SCAN in scan.js */
+
+  /* Mosaic tiles (drawn on the light canvas) */
+  --tile-clear: #D6E0EB;                    /* monitored, clear */
+  --tile-open: var(--status-medium);        /* open finding */
+  --tile-critical: var(--status-critical);  /* critical signal */
 }
 
 /* ---------- Dark scan panel (same surface family as the Data Mapping hero) ---------- */
@@ -98,34 +103,71 @@
 .scan-tag--high { background: rgba(224, 136, 60, 0.95); }
 @keyframes scan-tag-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
-/* ---------- Tessera mosaic ---------- */
-.mosaic { position: relative; }
+/* ---------- Tessera mosaic (sits directly on the light canvas) ---------- */
+/* Clip the scan bar at the left and right edges (it travels just past them) while
+   leaving room above and below for tags, glows and ripples */
+.mosaic { position: relative; clip-path: inset(-40px -12px -40px -12px); }
 .mosaic__grid { display: grid; grid-template-columns: repeat(34, 1fr); gap: 3px; }
 .tile {
-  position: relative; aspect-ratio: 1; border-radius: 2.5px; background: var(--nav-bg-raised);
+  position: relative; aspect-ratio: 1; border-radius: 2.5px; background: var(--tile-clear);
   animation: tile-scan var(--scan-pass) linear infinite; animation-delay: var(--d);
 }
-@keyframes tile-scan { 0% { filter: brightness(2.3); } 14% { filter: brightness(1.2); } 100% { filter: brightness(1); } }
-.tile.amber { background: #8A6B22; }
-.tile.red { background: #A63A3A; }
-.tile.hot { background: var(--status-critical); animation: none; box-shadow: 0 0 12px 1px rgba(214, 69, 69, 0.8); z-index: 4; }
-.tile.hot--high { background: var(--status-high); box-shadow: 0 0 12px 1px rgba(224, 136, 60, 0.8); }
+/* The scan line tints each tile blue as it passes, then it fades back */
+@keyframes tile-scan {
+  0%   { box-shadow: inset 0 0 0 12px rgba(47, 98, 170, 0.6); }
+  14%  { box-shadow: inset 0 0 0 12px rgba(47, 98, 170, 0.25); }
+  100% { box-shadow: inset 0 0 0 12px rgba(47, 98, 170, 0); }
+}
+.tile.amber { background: var(--tile-open); }
+.tile.red { background: var(--tile-critical); }
+.tile.hot { background: var(--tile-critical); animation: none; box-shadow: 0 0 10px 1px rgba(214, 69, 69, 0.55); z-index: 4; }
+.tile.hot--high { background: var(--status-high); box-shadow: 0 0 10px 1px rgba(224, 136, 60, 0.55); }
 .tile.hot::after { content: ""; position: absolute; inset: -2px; border-radius: 4px; border: 1.5px solid currentColor; color: var(--status-critical); animation: scan-ripple 1.8s ease-out 3; }
 .tile.hot--high::after { color: var(--status-high); }
 .mosaic__bar {
   position: absolute; top: -6px; bottom: -6px; width: 7%; left: -7%; pointer-events: none; z-index: 3; border-radius: 4px;
-  background: linear-gradient(to right, rgba(104, 154, 226, 0), rgba(104, 154, 226, 0.22) 80%, rgba(176, 202, 239, 0.6));
+  background: linear-gradient(to right, rgba(47, 98, 170, 0), rgba(47, 98, 170, 0.12) 80%, rgba(47, 98, 170, 0.35));
   animation: bar-move var(--scan-pass) linear infinite;
 }
 @keyframes bar-move { from { left: -7%; } to { left: 100%; } }
 .mosaic__tip {
   position: absolute; z-index: 8; pointer-events: none; white-space: nowrap; opacity: 0; transition: opacity .12s;
-  background: #fff; color: var(--ink); border-radius: 8px; padding: 6px 10px; font-size: 12px; line-height: 1.35;
-  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.5);
+  background: #fff; color: var(--ink); border: 1px solid var(--surface-border); border-radius: 8px; padding: 6px 10px; font-size: 12px; line-height: 1.35;
+  box-shadow: 0 8px 20px -8px rgba(16, 27, 48, 0.3);
 }
 .mosaic__tip.is-on { opacity: 1; }
 .mosaic__tip b { display: block; font-weight: 600; }
 .mosaic__tip span { color: var(--muted); }
+
+/* ---------- Open variant: scan section with no container (Dashboard) ----------
+   The dark panel is dropped; the mosaic and the task queue sit straight on the
+   canvas and use the full content width. Task cards follow the faded-card spec. */
+.scan-panel--open {
+  background: none; box-shadow: none; border-radius: 0; padding: 0; overflow: visible; color: var(--ink);
+  margin-bottom: var(--space-6);
+}
+.scan-panel--open .scan-eyebrow { color: var(--muted); }
+.scan-panel--open .scan-headline b { color: var(--ink); }
+.scan-panel--open .scan-headline span { color: var(--muted); }
+.scan-panel--open .scan-demo { color: var(--muted); border-color: var(--surface-border); background: var(--surface); }
+.scan-panel--open .scan-demo:hover { color: var(--blue-primary); border-color: var(--blue-light); background: var(--surface); }
+.scan-panel--open .scan-legend { color: var(--muted); }
+.scan-panel--open .scan-queue__head { color: var(--muted); }
+.scan-panel--open .scan-queue__head a { color: var(--blue-primary); }
+
+.scan-panel--open .scan-task {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0, #FFFFFF min(100%, var(--card-fade)));
+  border: 1px solid var(--surface-border); border-top: 0; border-radius: 0 0 var(--card-radius) var(--card-radius);
+}
+.scan-panel--open .scan-task__top { color: var(--muted); }
+.scan-panel--open .scan-sev--critical { background: rgba(214, 69, 69, 0.1); color: var(--status-critical); }
+.scan-panel--open .scan-sev--high { background: rgba(224, 136, 60, 0.12); color: var(--status-high); }
+.scan-panel--open .scan-task__vendor { color: var(--ink); }
+.scan-panel--open .scan-task__title { color: var(--ink); }
+.scan-panel--open .scan-task__meta { color: var(--muted); }
+.scan-panel--open .scan-task__foot { color: var(--muted); border-top-color: var(--surface-border); }
+.scan-panel--open .scan-task__sla { color: var(--ink); }
+.scan-panel--open .scan-task__open:hover { background: var(--blue-dark); }
 
 /* Live update on the Dashboard stat card when a new critical signal lands */
 .stat-flash { animation: stat-flash 1.6s ease-out; }

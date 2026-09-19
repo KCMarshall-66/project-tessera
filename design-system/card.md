@@ -39,6 +39,7 @@ Lives in [`prototypes/app-shell/shell.css`](../prototypes/app-shell/shell.css), 
 
 - **Tall cards fade over the reference depth, not their full height.** The spec was drawn at 143px. A literal full-height gradient on a 1,500px vendor table would leave the first several hundred pixels of rows nearly transparent. `min(100%, var(--card-fade))` fades a card over 143px and holds solid white below that. Cards at or below 143px (the stat cards) fade across their whole height, which is exactly the spec.
 - **Dark surfaces are out of scope.** The white-fade spec doesn't apply to the dark data-flow hero on Data Mapping, which keeps its own treatment. This was tried and deliberately rolled back (2026-09-19): the hero is not meant to match the cards.
+- **Investigation task cards on the Dashboard** use the same spec (`.scan-panel--open .scan-task` in `scan.css`), since they sit directly on the canvas. On Monitoring & Alerts they stay dark inside the flow panel.
 - **Not yet applied outside the app.** The prototype index cards, persona pages, and research page keep their earlier card style.
 
 ## Open work
