@@ -38,10 +38,9 @@ Lives in [`prototypes/app-shell/shell.css`](../prototypes/app-shell/shell.css), 
 ## Decisions beyond the spec
 
 - **Tall cards fade over the reference depth, not their full height.** The spec was drawn at 143px. A literal full-height gradient on a 1,500px vendor table would leave the first several hundred pixels of rows nearly transparent. `min(100%, var(--card-fade))` fades a card over 143px and holds solid white below that. Cards at or below 143px (the stat cards) fade across their whole height, which is exactly the spec.
-- **Dark variant (Data Mapping hero).** Same shape as the light card: open top, `1px #E2E5EC` borders on the sides and bottom, `15px` bottom-only radius, no shadow. The fill fades from transparent to the nav navy (`#131929`) instead of white. The fade is **48px, not 143px**, and the top padding matches it: white text on a fade that starts transparent would sit on a light grey (about 1.8:1 contrast at the title's old position), so the content has to start where the fade reaches solid navy. The border stays `#E2E5EC`; against the canvas it is nearly invisible, so it doesn't outline the dark fill.
+- **Dark surfaces are out of scope.** The white-fade spec doesn't apply to the dark data-flow hero on Data Mapping, which keeps its own treatment. This was tried and deliberately rolled back (2026-09-19): the hero is not meant to match the cards.
 - **Not yet applied outside the app.** The prototype index cards, persona pages, and research page keep their earlier card style.
 
 ## Open work
 
 - The mock only designs the stat cards. If panels should differ (for example, a different fade depth for short lists), that needs its own spec.
-- The dark variant lives as page-local CSS in `data-mapping.html`. If a second dark card appears, promote it into `shell.css`.
