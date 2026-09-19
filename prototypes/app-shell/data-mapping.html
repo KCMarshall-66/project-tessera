@@ -50,6 +50,7 @@
     margin: 0 auto;
     z-index: 1;
   }
+  .flow-lines { display: block; }  /* inline SVG leaves a baseline gap that pushed the stage's centre off the spokes' */
   .flow-lines line {
     stroke: var(--nav-text);
     stroke-width: 1.5;
@@ -62,13 +63,17 @@
   .flow-lines.dimmed line:not(.active) { opacity: 0.12; }
   @keyframes flowdash { to { stroke-dashoffset: -22; } }
 
+  /* Anchored on the cube's own centre, not the whole group's, so the spokes
+     meet in the middle of the cube and the label simply hangs below it. */
   .flow-center {
-    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    --flow-badge: 108px;
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, calc(var(--flow-badge) / -2));
     display: flex; flex-direction: column; align-items: center; gap: 10px;
     width: 168px;
   }
   .flow-center__badge {
-    width: 108px; height: 108px; border-radius: 50%;
+    width: var(--flow-badge); height: var(--flow-badge); border-radius: 50%;
     background: radial-gradient(circle at 35% 30%, #1D2740, #0C1424);
     border: 1px solid var(--nav-border);
     box-shadow: 0 0 0 10px rgba(104,154,226,0.05), 0 12px 28px -10px rgba(0,0,0,0.6);
