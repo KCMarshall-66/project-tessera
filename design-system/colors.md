@@ -22,6 +22,18 @@ Seeded from [`../brand/logos/tessera-color-logo.png`](../brand/logos/tessera-col
 
 `--tessera-ink` and `--tessera-muted` were introduced while building the first persona card graphics (see [`../personas/`](../personas), Figma file) and fill the gap flagged below.
 
+## Surfaces and borders
+
+Read from the Figma dashboard frame (node `7:665`), not sampled from the logo.
+
+| Token | Hex | Use |
+|---|---|---|
+| `--tessera-canvas` | `#EFF3F7` | Page background. Cards fade into this at their top edge, so it has to match the design for the [card](card.md) to look right. |
+| `--tessera-surface` | `#FFFFFF` | Card and input fill. |
+| `--tessera-border` | `#E2E5EC` | Borders on cards and inputs (the mock's search boxes use the same value), plus table dividers. |
+
+The app previously used `#F6F8FB` for the canvas and `#E5E9EF` for borders; both were replaced with the values above when the card spec landed.
+
 ## Notes / open work
 
 - This is a **brand palette**, not yet a full **UI color system** — still needed: a full neutral gray scale (10 steps) built out from `--tessera-ink`/`--tessera-muted`, semantic colors (success/warning/danger/info), and dark-mode surface colors.

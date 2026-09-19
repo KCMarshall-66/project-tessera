@@ -13,10 +13,19 @@
   --muted: #5B6B7C;
   --gray: #C9C9C9;
 
-  /* Canvas / surfaces */
-  --canvas: #F6F8FB;
+  /* Canvas / surfaces — values from the Figma dashboard frame (7:665): page
+     fill #EFF3F7, and #E2E5EC as the border colour on both cards and inputs */
+  --canvas: #EFF3F7;
   --surface: #FFFFFF;
-  --surface-border: #E5E9EF;
+  --surface-border: #E2E5EC;
+
+  /* Card ("faded-card", Figma node 19:1232): gradient from transparent white
+     to opaque white, borders on left/right/bottom only, bottom corners only
+     rounded. --card-fade is the spec card's height: taller cards (tables)
+     fade over the same depth and are solid white below it, so data rows stay
+     legible. Cards shorter than this fade across their whole height. */
+  --card-radius: 15px;
+  --card-fade: 143px;
 
   /* Nav — exact fill from Figma (node 7:666, "lef-navigation-bar") */
   --nav-bg: #131929;
@@ -360,10 +369,15 @@ body {
   gap: var(--space-4);
   margin: var(--space-6) 0;
 }
-.stat-card {
-  background: var(--surface);
+/* Faded card — shared by every card surface in the app (Figma node 19:1232) */
+.stat-card,
+.panel {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0, #FFFFFF min(100%, var(--card-fade)));
   border: 1px solid var(--surface-border);
-  border-radius: var(--radius-lg);
+  border-top: 0;
+  border-radius: 0 0 var(--card-radius) var(--card-radius);
+}
+.stat-card {
   padding: var(--space-4) var(--space-5);
 }
 .stat-card__label {
@@ -380,9 +394,6 @@ body {
 .grid-2 { display: grid; grid-template-columns: 1.7fr 1fr; gap: var(--space-5); align-items: start; }
 
 .panel {
-  background: var(--surface);
-  border: 1px solid var(--surface-border);
-  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 .panel + .panel { margin-top: var(--space-5); }
