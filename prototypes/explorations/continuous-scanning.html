@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tessera — Continuous Scanning Explorations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@200;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../app-shell/shell.css">
+<style>
+  /* Exploration page: four ways to show "Tessera continuously scans the public
+     internet, and a high-risk finding becomes an investigation task".
+     Tokens come from shell.css; everything below is page-local. */
+
+  body { background: #FBFCFE; height: auto; }
+  :root { --ease: cubic-bezier(0.22, 1, 0.36, 1); --sweep: 6s; --scan: 5s; }
+
+  .page { max-width: 1180px; margin: 0 auto; padding: 32px 24px 96px; }
+  .back { font-size: 13px; color: var(--blue-primary); text-decoration: none; }
+  .back:hover { text-decoration: underline; }
+
+  .intro { margin: 28px 0 40px; max-width: 760px; }
+  .eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .intro h1 { font-size: 40px; font-weight: 200; line-height: 1.15; margin: 8px 0 16px; color: var(--ink); }
+  .intro p { font-size: 16px; line-height: 1.55; color: var(--muted); margin: 0 0 12px; }
+
+  .pipeline { display: flex; flex-wrap: wrap; align-items: stretch; gap: 12px; margin: 24px 0 8px; padding: 0; list-style: none; }
+  .pipeline li { flex: 1 1 200px; background: #fff; border: 1px solid var(--surface-border); border-radius: 12px; padding: 14px 16px; }
+  .pipeline b { display: block; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--blue-primary); font-weight: 600; margin-bottom: 4px; }
+  .pipeline span { font-size: 14px; color: var(--ink); line-height: 1.45; }
+
+  .jump { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .jump a { font-size: 13px; color: var(--ink); text-decoration: none; padding: 6px 14px; border: 1px solid var(--surface-border); border-radius: 999px; background: #fff; }
+  .jump a:hover { border-color: var(--blue-accent); color: var(--blue-primary); }
+
+  /* ---------- Option block ---------- */
+  .option { margin-top: 72px; scroll-margin-top: 24px; }
+  .option__head { display: flex; align-items: flex-end; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
+  .option__num { font-size: 56px; font-weight: 200; line-height: 0.9; color: var(--blue-accent); }
+  .option__title { flex: 1 1 320px; }
+  .option__title h2 { font-size: 24px; font-weight: 600; margin: 0 0 4px; color: var(--ink); }
+  .option__title p { margin: 0; font-size: 15px; color: var(--muted); line-height: 1.5; max-width: 640px; }
+  .btn-trigger {
+    font: inherit; font-size: 13px; font-weight: 600; color: var(--blue-primary); background: #fff;
+    border: 1px solid var(--blue-light); border-radius: 8px; padding: 9px 16px; cursor: pointer;
+    transition: background .2s, border-color .2s;
+  }
+  .btn-trigger:hover { background: #F2F7FE; border-color: var(--blue-accent); }
+  .btn-trigger:focus-visible { outline: 2px solid var(--blue-accent); outline-offset: 2px; }
+  .btn-trigger[disabled] { opacity: .55; cursor: progress; }
+
+  .notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin: 20px 0 0; }
+  .notes dt { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: 6px; }
+  .notes dd { margin: 0; font-size: 14px; line-height: 1.55; color: var(--ink); }
+
+  /* ---------- Dark stage ---------- */
+  .stage { position: relative; border-radius: 16px; overflow: hidden; }
+  .stage--dark {
+    background: radial-gradient(900px 480px at 28% 45%, rgba(47, 98, 170, 0.20), transparent 62%), var(--nav-bg);
+    color: #E8EEF9;
+    display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 32px; padding: 28px; align-items: center;
+  }
+  .stage.is-paused *, .stage.is-paused *::before, .stage.is-paused *::after { animation-play-state: paused !important; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 18px; font-size: 12px; color: var(--nav-text); }
+  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+
+  /* ---------- Investigation queue + task card (shared by options 1-3) ---------- */
+  .queue { align-self: stretch; display: flex; flex-direction: column; gap: 12px; min-height: 320px; }
+  .queue__head { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--nav-group-label); font-weight: 600; }
+  .queue__head span:last-child { letter-spacing: 0; text-transform: none; font-weight: 400; color: var(--nav-text); }
+  .queue__list { display: flex; flex-direction: column; gap: 12px; }
+  .queue__empty { margin: 0; padding: 20px 4px; font-size: 13px; color: var(--nav-text); border-top: 1px dashed var(--nav-border); }
+  .queue__list:not(:empty) + .queue__empty { display: none; }
+
+  .task {
+    position: relative; background: var(--nav-bg-raised); border: 1px solid var(--nav-border); border-radius: 12px;
+    padding: 14px 16px 14px 18px; animation: taskIn .6s var(--ease) both;
+  }
+  .task::before { content: ""; position: absolute; left: 0; top: 12px; bottom: 12px; width: 3px; border-radius: 0 3px 3px 0; background: var(--status-high); }
+  .task--critical::before { background: var(--status-critical); }
+  .task.is-leaving { animation: taskOut .4s ease forwards; }
+  .task__top { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--nav-text); }
+  .task__time { margin-left: auto; }
+  .sev { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; }
+  .sev--critical { background: rgba(214, 69, 69, 0.2); color: #FF9A9A; }
+  .sev--high { background: rgba(224, 136, 60, 0.2); color: #F5B476; }
+  .task__vendor { margin: 10px 0 2px; font-size: 16px; font-weight: 600; color: #fff; }
+  .task__title { margin: 0; font-size: 13.5px; line-height: 1.45; color: #C9D4E6; }
+  .task__meta { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 10px; font-size: 12px; color: var(--nav-text); }
+  .task__foot { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--nav-border); font-size: 12px; color: var(--nav-text); flex-wrap: wrap; }
+  .task__sla { color: #fff; font-weight: 600; }
+  .task__open {
+    margin-left: auto; font: inherit; font-size: 12px; font-weight: 600; color: #fff; background: var(--blue-primary);
+    border: 0; border-radius: 7px; padding: 6px 12px; cursor: pointer;
+  }
+  .task__open:hover { background: var(--blue-accent); }
+  @keyframes taskIn { from { opacity: 0; transform: translateY(-14px) scale(0.98); } to { opacity: 1; transform: none; } }
+  @keyframes taskOut { to { opacity: 0; transform: translateX(16px); } }
+
+  /* Tag that labels the vendor the scan just flagged */
+  .flag-tag {
+    position: absolute; white-space: nowrap; z-index: 5; pointer-events: none;
+    font-size: 12px; font-weight: 600; color: #fff; padding: 4px 9px; border-radius: 6px;
+    background: rgba(214, 69, 69, 0.92); animation: tagIn .4s var(--ease) both;
+  }
+  .flag-tag--high { background: rgba(224, 136, 60, 0.95); }
+  @keyframes tagIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  /* =====================================================
+     OPTION 1 — Radar sweep
+     ===================================================== */
+  .radar-wrap { display: flex; flex-direction: column; align-items: center; }
+  .radar { position: relative; width: min(100%, 440px); aspect-ratio: 1; }
+  .radar__ring { position: absolute; left: 50%; top: 50%; border: 1px solid rgba(150, 167, 194, 0.22); border-radius: 50%; transform: translate(-50%, -50%); }
+  .radar__ring span { position: absolute; left: 50%; top: -1px; transform: translate(-50%, -50%); font-size: 10.5px; letter-spacing: 0.04em; color: var(--nav-group-label); background: var(--nav-bg); padding: 0 6px; }
+  .radar__axis { position: absolute; background: rgba(150, 167, 194, 0.12); }
+  .radar__axis--v { left: 50%; top: 0; bottom: 0; width: 1px; }
+  .radar__axis--h { top: 50%; left: 0; right: 0; height: 1px; }
+  .radar__sweep {
+    position: absolute; inset: 0; border-radius: 50%;
+    background: conic-gradient(from 0deg, rgba(104, 154, 226, 0) 0deg, rgba(104, 154, 226, 0) 290deg, rgba(104, 154, 226, 0.34) 359deg, rgba(176, 202, 239, 0.75) 360deg);
+    animation: spin var(--sweep) linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .radar__core {
+    position: absolute; left: 50%; top: 50%; width: 84px; height: 84px; margin: -42px 0 0 -42px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #1D2740, #0C1424); border: 1px solid var(--nav-border);
+    box-shadow: 0 0 0 8px rgba(104, 154, 226, 0.06); display: flex; align-items: center; justify-content: center; z-index: 3;
+  }
+  .radar__core img { width: 40px; height: auto; }
+
+  .dot {
+    position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: var(--blue-accent);
+    opacity: 0.4; animation: blip var(--sweep) linear infinite; animation-delay: calc(var(--a) / 360 * var(--sweep)); z-index: 2;
+  }
+  @keyframes blip { 0% { opacity: 1; transform: scale(1.7); } 18% { opacity: 0.7; transform: scale(1.15); } 100% { opacity: 0.4; transform: scale(1); } }
+  .dot.alert { animation: none; opacity: 1; width: 12px; height: 12px; margin: -6px 0 0 -6px; background: var(--status-critical); z-index: 6; box-shadow: 0 0 14px 2px rgba(214, 69, 69, 0.7); }
+  .dot.alert--high { background: var(--status-high); box-shadow: 0 0 14px 2px rgba(224, 136, 60, 0.7); }
+  .dot.alert::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 1.5px solid currentColor; color: var(--status-critical); animation: ripple 1.8s ease-out infinite; }
+  .dot.alert--high::after { color: var(--status-high); }
+  @keyframes ripple { from { transform: scale(0.6); opacity: 0.9; } to { transform: scale(3.6); opacity: 0; } }
+  .dot .flag-tag { left: 18px; top: -10px; }
+  .dot.tag-left .flag-tag { left: auto; right: 18px; }
+
+  /* =====================================================
+     OPTION 2 — Tessera mosaic
+     ===================================================== */
+  .mosaic-wrap { min-width: 0; }
+  .mosaic-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .mosaic-head b { font-size: 28px; font-weight: 200; color: #fff; }
+  .mosaic-head span { font-size: 13px; color: var(--nav-text); }
+  .mosaic { position: relative; }
+  .mosaic__grid { display: grid; grid-template-columns: repeat(34, 1fr); gap: 3px; }
+  .tile {
+    position: relative; aspect-ratio: 1; border-radius: 2.5px; background: var(--nav-bg-raised);
+    animation: tileScan var(--scan) linear infinite; animation-delay: var(--d);
+  }
+  @keyframes tileScan { 0% { filter: brightness(2.3); } 14% { filter: brightness(1.2); } 100% { filter: brightness(1); } }
+  .tile.amber { background: #8A6B22; }
+  .tile.red { background: #A63A3A; }
+  .tile.hot { background: var(--status-critical); animation: none; box-shadow: 0 0 12px 1px rgba(214, 69, 69, 0.8); z-index: 4; }
+  .tile.hot--high { background: var(--status-high); box-shadow: 0 0 12px 1px rgba(224, 136, 60, 0.8); }
+  .tile.hot::after { content: ""; position: absolute; inset: -2px; border-radius: 4px; border: 1.5px solid currentColor; color: var(--status-critical); animation: ripple 1.8s ease-out infinite; }
+  .tile.hot--high::after { color: var(--status-high); }
+  .mosaic__bar {
+    position: absolute; top: -6px; bottom: -6px; width: 7%; left: -7%; pointer-events: none; z-index: 3; border-radius: 4px;
+    background: linear-gradient(to right, rgba(104, 154, 226, 0), rgba(104, 154, 226, 0.22) 80%, rgba(176, 202, 239, 0.6));
+    animation: barMove var(--scan) linear infinite;
+  }
+  @keyframes barMove { from { left: -7%; } to { left: 100%; } }
+
+  /* =====================================================
+     OPTION 3 — Signal flow
+     ===================================================== */
+  .flow-wrap { min-width: 0; }
+  .flow-svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .flow-svg text { font-family: "IBM Plex Sans", sans-serif; }
+  .src-label { font-size: 12px; fill: var(--nav-text); transition: fill .3s; }
+  .src-label.hot { fill: #fff; font-weight: 600; }
+  .src-node { fill: #2F62AA; stroke: rgba(104, 154, 226, 0.5); stroke-width: 1; }
+  .src-path { fill: none; stroke: rgba(104, 154, 226, 0.3); stroke-width: 1; stroke-dasharray: 3 5; }
+  .out-path { fill: none; stroke: rgba(104, 154, 226, 0.5); stroke-width: 1.5; }
+  .flow-halo { fill: none; stroke: rgba(104, 154, 226, 0.28); stroke-width: 1; transform-origin: 400px 210px; animation: halo 3.2s ease-out infinite; }
+  .flow-halo--2 { animation-delay: 1.6s; }
+  @keyframes halo { from { transform: scale(1); opacity: 0.9; } to { transform: scale(1.6); opacity: 0; } }
+  .flow-core { fill: #0C1424; stroke: rgba(150, 167, 194, 0.25); stroke-width: 1; }
+  .flow-core.hit { stroke: var(--blue-accent); stroke-width: 2; }
+  .flow-cap { font-size: 10.5px; letter-spacing: 0.08em; fill: var(--nav-group-label); text-transform: uppercase; }
+  .flow-cat { font-size: 15px; font-weight: 600; fill: #fff; }
+  .flow-note { font-size: 11.5px; fill: var(--nav-text); }
+  .flow-sig { filter: drop-shadow(0 0 5px rgba(214, 69, 69, 0.9)); }
+  .flow-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+  .flow-stats div { border-top: 1px solid var(--nav-border); padding-top: 10px; }
+  .flow-stats b { display: block; font-size: 26px; font-weight: 200; color: #fff; font-variant-numeric: tabular-nums; }
+  .flow-stats span { font-size: 12px; color: var(--nav-text); }
+
+  /* =====================================================
+     OPTION 4 — Pulse ribbon (light, sits in the real dashboard)
+     ===================================================== */
+  .stage--light { background: var(--canvas); border: 1px solid var(--surface-border); padding: 28px; }
+  .mock-head h3 { margin: 0; font-size: 28px; font-weight: 200; color: var(--ink); }
+  .mock-head p { margin: 4px 0 20px; font-size: 14px; color: var(--muted); }
+  .ribbon {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 20px; padding: 6px 22px 0;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0, #fff min(100%, var(--card-fade)));
+    border: 1px solid var(--surface-border); border-top: 0; border-radius: 0 0 var(--card-radius) var(--card-radius);
+    min-height: 88px;
+  }
+  .ribbon__status { display: flex; align-items: center; gap: 12px; padding-top: 10px; }
+  .ribbon__status strong { display: block; font-size: 14px; font-weight: 600; color: var(--ink); }
+  .ribbon__status span { display: block; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .live-dot { position: relative; flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--status-low); }
+  .live-dot::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid var(--status-low); animation: ripple 2s ease-out infinite; }
+  .ribbon__trace { width: 100%; height: 72px; display: block; padding-top: 8px; }
+  .ribbon__stat { text-align: right; padding-top: 10px; }
+  .ribbon__num { display: block; font-size: 22px; font-weight: 200; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .ribbon__stat span:last-child { font-size: 12px; color: var(--muted); }
+
+  .banner { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .55s var(--ease), margin-top .55s var(--ease); }
+  .banner.is-open { grid-template-rows: 1fr; margin-top: 14px; }
+  .banner > div { min-height: 0; overflow: hidden; }
+  .banner__inner {
+    display: flex; align-items: center; gap: 16px; padding: 14px 18px; flex-wrap: wrap;
+    background: #FFF6F5; border: 1px solid #F1CBC8; border-left: 4px solid var(--sev, var(--status-critical)); border-radius: 10px;
+  }
+  .banner.is-high .banner__inner { background: #FFF9F2; border-color: #F3D9BC; }
+  .banner .sev--critical { background: rgba(214, 69, 69, 0.12); color: #B12F2F; }
+  .banner .sev--high { background: rgba(224, 136, 60, 0.14); color: #A5601F; }
+  .banner__main { flex: 1 1 260px; min-width: 0; }
+  .banner__main b { font-size: 15px; font-weight: 600; color: var(--ink); }
+  .banner__main p { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+  .banner__sla { font-size: 13px; color: var(--ink); font-weight: 600; }
+  .banner__open { font: inherit; font-size: 13px; font-weight: 600; color: #fff; background: var(--blue-primary); border: 0; border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+  .banner__open:hover { background: var(--blue-dark); }
+
+  .ghost-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
+  .ghost {
+    height: 92px; padding: 16px 18px; border: 1px solid var(--surface-border); border-top: 0; border-radius: 0 0 var(--card-radius) var(--card-radius);
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0, #fff min(100%, var(--card-fade)));
+  }
+  .ghost i { display: block; height: 8px; border-radius: 4px; background: #E6EBF2; width: 55%; }
+  .ghost i + i { margin-top: 12px; width: 32%; height: 18px; }
+
+  .summary { margin-top: 88px; padding-top: 32px; border-top: 1px solid var(--surface-border); }
+  .summary h2 { font-size: 24px; font-weight: 600; margin: 0 0 12px; }
+  .summary p { max-width: 760px; font-size: 15px; line-height: 1.6; color: var(--ink); margin: 0 0 12px; }
+
+  @media (max-width: 960px) {
+    .stage--dark { grid-template-columns: 1fr; padding: 20px; }
+    .queue { min-height: 0; }
+    .notes { grid-template-columns: 1fr; gap: 16px; }
+    .ribbon { grid-template-columns: 1fr; padding-bottom: 12px; }
+    .ribbon__stat { text-align: left; }
+    .ghost-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .intro h1 { font-size: 32px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .radar__sweep, .dot, .tile, .mosaic__bar, .flow-halo, .live-dot::after, .dot.alert::after, .tile.hot::after { animation: none !important; }
+    .radar__sweep { opacity: 0.5; transform: rotate(40deg); }
+    .mosaic__bar { display: none; }
+    .task, .flag-tag { animation: none; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+  <a class="back" href="../../index.html">← Tessera prototypes</a>
+
+  <header class="intro">
+    <div class="eyebrow">Exploration · Monitoring &amp; Alerts</div>
+    <h1>Showing that Tessera never stops looking</h1>
+    <p>Tessera continuously scans the public internet for signals of cybersecurity issues that can be attributed to Dana's vendors. When it finds a high-risk issue, it categorizes it and opens an investigation task for her team.</p>
+    <p>Four ways to make that visible. Every option replays the same four scripted signals, so you can compare how each one shows the <em>scan</em>, the <em>categorization</em>, and the <em>hand-off to a task</em>. Use each option's button to trigger a signal on demand.</p>
+
+    <ol class="pipeline">
+      <li><b>1 · Scan</b><span>Breach dumps, code repos, CVE feeds, certificate logs, internet-wide scans, news and filings, watched 24/7.</span></li>
+      <li><b>2 · Categorize</b><span>Each signal is matched to a vendor, scored, and labeled: breach, vulnerability, credential exposure, certificate.</span></li>
+      <li><b>3 · Create a task</b><span>High-risk findings become an investigation task with an SLA and a suggested owner.</span></li>
+    </ol>
+    <nav class="jump" aria-label="Options">
+      <a href="#radar">1 · Radar sweep</a>
+      <a href="#mosaic">2 · Tessera mosaic</a>
+      <a href="#flow">3 · Signal flow</a>
+      <a href="#pulse">4 · Pulse ribbon</a>
+    </nav>
+  </header>
+
+  <!-- ============ OPTION 1 ============ -->
+  <section class="option" id="radar">
+    <header class="option__head">
+      <span class="option__num">01</span>
+      <div class="option__title">
+        <h2>Radar sweep</h2>
+        <p>The portfolio as a scope. A sweep passes over every vendor, and the one it finds lights up and drops a task into the queue.</p>
+      </div>
+      <button class="btn-trigger" type="button" data-trigger="radar">Trigger a signal</button>
+    </header>
+    <div class="stage stage--dark" id="stage-radar">
+      <div class="radar-wrap">
+        <div class="radar" id="radar-scope" aria-label="Radar view of a sample of vendors being scanned">
+          <span class="radar__axis radar__axis--v"></span><span class="radar__axis radar__axis--h"></span>
+          <div class="radar__sweep" id="radar-sweep"></div>
+          <div class="radar__core"><img src="../../brand/logos/balanced-cube.svg" alt=""></div>
+        </div>
+        <div class="legend">
+          <span><i style="background:var(--blue-accent)"></i>Vendor (sample of 612)</span>
+          <span><i style="background:var(--status-critical)"></i>Critical signal</span>
+          <span><i style="background:var(--status-high)"></i>High signal</span>
+          <span>Rings = vendor risk tier</span>
+        </div>
+      </div>
+      <aside class="queue" aria-live="polite">
+        <div class="queue__head"><span>Investigation tasks</span><span>auto-created</span></div>
+        <div class="queue__list" data-queue></div>
+        <p class="queue__empty">Scanning. The next high-risk signal becomes a task here.</p>
+      </aside>
+    </div>
+    <dl class="notes">
+      <div><dt>Reads as</dt><dd>Active surveillance. The sweep is the scanning, and a vendor lights up at the moment it is found, so discovery has a visible cause.</dd></div>
+      <div><dt>Best home</dt><dd>Hero of the Monitoring &amp; Alerts page, or a full-screen "wall display" mode for a security team.</dd></div>
+      <div><dt>Trade-off</dt><dd>A familiar metaphor, close to cliché. Only the ring carries meaning (risk tier); a vendor's angle on the scope is arbitrary.</dd></div>
+    </dl>
+  </section>
+
+  <!-- ============ OPTION 2 ============ -->
+  <section class="option" id="mosaic">
+    <header class="option__head">
+      <span class="option__num">02</span>
+      <div class="option__title">
+        <h2>Tessera mosaic</h2>
+        <p>Every vendor is one tile, all 612 at once. A scan line crosses the mosaic, and the tile with a new finding turns red. A tessera is a mosaic tile.</p>
+      </div>
+      <button class="btn-trigger" type="button" data-trigger="mosaic">Trigger a signal</button>
+    </header>
+    <div class="stage stage--dark" id="stage-mosaic">
+      <div class="mosaic-wrap">
+        <div class="mosaic-head">
+          <b id="mosaic-count">6</b>
+          <span>critical signals open across 612 monitored vendors</span>
+        </div>
+        <div class="mosaic" id="mosaic-view" role="img" aria-label="Grid of 612 tiles, one per vendor, with a scan line moving across">
+          <div class="mosaic__grid" id="mosaic-grid"></div>
+          <div class="mosaic__bar"></div>
+        </div>
+        <div class="legend">
+          <span><i style="background:var(--nav-bg-raised);border:1px solid var(--nav-border)"></i>Monitored, clear</span>
+          <span><i style="background:#8A6B22"></i>Open finding</span>
+          <span><i style="background:var(--status-critical)"></i>Critical signal</span>
+        </div>
+      </div>
+      <aside class="queue" aria-live="polite">
+        <div class="queue__head"><span>Investigation tasks</span><span>auto-created</span></div>
+        <div class="queue__list" data-queue></div>
+        <p class="queue__empty">Scanning. The next high-risk signal becomes a task here.</p>
+      </aside>
+    </div>
+    <dl class="notes">
+      <div><dt>Reads as</dt><dd>The whole portfolio in one glance. The scale (612 vendors) is the picture, and the brand idea (a mosaic of tiles) does the explaining.</dd></div>
+      <div><dt>Best home</dt><dd>Top of the Dashboard, above the stat cards, or the overview state of the Vendors page.</dd></div>
+      <div><dt>Trade-off</dt><dd>A density map, not a list: a tile means nothing until it is flagged or hovered. Needs a sort rule (by tier, region, or owner) to make position meaningful.</dd></div>
+    </dl>
+  </section>
+
+  <!-- ============ OPTION 3 ============ -->
+  <section class="option" id="flow">
+    <header class="option__head">
+      <span class="option__num">03</span>
+      <div class="option__title">
+        <h2>Signal flow</h2>
+        <p>The scan as a pipeline. Signals stream in from the public internet, converge on Tessera, and only the few that matter come out as tasks.</p>
+      </div>
+      <button class="btn-trigger" type="button" data-trigger="flow">Trigger a signal</button>
+    </header>
+    <div class="stage stage--dark" id="stage-flow">
+      <div class="flow-wrap">
+        <svg class="flow-svg" id="flow-svg" viewBox="0 0 640 420" role="img" aria-label="Signals from six public-internet sources converge on Tessera, which categorizes them and outputs investigation tasks">
+          <g id="flow-paths"></g>
+          <path id="out-path" class="out-path" d="M446 210 H640"/>
+          <circle class="flow-halo" cx="400" cy="210" r="52"/>
+          <circle class="flow-halo flow-halo--2" cx="400" cy="210" r="52"/>
+          <circle id="flow-core" class="flow-core" cx="400" cy="210" r="46"/>
+          <image href="../../brand/logos/balanced-cube.svg" x="377" y="182" width="46" height="55"/>
+          <text class="flow-note" x="400" y="286" text-anchor="middle">Match · Score · Categorize</text>
+          <text class="flow-cap" x="540" y="176" text-anchor="middle">Categorized as</text>
+          <text class="flow-cat" id="flow-cat" x="540" y="196" text-anchor="middle">Awaiting signal</text>
+          <g id="flow-particles"></g>
+        </svg>
+        <div class="flow-stats">
+          <div><b id="stat-read">48,212</b><span>Signals read today</span></div>
+          <div><b id="stat-match">213</b><span>Matched to your vendors</span></div>
+          <div><b id="stat-tasks">7</b><span>Investigation tasks opened</span></div>
+        </div>
+      </div>
+      <aside class="queue" aria-live="polite">
+        <div class="queue__head"><span>Investigation tasks</span><span>auto-created</span></div>
+        <div class="queue__list" data-queue></div>
+        <p class="queue__empty">Scanning. The next high-risk signal becomes a task here.</p>
+      </aside>
+    </div>
+    <dl class="notes">
+      <div><dt>Reads as</dt><dd>How the system thinks: thousands of signals in, a handful of tasks out. It makes the categorization step visible, which the other options only imply.</dd></div>
+      <div><dt>Best home</dt><dd>The Monitoring &amp; Alerts page, onboarding, and sales demos, where the point is to explain what Tessera does for you.</dd></div>
+      <div><dt>Trade-off</dt><dd>About the system, not Dana's portfolio, so it is less useful day to day. It also reuses the hub-and-spoke shape of the Data Mapping hero, so the two pages could feel alike.</dd></div>
+    </dl>
+  </section>
+
+  <!-- ============ OPTION 4 ============ -->
+  <section class="option" id="pulse">
+    <header class="option__head">
+      <span class="option__num">04</span>
+      <div class="option__title">
+        <h2>Pulse ribbon</h2>
+        <p>A heartbeat strip. Calm and steady while the scan runs; a red spike when it finds something, and a banner drops down with the task.</p>
+      </div>
+      <button class="btn-trigger" type="button" data-trigger="pulse">Trigger a signal</button>
+    </header>
+    <div class="stage stage--light" id="stage-pulse">
+      <div class="mock-head">
+        <h3>Good afternoon, Dana</h3>
+        <p>Thursday, September 18 · Northbridge Financial Group · US, EU &amp; Canada portfolio</p>
+      </div>
+      <div class="ribbon" id="ribbon">
+        <div class="ribbon__status">
+          <span class="live-dot" aria-hidden="true"></span>
+          <div><strong>Scanning the public internet</strong><span>4,318 sources · 612 vendors · 24/7</span></div>
+        </div>
+        <canvas class="ribbon__trace" id="ribbon-canvas" aria-hidden="true"></canvas>
+        <div class="ribbon__stat"><span class="ribbon__num" id="ribbon-last">12 min</span><span>since last high-risk signal</span></div>
+      </div>
+      <div class="banner" id="banner" aria-live="polite"><div></div></div>
+      <div class="ghost-row" aria-hidden="true">
+        <div class="ghost"><i></i><i></i></div><div class="ghost"><i></i><i></i></div>
+        <div class="ghost"><i></i><i></i></div><div class="ghost"><i></i><i></i></div>
+      </div>
+    </div>
+    <dl class="notes">
+      <div><dt>Reads as</dt><dd>A pulse: steady means the scan is healthy and nothing needs you. A spike means look now. The quiet state is the message.</dd></div>
+      <div><dt>Best home</dt><dd>Pinned under the page heading on the Dashboard, and as a compressed strip in the top bar on every other page.</dd></div>
+      <div><dt>Trade-off</dt><dd>The least expressive of the four, and it says little about scale. It is the only one cheap enough to stay on screen all the time.</dd></div>
+    </dl>
+  </section>
+
+  <section class="summary">
+    <h2>Combining them</h2>
+    <p>These answer different questions, so they are not really rivals. The pulse ribbon is the always-on signal ("is the scan alive, and do I need to act?"). The mosaic is the portfolio view for the Dashboard. The signal flow explains the system on the Monitoring &amp; Alerts page. The radar is the most cinematic, and the one I would drop first.</p>
+    <p>The task card in the queue and the banner in option 4 are separate designs for the same moment. Whichever direction you pick, that hand-off is worth iterating on next: what Dana sees the second a critical signal becomes work for the team.</p>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var SWEEP = 6;   // seconds per radar rotation (matches --sweep)
+  var SCAN = 5;    // seconds per mosaic pass (matches --scan)
+
+  /* The four scripted signals every option replays. src = flow source index. */
+  var SIGNALS = [
+    { vendor: 'Northwind AI Labs',  sev: 'critical', category: 'Credential exposure', title: 'Live API keys found in a public code repository',        source: 'Public code repositories', conf: 94, sla: '4 hours',  owner: 'Priya N.',  src: 1 },
+    { vendor: 'Ironclad Identity',  sev: 'critical', category: 'Data breach',         title: 'Staff records appear in a newly posted breach dump',      source: 'Breach dumps & paste sites', conf: 89, sla: '4 hours',  owner: 'Marcus C.', src: 0 },
+    { vendor: 'Vertex Analytics',   sev: 'high',     category: 'Vulnerability',       title: 'Critical CVE unpatched on an internet-facing server',     source: 'Internet-wide scans', conf: 91, sla: '24 hours', owner: 'Priya N.',  src: 4 },
+    { vendor: 'Solace Payments API', sev: 'high',    category: 'Certificate hygiene', title: 'TLS certificate expired on a production endpoint',        source: 'Certificate transparency logs', conf: 97, sla: '24 hours', owner: 'Marcus C.', src: 3 }
+  ];
+
+  /* Seeded PRNG so the layouts are the same every load */
+  function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  function pick(a, r) { return a[Math.floor((r || Math.random)() * a.length)]; }
+
+  /* ---------- Shared: task cards in a stage's queue ---------- */
+  function ago(ms) { var s = Math.round(ms / 1000); return s < 45 ? 'Just now' : s < 3600 ? Math.max(1, Math.round(s / 60)) + ' min ago' : Math.round(s / 3600) + ' h ago'; }
+
+  function pushTask(stage, s, onRemove) {
+    var list = stage.querySelector('[data-queue]');
+    var el = document.createElement('article');
+    el.className = 'task task--' + s.sev;
+    el.dataset.t = Date.now();
+    el.innerHTML =
+      '<div class="task__top"><span class="sev sev--' + s.sev + '">' + cap(s.sev) + '</span><span>' + s.category + '</span><span class="task__time">Just now</span></div>' +
+      '<h4 class="task__vendor">' + s.vendor + '</h4>' +
+      '<p class="task__title">' + s.title + '</p>' +
+      '<div class="task__meta"><span>Source · ' + s.source + '</span><span>AI confidence ' + s.conf + '%</span></div>' +
+      '<div class="task__foot"><span class="task__sla">Respond within ' + s.sla + '</span><span>Suggested · ' + s.owner + '</span><button type="button" class="task__open">Open task</button></div>';
+    list.insertBefore(el, list.firstChild);
+    while (list.children.length > 3) {
+      var old = list.lastElementChild;
+      if (old._onRemove) old._onRemove();
+      old.remove();
+    }
+    el._onRemove = onRemove;
+    return el;
+  }
+  setInterval(function () {
+    document.querySelectorAll('.task[data-t] .task__time').forEach(function (t) {
+      t.textContent = ago(Date.now() - Number(t.closest('.task').dataset.t));
+    });
+  }, 5000);
+
+  /* ---------- Shared: stage plumbing (visibility, auto-loop, trigger button) ---------- */
+  function makeStage(name, fire) {
+    var el = document.getElementById('stage-' + name);
+    var btn = document.querySelector('[data-trigger="' + name + '"]');
+    var st = { el: el, i: 0, busy: false, visible: false, started: false };
+
+    function go() {
+      if (st.busy) return;
+      st.busy = true; btn.disabled = true;
+      var s = SIGNALS[st.i++ % SIGNALS.length];
+      fire(s, function () { st.busy = false; btn.disabled = false; });
+    }
+    btn.addEventListener('click', go);
+
+    new IntersectionObserver(function (entries) {
+      st.visible = entries[0].isIntersecting;
+      el.classList.toggle('is-paused', !st.visible);
+      if (st.visible && !st.started && !REDUCE) { st.started = true; setTimeout(go, 1800); }
+    }, { threshold: 0.25 }).observe(el);
+
+    if (!REDUCE) {
+      setInterval(function () { if (st.visible && !document.hidden) go(); }, 12000);
+    }
+    return st;
+  }
+
+  /* ---------- Option 1: Radar ---------- */
+  (function () {
+    var scope = document.getElementById('radar-scope');
+    var sweep = document.getElementById('radar-sweep');
+    var r = rng(11);
+    var rings = [
+      { label: 'Critical', radius: 0.30, n: 7 },
+      { label: 'High',     radius: 0.52, n: 12 },
+      { label: 'Medium',   radius: 0.74, n: 17 },
+      { label: 'Low',      radius: 0.95, n: 22 }
+    ];
+    var dots = [];
+
+    rings.forEach(function (ring, ri) {
+      var ringEl = document.createElement('div');
+      ringEl.className = 'radar__ring';
+      ringEl.style.width = ringEl.style.height = (ring.radius * 100) + '%';
+      ringEl.innerHTML = '<span>' + ring.label + '</span>';
+      scope.insertBefore(ringEl, sweep);
+      var off = r() * 360;
+      for (var i = 0; i < ring.n; i++) {
+        var a = (off + (i + r() * 0.55) / ring.n * 360) % 360;
+        var d = document.createElement('span');
+        d.className = 'dot';
+        d.style.setProperty('--a', a.toFixed(1));
+        d.style.left = (50 + ring.radius * 50 * Math.sin(a * Math.PI / 180)) + '%';
+        d.style.top  = (50 - ring.radius * 50 * Math.cos(a * Math.PI / 180)) + '%';
+        scope.appendChild(d);
+        dots.push({ el: d, a: a, ring: ri, alert: false });
+      }
+    });
+    scope.appendChild(sweep); // keep sweep above rings, below core/dots via z-index
+
+    function sweepAngle() {
+      var anim = sweep.getAnimations && sweep.getAnimations()[0];
+      if (!anim || anim.currentTime == null) return 0;
+      return (anim.currentTime % (SWEEP * 1000)) / (SWEEP * 1000) * 360;
+    }
+
+    var stageState = makeStage('radar', function (s, done) {
+      var stage = stageState.el;
+      if (REDUCE) { pushTask(stage, s); done(); return; }
+      var phi = sweepAngle();
+      var cands = dots.filter(function (d) { return !d.alert && d.ring <= 1; }).map(function (d) {
+        return { d: d, diff: (d.a - phi + 360) % 360 };
+      }).filter(function (c) { return c.diff > 30; }).sort(function (x, y) { return x.diff - y.diff; });
+      var c = pick(cands.slice(0, 4));
+      var d = c.d;
+      d.alert = true;
+      setTimeout(function () {
+        d.el.classList.add('alert', 'alert--' + s.sev);
+        if (d.a > 180) d.el.classList.add('tag-left');
+        var tag = document.createElement('span');
+        tag.className = 'flag-tag flag-tag--' + s.sev;
+        tag.textContent = s.vendor;
+        d.el.appendChild(tag);
+        pushTask(stage, s, function () {
+          d.alert = false;
+          d.el.className = 'dot';
+          d.el.innerHTML = '';
+        });
+        done();
+      }, c.diff / 360 * SWEEP * 1000);
+    });
+  })();
+
+  /* ---------- Option 2: Mosaic ---------- */
+  (function () {
+    var COLS = 34, ROWS = 18, N = COLS * ROWS; // 612 vendors
+    var grid = document.getElementById('mosaic-grid');
+    var wrap = document.getElementById('mosaic-view');
+    var countEl = document.getElementById('mosaic-count');
+    var bar = wrap.querySelector('.mosaic__bar');
+    var r = rng(29);
+    var tiles = [];
+
+    var redSet = {}, amberSet = {};
+    while (Object.keys(redSet).length < 6) redSet[Math.floor(r() * N)] = 1;
+    while (Object.keys(amberSet).length < 15) { var k = Math.floor(r() * N); if (!redSet[k]) amberSet[k] = 1; }
+
+    for (var i = 0; i < N; i++) {
+      var col = i % COLS;
+      var t = document.createElement('span');
+      t.className = 'tile' + (redSet[i] ? ' red' : amberSet[i] ? ' amber' : '');
+      t.style.setProperty('--d', (((col + 0.5) / COLS) / 1.07 * SCAN).toFixed(3) + 's');
+      grid.appendChild(t);
+      tiles.push({ el: t, col: col, state: redSet[i] ? 'red' : amberSet[i] ? 'amber' : 'clear', hot: false });
+    }
+    function recount() { countEl.textContent = tiles.filter(function (t) { return t.state === 'red' || (t.hot && t.sev === 'critical'); }).length; }
+    recount();
+
+    function barCol() {
+      var anim = bar.getAnimations && bar.getAnimations()[0];
+      if (!anim || anim.currentTime == null) return 0;
+      var f = (anim.currentTime % (SCAN * 1000)) / (SCAN * 1000);   // 0..1
+      return Math.max(0, (f * 1.07) * COLS);
+    }
+
+    var stageState = makeStage('mosaic', function (s, done) {
+      var stage = stageState.el;
+      if (REDUCE) { pushTask(stage, s); done(); return; }
+      var phi = barCol();
+      var targetCol = Math.floor((phi + 6 + r() * 6)) % COLS;
+      var pool = tiles.filter(function (t) { return t.col === targetCol && t.state === 'clear' && !t.hot; });
+      var tile = pick(pool);
+      tile.hot = true; tile.sev = s.sev;
+      var diff = (targetCol - phi + COLS) % COLS;
+      setTimeout(function () {
+        tile.el.classList.add('hot');
+        if (s.sev === 'high') tile.el.classList.add('hot--high');
+        // tag
+        var g = grid.getBoundingClientRect(), tr = tile.el.getBoundingClientRect();
+        var tag = document.createElement('span');
+        tag.className = 'flag-tag flag-tag--' + s.sev;
+        tag.textContent = s.vendor;
+        wrap.appendChild(tag);
+        var x = tr.left - g.left, y = tr.top - g.top - 34;
+        if (y < 0) y = tr.top - g.top + tr.height + 8;
+        tag.style.top = y + 'px';
+        var w = tag.offsetWidth;
+        tag.style.left = Math.max(0, Math.min(x - w / 2 + tr.width / 2, g.width - w)) + 'px';
+        recount();
+        pushTask(stage, s, function () {
+          tile.hot = false;
+          tile.el.className = 'tile';
+          tag.remove();
+          recount();
+        });
+        done();
+      }, diff / COLS * SCAN * 1000 / 1.07 + 150);
+    });
+  })();
+
+  /* ---------- Option 3: Signal flow ---------- */
+  (function () {
+    var NS = 'http://www.w3.org/2000/svg';
+    var svg = document.getElementById('flow-svg');
+    var pathsG = document.getElementById('flow-paths');
+    var partsG = document.getElementById('flow-particles');
+    var outPath = document.getElementById('out-path');
+    var core = document.getElementById('flow-core');
+    var catEl = document.getElementById('flow-cat');
+    var sources = ['Breach dumps & paste sites', 'Public code repositories', 'CVE & vendor advisories', 'Certificate transparency logs', 'Internet-wide scans', 'News, filings & notices'];
+    var ys = [40, 108, 176, 244, 312, 380];
+    var paths = [], lens = [], labels = [];
+
+    function el(tag, attrs) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+
+    sources.forEach(function (name, i) {
+      var y = ys[i];
+      var t = el('text', { x: 184, y: y + 4, 'text-anchor': 'end', 'class': 'src-label' });
+      t.textContent = name; pathsG.appendChild(t); labels.push(t);
+      var p = el('path', { 'class': 'src-path', d: 'M200 ' + y + ' C 282 ' + y + ', 300 210, 354 210' });
+      pathsG.appendChild(p); paths.push(p);
+      pathsG.appendChild(el('circle', { 'class': 'src-node', cx: 200, cy: y, r: 5 }));
+    });
+    paths.forEach(function (p) { lens.push(p.getTotalLength()); });
+    var outLen = outPath.getTotalLength();
+
+    var r = rng(5);
+    var parts = [];
+    function mk(kind, pathIdx, t, v) {
+      var c = el('circle', { r: kind === 'sig' ? 5 : 2.4, fill: kind === 'out' ? '#B0CAEF' : '#8FB6EE', 'class': kind === 'sig' ? 'flow-sig' : '' });
+      partsG.appendChild(c);
+      return { el: c, kind: kind, p: pathIdx, t: t, v: v };
+    }
+    paths.forEach(function (_, i) { for (var k = 0; k < 4; k++) parts.push(mk('in', i, k / 4 + r() * 0.1, 0.30 + r() * 0.12)); });
+    for (var k = 0; k < 2; k++) parts.push(mk('out', -1, k / 2, 0.42));
+
+    function place(part) {
+      var path = part.p < 0 ? outPath : paths[part.p];
+      var len = part.p < 0 ? outLen : lens[part.p];
+      var pt = path.getPointAtLength(Math.min(1, part.t) * len);
+      part.el.setAttribute('cx', pt.x); part.el.setAttribute('cy', pt.y);
+      var t = part.t;
+      part.el.setAttribute('opacity', part.kind === 'sig' ? 1 : (t < 0.1 ? t / 0.1 : t > 0.86 ? (1 - t) / 0.14 : 1) * (part.kind === 'out' ? 0.7 : 0.9));
+    }
+
+    var sig = null, sigDone = null;
+    var last = performance.now();
+    function frame(now) {
+      var dt = Math.min(0.05, (now - last) / 1000); last = now;
+      if (!stageState.el.classList.contains('is-paused')) {
+        parts.forEach(function (p) { p.t += p.v * dt; if (p.t >= 1) { p.t -= 1; p.v = (p.kind === 'out' ? 0.42 : 0.30 + r() * 0.12); } place(p); });
+        if (sig) {
+          sig.t += sig.v * dt;
+          if (sig.t >= 1) {
+            if (sig.phase === 'in') {
+              core.classList.add('hit'); setTimeout(function () { core.classList.remove('hit'); }, 700);
+              catEl.textContent = sig.s.category;
+              sig.phase = 'out'; sig.p = -1; sig.t = 0; sig.v = 0.7;
+            } else {
+              sig.el.remove();
+              document.getElementById('stat-tasks').textContent = ++taskCount;
+              pushTask(stageState.el, sig.s);
+              var cb = sigDone; sig = null; sigDone = null; cb();
+            }
+          }
+          if (sig) place(sig);
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+    var taskCount = 7;
+
+    var stageState = makeStage('flow', function (s, done) {
+      if (REDUCE) { catEl.textContent = s.category; document.getElementById('stat-tasks').textContent = ++taskCount; pushTask(stageState.el, s); done(); return; }
+      labels.forEach(function (l) { l.classList.remove('hot'); });
+      labels[s.src].classList.add('hot');
+      setTimeout(function () { labels[s.src].classList.remove('hot'); }, 5500);
+      var p = mk('sig', s.src, 0, 0);
+      p.phase = 'in'; p.v = 0.36; p.s = s;
+      if (s.sev === 'high') p.el.setAttribute('fill', '#F0A75B'); else p.el.setAttribute('fill', '#FF7A7A');
+      sig = p; sigDone = done;
+    });
+
+    // static frame for reduced motion, otherwise animate
+    parts.forEach(function (p) { place(p); });
+    if (!REDUCE) requestAnimationFrame(frame);
+
+    // Ticking counters
+    var read = 48212, match = 213;
+    if (!REDUCE) setInterval(function () {
+      if (stageState.el.classList.contains('is-paused')) return;
+      read += 3 + Math.floor(Math.random() * 9);
+      if (Math.random() < 0.08) match++;
+      document.getElementById('stat-read').textContent = read.toLocaleString('en-US');
+      document.getElementById('stat-match').textContent = match;
+    }, 450);
+  })();
+
+  /* ---------- Option 4: Pulse ribbon ---------- */
+  (function () {
+    var canvas = document.getElementById('ribbon-canvas');
+    var ctx = canvas.getContext('2d');
+    var lastEl = document.getElementById('ribbon-last');
+    var banner = document.getElementById('banner');
+    var bannerBox = banner.firstElementChild;
+    var STEP = 2, SPEED = 70;       // px per sample, px per second
+    var W = 0, H = 0, n = 0, samples = [], acc = 0, pending = [], blips = [], nextBlip = 0.6, clock = 0;
+    var SPIKE = [0.15, 0.5, -0.25, 1, -0.95, 0.4, -0.15, 0.05];
+    var lastAt = Date.now() - 12 * 60000;
+    var r = rng(3);
+
+    function size() {
+      var dpr = window.devicePixelRatio || 1;
+      var box = canvas.getBoundingClientRect();
+      W = box.width; H = box.height;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      n = Math.ceil(W / STEP) + 2;
+      while (samples.length < n) samples.unshift({ v: 0, k: 0 });
+      samples.length = n;
+    }
+
+    function nextSample() {
+      if (pending.length) return { v: pending.shift(), k: 1 };
+      if (blips.length) return { v: blips.shift(), k: 0 };
+      clock += STEP / SPEED;
+      if (clock >= nextBlip) { clock = 0; nextBlip = 0.7 + r() * 1.6; blips = [0.08, 0.26, -0.12, 0.04]; }
+      return { v: (r() - 0.5) * 0.05, k: 0 };
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      var mid = H * 0.55, amp = H * 0.4;
+      // baseline
+      ctx.strokeStyle = 'rgba(47,98,170,0.10)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, mid); ctx.lineTo(W, mid); ctx.stroke();
+      ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.lineWidth = 1.8;
+      for (var i = 1; i < samples.length; i++) {
+        var a = samples[i - 1], b = samples[i];
+        var x0 = (i - 1) * STEP - acc, x1 = i * STEP - acc;
+        ctx.strokeStyle = b.k ? '#D64545' : '#2F62AA';
+        ctx.globalAlpha = Math.min(1, 0.12 + (i / samples.length) * 1.0);
+        ctx.beginPath(); ctx.moveTo(x0, mid - a.v * amp); ctx.lineTo(x1, mid - b.v * amp); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      var head = samples[samples.length - 1];
+      ctx.fillStyle = head.k ? '#D64545' : '#2F62AA';
+      ctx.beginPath(); ctx.arc((samples.length - 1) * STEP - acc, mid - head.v * amp, 3.2, 0, 6.283); ctx.fill();
+    }
+
+    var lastT = performance.now(), running = false, visible = false;
+    function loop(now) {
+      var dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
+      acc += SPEED * dt;
+      while (acc >= STEP) {
+        acc -= STEP;
+        samples.push(nextSample()); samples.shift();
+      }
+      draw();
+      if (running) requestAnimationFrame(loop);
+    }
+
+    function setRunning(v) { if (v && !running) { running = true; lastT = performance.now(); requestAnimationFrame(loop); } else if (!v) running = false; }
+
+    function fmtLast() {
+      var s = Math.round((Date.now() - lastAt) / 1000);
+      lastEl.textContent = s < 60 ? s + 's' : s < 3600 ? Math.round(s / 60) + ' min' : Math.round(s / 3600) + ' h';
+    }
+    setInterval(fmtLast, 1000); fmtLast();
+
+    function showBanner(s) {
+      banner.classList.toggle('is-high', s.sev === 'high');
+      banner.style.setProperty('--sev', s.sev === 'high' ? 'var(--status-high)' : 'var(--status-critical)');
+      bannerBox.innerHTML =
+        '<div class="banner__inner"><span class="sev sev--' + s.sev + '">' + cap(s.sev) + '</span>' +
+        '<div class="banner__main"><b>' + s.vendor + ' · ' + s.category + '</b><p>' + s.title + '. Investigation task created and suggested for ' + s.owner + '.</p></div>' +
+        '<span class="banner__sla">Respond within ' + s.sla + '</span><button type="button" class="banner__open">Open task</button></div>';
+      banner.classList.add('is-open');
+    }
+
+    function fire(s, done) {
+      if (REDUCE) { showBanner(s); lastAt = Date.now(); fmtLast(); done(); return; }
+      banner.classList.remove('is-open');
+      pending = SPIKE.slice();
+      lastAt = Date.now(); fmtLast();
+      setTimeout(function () { showBanner(s); done(); }, 900);
+    }
+
+    var st = makeStage('pulse', fire);
+    // makeStage toggles is-paused on the stage; the canvas loop follows visibility separately
+    new IntersectionObserver(function (e) { visible = e[0].isIntersecting; setRunning(visible && !REDUCE); }, { threshold: 0.1 }).observe(canvas);
+
+    size();
+    new ResizeObserver(function () { size(); if (!running) draw(); }).observe(canvas);
+    // Seed a static frame (also the reduced-motion state)
+    samples.forEach(function (s, i) { s.v = 0; s.k = 0; });
+    var seed = Math.floor(samples.length * 0.62);
+    SPIKE.forEach(function (v, j) { if (samples[seed + j]) { samples[seed + j] = { v: v, k: 1 }; } });
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

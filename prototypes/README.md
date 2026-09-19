@@ -57,6 +57,12 @@ Two sections were added beyond the original brief, both directly justified by th
 - Analyst-specific dashboard variants for Priya and Marcus (this shell currently only shows Dana's view).
 - If Figma ever exposes exact spring constants for "Quick" (e.g. via a future API or manual inspection in the desktop app's Interaction panel), swap the approximated `linear()` easing for the precise one.
 
+## `explorations/`
+
+Design explorations that compare several directions for one problem, rather than building one screen.
+
+- [`continuous-scanning.html`](explorations/continuous-scanning.html) (2026-09-19): four animated ways to show that Tessera continuously scans the public internet for signals about Dana's vendors, and that a high-risk finding is categorized and becomes an investigation task. **Radar sweep** (vendors on risk-tier rings, a sweep finds the flagged one), **Tessera mosaic** (all 612 vendors as tiles, a scan line crosses them), **Signal flow** (six public-internet sources converge on the Tessera mark, thousands of signals in, a few tasks out), and **Pulse ribbon** (a heartbeat strip in the Dashboard header that spikes and drops a task banner). All four replay the same four scripted signals; each has a "Trigger a signal" button. Uses the app's tokens from `shell.css`; the ribbon uses the faded-card treatment because it is designed to sit in the Dashboard. Sample signals, vendors, and counts are fictional. Respects `prefers-reduced-motion` (static frame, tasks appear without animation).
+
 ## `personas/`
 
 Standalone HTML persona artifacts — one page per persona, transcribed in full from the [`../personas/`](../personas) Markdown docs (snapshot, goals, a day in the life, responsibilities, pain points, motivations, tools, compliance frameworks, quote, and "how Tessera helps"), for sharing/viewing as a page rather than reading Markdown. Share `persona.css` for consistent styling; each page is otherwise self-contained. Linked from the root [`../../index.html`](../../index.html) under "Personas," and cross-link to each other via a switcher in the top bar.
