@@ -10,14 +10,21 @@
 <link rel="stylesheet" href="shell.css">
 <style>
   /* ---------- Hero flow diagram ---------- */
+  /* Dark variant of the faded card (design-system/card.md): same open top,
+     side/bottom borders, bottom-only radius, and no shadow, with the fade run
+     from transparent to the nav navy. White text can't sit on a fade that starts
+     transparent, so the fade is short (48px) and the top padding matches it,
+     which keeps all content on solid navy. */
   .flow-panel {
-    background: var(--nav-bg);
-    border-radius: var(--radius-lg);
-    padding: var(--space-6);
+    --flow-fade: var(--space-7);
+    background: linear-gradient(to bottom, rgba(19, 25, 41, 0) 0, var(--nav-bg) var(--flow-fade));
+    border: 1px solid var(--surface-border);
+    border-top: 0;
+    border-radius: 0 0 var(--card-radius) var(--card-radius);
+    padding: var(--flow-fade) var(--space-6) var(--space-6);
     margin: var(--space-6) 0;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 20px 40px -18px rgba(16, 27, 48, 0.4);
   }
   .flow-panel::before {
     content: "";
