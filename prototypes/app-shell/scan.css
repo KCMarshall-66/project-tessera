@@ -147,7 +147,13 @@
   margin-bottom: var(--space-6);
 }
 .scan-panel--open .scan-eyebrow { color: var(--muted); }
-.scan-panel--open .scan-headline b { color: var(--ink); }
+/* The critical-signal count sits on a red tile, the same red as the mosaic's critical tiles and the legend */
+.scan-panel--open .scan-headline { align-items: center; }
+.scan-panel--open .scan-headline b {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 40px; height: 40px; padding: 0 10px; border-radius: 4px;
+  background: var(--tile-critical); color: #fff; font-size: 22px; font-weight: 600; line-height: 1;
+}
 .scan-panel--open .scan-headline span { color: var(--muted); }
 .scan-panel--open .scan-demo { color: var(--muted); border-color: var(--surface-border); background: var(--surface); }
 .scan-panel--open .scan-demo:hover { color: var(--blue-primary); border-color: var(--blue-light); background: var(--surface); }
