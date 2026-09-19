@@ -1,0 +1,161 @@
+/* Continuous-scanning visuals shared by the Dashboard (Tessera mosaic) and
+   Monitoring & Alerts (signal flow). Built from the exploration in
+   ../explorations/continuous-scanning.html; behaviour lives in scan.js.
+   Tokens come from shell.css. */
+
+:root {
+  --scan-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --scan-pass: 5s;   /* mosaic scan line, one pass. Must match SCAN in scan.js */
+}
+
+/* ---------- Dark scan panel (same surface family as the Data Mapping hero) ---------- */
+.scan-panel {
+  container-type: inline-size;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(900px 480px at 28% 45%, rgba(47, 98, 170, 0.20), transparent 62%), var(--nav-bg);
+  color: #E8EEF9;
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: 0 20px 40px -18px rgba(16, 27, 48, 0.4);
+}
+.page-heading + .scan-panel { margin-top: var(--space-5); }
+.scan-panel.is-paused *,
+.scan-panel.is-paused *::before,
+.scan-panel.is-paused *::after { animation-play-state: paused !important; }
+
+.scan-panel__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: var(--space-6);
+  align-items: start;
+}
+/* Signal flow is shorter than the task queue beside it: centre it rather than top-align */
+.scan-panel--flow .scan-panel__grid { align-items: center; }
+@container (max-width: 820px) {
+  .scan-panel__grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+.scan-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-4); flex-wrap: wrap; }
+.scan-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--nav-text); }
+.scan-live { position: relative; width: 8px; height: 8px; border-radius: 50%; background: var(--status-low); flex: none; }
+.scan-live::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid var(--status-low); animation: scan-ripple 2s ease-out infinite; }
+.scan-headline { margin-top: 6px; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.scan-headline b { font-size: 30px; font-weight: 200; line-height: 1; color: #fff; font-variant-numeric: tabular-nums; }
+.scan-headline span { font-size: 13.5px; color: var(--nav-text); }
+
+.scan-demo {
+  font-family: inherit; font-size: 12px; font-weight: 600; color: var(--nav-text);
+  background: none; border: 1px solid var(--nav-border); border-radius: var(--radius-md);
+  padding: 7px 12px; cursor: pointer; transition: color .15s, border-color .15s, background .15s;
+}
+.scan-demo:hover { color: #fff; border-color: rgba(150, 167, 194, 0.4); background: rgba(255, 255, 255, 0.04); }
+.scan-demo:focus-visible { outline: 2px solid var(--blue-accent); outline-offset: 2px; }
+.scan-demo[disabled] { opacity: 0.5; cursor: progress; }
+
+.scan-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: var(--space-4); font-size: 12px; color: var(--nav-text); }
+.scan-legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+
+@keyframes scan-ripple { from { transform: scale(0.6); opacity: 0.9; } to { transform: scale(3.6); opacity: 0; } }
+
+/* ---------- Investigation queue + task card ---------- */
+.scan-queue { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.scan-queue__head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--nav-group-label); font-weight: 600; }
+.scan-queue__head a { letter-spacing: 0; text-transform: none; font-weight: 600; color: var(--blue-accent); text-decoration: none; }
+.scan-queue__head a:hover { text-decoration: underline; }
+.scan-queue__list { display: flex; flex-direction: column; gap: 12px; }
+
+.scan-task {
+  position: relative; background: var(--nav-bg-raised); border: 1px solid var(--nav-border); border-radius: 12px;
+  padding: 14px 16px 14px 18px;
+}
+.scan-task.is-new { animation: scan-task-in .6s var(--scan-ease) both; }
+.scan-task::before { content: ""; position: absolute; left: 0; top: 12px; bottom: 12px; width: 3px; border-radius: 0 3px 3px 0; background: var(--status-high); }
+.scan-task--critical::before { background: var(--status-critical); }
+.scan-task__top { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--nav-text); }
+.scan-task__time { margin-left: auto; white-space: nowrap; }
+.scan-sev { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; }
+.scan-sev--critical { background: rgba(214, 69, 69, 0.2); color: #FF9A9A; }
+.scan-sev--high { background: rgba(224, 136, 60, 0.2); color: #F5B476; }
+.scan-task__vendor { margin: 10px 0 2px; font-size: 16px; font-weight: 600; color: #fff; }
+.scan-task__title { margin: 0; font-size: 13.5px; line-height: 1.45; color: #C9D4E6; }
+.scan-task__meta { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 10px; font-size: 12px; color: var(--nav-text); }
+.scan-task__foot { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--nav-border); font-size: 12px; color: var(--nav-text); flex-wrap: wrap; }
+.scan-task__sla { color: #fff; font-weight: 600; }
+.scan-task__open {
+  margin-left: auto; font-family: inherit; font-size: 12px; font-weight: 600; color: #fff; background: var(--blue-primary);
+  border: 0; border-radius: 7px; padding: 6px 12px; cursor: pointer; text-decoration: none;
+}
+.scan-task__open:hover { background: var(--blue-accent); }
+@keyframes scan-task-in { from { opacity: 0; transform: translateY(-14px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+/* Tag naming the vendor the scan just flagged */
+.scan-tag {
+  position: absolute; white-space: nowrap; z-index: 5; pointer-events: none;
+  font-size: 12px; font-weight: 600; color: #fff; padding: 4px 9px; border-radius: 6px;
+  background: rgba(214, 69, 69, 0.92); animation: scan-tag-in .4s var(--scan-ease) both;
+}
+.scan-tag--high { background: rgba(224, 136, 60, 0.95); }
+@keyframes scan-tag-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Tessera mosaic ---------- */
+.mosaic { position: relative; }
+.mosaic__grid { display: grid; grid-template-columns: repeat(34, 1fr); gap: 3px; }
+.tile {
+  position: relative; aspect-ratio: 1; border-radius: 2.5px; background: var(--nav-bg-raised);
+  animation: tile-scan var(--scan-pass) linear infinite; animation-delay: var(--d);
+}
+@keyframes tile-scan { 0% { filter: brightness(2.3); } 14% { filter: brightness(1.2); } 100% { filter: brightness(1); } }
+.tile.amber { background: #8A6B22; }
+.tile.red { background: #A63A3A; }
+.tile.hot { background: var(--status-critical); animation: none; box-shadow: 0 0 12px 1px rgba(214, 69, 69, 0.8); z-index: 4; }
+.tile.hot--high { background: var(--status-high); box-shadow: 0 0 12px 1px rgba(224, 136, 60, 0.8); }
+.tile.hot::after { content: ""; position: absolute; inset: -2px; border-radius: 4px; border: 1.5px solid currentColor; color: var(--status-critical); animation: scan-ripple 1.8s ease-out 3; }
+.tile.hot--high::after { color: var(--status-high); }
+.mosaic__bar {
+  position: absolute; top: -6px; bottom: -6px; width: 7%; left: -7%; pointer-events: none; z-index: 3; border-radius: 4px;
+  background: linear-gradient(to right, rgba(104, 154, 226, 0), rgba(104, 154, 226, 0.22) 80%, rgba(176, 202, 239, 0.6));
+  animation: bar-move var(--scan-pass) linear infinite;
+}
+@keyframes bar-move { from { left: -7%; } to { left: 100%; } }
+.mosaic__tip {
+  position: absolute; z-index: 8; pointer-events: none; white-space: nowrap; opacity: 0; transition: opacity .12s;
+  background: #fff; color: var(--ink); border-radius: 8px; padding: 6px 10px; font-size: 12px; line-height: 1.35;
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.5);
+}
+.mosaic__tip.is-on { opacity: 1; }
+.mosaic__tip b { display: block; font-weight: 600; }
+.mosaic__tip span { color: var(--muted); }
+
+/* Live update on the Dashboard stat card when a new critical signal lands */
+.stat-flash { animation: stat-flash 1.6s ease-out; }
+@keyframes stat-flash { 0% { color: var(--status-critical); transform: scale(1.12); transform-origin: left center; } 100% { color: inherit; transform: none; } }
+
+/* ---------- Signal flow ---------- */
+.flow { min-width: 0; }
+.flow__svg { width: 100%; height: auto; display: block; overflow: visible; }
+.flow__svg text { font-family: "IBM Plex Sans", sans-serif; }
+.src-label { font-size: 12.5px; fill: var(--nav-text); transition: fill .3s; }
+.src-label.hot { fill: #fff; font-weight: 600; }
+.src-node { fill: #2F62AA; stroke: rgba(104, 154, 226, 0.5); stroke-width: 1; }
+.src-path { fill: none; stroke: rgba(104, 154, 226, 0.3); stroke-width: 1; stroke-dasharray: 3 5; }
+.out-path { fill: none; stroke: rgba(104, 154, 226, 0.5); stroke-width: 1.5; }
+.flow-halo { fill: none; stroke: rgba(104, 154, 226, 0.28); stroke-width: 1; transform-origin: 400px 210px; animation: flow-halo 3.2s ease-out infinite; }
+.flow-halo--2 { animation-delay: 1.6s; }
+@keyframes flow-halo { from { transform: scale(1); opacity: 0.9; } to { transform: scale(1.6); opacity: 0; } }
+.flow-core { fill: #0C1424; stroke: rgba(150, 167, 194, 0.25); stroke-width: 1; transition: stroke .2s; }
+.flow-core.hit { stroke: var(--blue-accent); stroke-width: 2; }
+.flow-cap { font-size: 10.5px; letter-spacing: 0.08em; fill: var(--nav-group-label); text-transform: uppercase; }
+.flow-cat { font-size: 15px; font-weight: 600; fill: #fff; }
+.flow-note { font-size: 11.5px; fill: var(--nav-text); }
+.flow-sig { filter: drop-shadow(0 0 5px rgba(214, 69, 69, 0.9)); }
+.flow__stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: var(--space-4); }
+.flow__stats div { border-top: 1px solid var(--nav-border); padding-top: 10px; }
+.flow__stats b { display: block; font-size: 26px; font-weight: 200; color: #fff; font-variant-numeric: tabular-nums; }
+.flow__stats span { font-size: 12px; color: var(--nav-text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .tile, .mosaic__bar, .flow-halo, .scan-live::after, .tile.hot::after { animation: none !important; }
+  .mosaic__bar { display: none; }
+  .scan-task.is-new, .scan-tag, .stat-flash { animation: none; }
+}
