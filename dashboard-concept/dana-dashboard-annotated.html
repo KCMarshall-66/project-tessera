@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dana's Dashboard Concept</title>
+<style>
+:root{
+  --canvas:#EFF3F7;--surface:#fff;--border:#E2E5EC;--ink:#26313D;--muted:#5B6B7C;--faint:#8A97A6;
+  --blue:#2F62AA;--blue-accent:#689AE2;--blue-tint:#C6D9F4;--nav:#131929;
+  --crit:#D64545;--high:#E0883C;--med:#D9B23C;--ok:#3FA873;
+  --crit-bg:#FBEAEA;--high-bg:#FCF0E3;--ok-bg:#E5F4EC;--note:#FFF8DD;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--canvas:#0F1420;--surface:#171E2E;--border:#28324A;--ink:#E6EBF3;--muted:#9AA8BD;--faint:#74849C;--blue-tint:#22365A;--crit-bg:#3A1E22;--high-bg:#3A2A18;--ok-bg:#16332A;--note:#3A3418}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--canvas);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 16px 56px}
+h1{font-size:22px;margin:0 0 2px}
+h2{font-size:15px;margin:0}
+.sub{color:var(--muted);font-size:13px}
+.intro{margin:0 0 20px;color:var(--muted);max-width:760px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative}
+.c12{grid-column:span 12}.c8{grid-column:span 8}.c7{grid-column:span 7}.c6{grid-column:span 6}.c5{grid-column:span 5}.c4{grid-column:span 4}.c3{grid-column:span 3}
+@media(max-width:900px){.c8,.c7,.c6,.c5,.c4,.c3{grid-column:span 12}.kpis .c3{grid-column:span 6}}
+.head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.q{display:inline-flex;align-items:center;gap:8px}
+.num{flex:none;width:22px;height:22px;border-radius:50%;background:var(--nav);color:#fff;font-size:12px;font-weight:600;display:inline-grid;place-items:center}
+.ask{font-size:12px;color:var(--muted);font-style:italic}
+.why{margin-top:12px;padding:8px 10px;background:var(--note);border-radius:8px;font-size:12px;color:var(--ink)}
+.why b{font-weight:600}
+/* KPIs */
+.kpi .lbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.kpi .val{font-size:34px;font-weight:650;line-height:1.1;margin:4px 0}
+.kpi .val small{font-size:14px;color:var(--muted);font-weight:500}
+.trend{font-size:12px;font-weight:600;display:inline-flex;gap:4px;align-items:center}
+.bad{color:var(--crit)}.good{color:var(--ok)}.warn{color:var(--high)}
+.kpi svg{display:block;margin-top:8px}
+/* attention */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip{border:1px solid var(--border);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--muted);background:transparent}
+.chip.on{background:var(--nav);color:#fff;border-color:var(--nav)}
+.chip b{font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--faint);text-align:left;font-weight:600;padding:0 8px 6px}
+td{padding:9px 8px;border-top:1px solid var(--border);vertical-align:middle}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.t-new{background:var(--blue-tint);color:var(--blue)}
+.t-crit{background:var(--crit-bg);color:var(--crit)}
+.t-stale{background:var(--high-bg);color:#B5651C}
+.t-wait{background:var(--border);color:var(--muted)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .t-new{color:#9CC1F5}.t-stale{color:#F0A868}}
+.age{font-variant-numeric:tabular-nums;font-weight:600}
+.av{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--blue-tint);color:var(--blue);font-size:10px;font-weight:700}
+.av.un{background:transparent;border:1.5px dashed var(--faint);color:var(--faint)}
+.btn{font-size:12px;border:1px solid var(--blue);color:var(--blue);background:transparent;border-radius:6px;padding:3px 9px}
+/* bars */
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:6px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.aging{display:flex;gap:2px;height:26px;margin:8px 0 6px}
+.aging div{border-radius:3px;display:grid;place-items:center;color:#fff;font-size:11px;font-weight:600}
+.aglbl{display:flex;gap:2px;font-size:11px;color:var(--muted)}
+.aglbl div{text-align:center}
+/* team */
+.member{display:grid;grid-template-columns:auto 1fr auto;gap:12px;padding:12px 0;border-top:1px solid var(--border);align-items:start}
+.member:first-of-type{border-top:0}
+.avl{width:38px;height:38px;border-radius:50%;background:var(--blue-tint);color:var(--blue);display:grid;place-items:center;font-weight:700}
+.mname{font-weight:600}
+.mrole{font-size:12px;color:var(--muted)}
+.bar{height:8px;border-radius:4px;background:var(--border);overflow:hidden;display:flex;gap:2px;margin:6px 0 4px}
+.bar span{display:block;height:100%}
+.mini{font-size:12px;color:var(--muted)}
+.score{text-align:right}
+.score .n{font-size:26px;font-weight:650;line-height:1}
+.score .t{font-size:11px}
+.parts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.part{background:var(--canvas);border-radius:8px;padding:8px 10px}
+.part .k{font-size:11px;color:var(--muted)}
+.part .v{font-weight:650;font-size:16px}
+/* mosaic */
+.mosaic{display:grid;grid-template-columns:repeat(51,1fr);gap:2px}
+.mosaic i{aspect-ratio:1;border-radius:2px;background:#D6E0EB}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .mosaic i{background:#2B3A55}}
+.mosaic i.r{background:var(--crit)}.mosaic i.o{background:var(--high)}
+.rank{display:flex;flex-direction:column;gap:10px}
+.rk{display:grid;grid-template-columns:1fr auto;gap:2px 8px;font-size:13px}
+.rk .meter{grid-column:1/-1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.rk .meter span{display:block;height:100%;background:var(--blue)}
+.foot{margin-top:24px;color:var(--muted);font-size:12px}
+.svgtxt{font:11px system-ui,sans-serif;fill:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Dana's dashboard: recommended layout</h1>
+  <p class="intro">Reading order is top to bottom, and the numbered badges match the priority order. Every block answers one of Dana's four questions. All data below is sample data for Northbridge (612 vendors), consistent with the current prototype.</p>
+
+  <div class="grid">
+
+    <!-- Greeting -->
+    <div class="c12" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:end">
+      <div><div style="font-size:18px;font-weight:600">Good morning, Dana</div><div class="sub">Sunday, September 20 · Northbridge Financial Group · US, EU &amp; Canada</div></div>
+      <div class="sub">Last scan 4 min ago · 612 vendors monitored</div>
+    </div>
+
+    <!-- 1. KPI strip -->
+    <div class="c12"><div class="q" style="margin-bottom:8px"><span class="num">1</span><h2>Health check in five seconds</h2><span class="ask">Where do we stand?</span></div></div>
+    <div class="c12 grid kpis" style="gap:16px">
+      <div class="card kpi c3">
+        <div class="lbl">Portfolio risk score</div>
+        <div class="val">68 <small>/ 100</small></div>
+        <div class="trend bad">▲ 4 pts vs 30 days ago</div>
+        <svg width="100%" height="34" viewBox="0 0 200 34" preserveAspectRatio="none" role="img" aria-label="Risk score 30-day trend rising from 64 to 68">
+          <polyline fill="none" stroke="#D64545" stroke-width="2" stroke-linejoin="round" points="0,26 20,24 40,25 60,21 80,22 100,18 120,19 140,14 160,15 180,9 200,7"/>
+          <circle cx="200" cy="7" r="3" fill="#D64545"/>
+        </svg>
+      </div>
+      <div class="card kpi c3">
+        <div class="lbl">Open investigation tasks</div>
+        <div class="val">47</div>
+        <div class="trend bad">▲ 17 net in the last 7 days</div>
+        <div class="sub" style="margin-top:8px">15 past SLA · median age 6 days</div>
+      </div>
+      <div class="card kpi c3">
+        <div class="lbl">Arriving vs. closed · 7 days</div>
+        <div class="val">41 <small>in</small> · 24 <small>out</small></div>
+        <div class="trend bad">Backlog growing: +17</div>
+        <div class="sub" style="margin-top:8px">Close rate 59% of inflow</div>
+      </div>
+      <div class="card kpi c3">
+        <div class="lbl">Team score</div>
+        <div class="val">82 <small>/ 100</small></div>
+        <div class="trend good">▲ 2 pts vs last month</div>
+        <div class="sub" style="margin-top:8px">Capacity, not effort, is the gap</div>
+      </div>
+    </div>
+    <div class="c12"><div class="why" style="margin-top:0"><b>Why this is first:</b> Dana's day starts by triaging overnight signals (8:30 am). Four numbers tell her whether today is a normal day or a bad one. The risk score and the in-versus-out count are the pair that matter most: risk is rising <i>because</i> tasks arrive faster than they close, and that link should be visible immediately.</div></div>
+
+    <!-- 2. Needs attention -->
+    <div class="card c12">
+      <div class="head">
+        <div><div class="q"><span class="num">2</span><h2>Needs your attention now</h2></div><div class="ask">What is urgent, new, or sitting too long?</div></div>
+        <div class="sub">Sorted by risk impact, not by date</div>
+      </div>
+      <div class="tabs">
+        <span class="chip on"><b>All</b> 21</span>
+        <span class="chip"><b>Unassigned / new</b> 6</span>
+        <span class="chip"><b>Critical</b> 7</span>
+        <span class="chip"><b>Stale, past SLA</b> 15</span>
+        <span class="chip"><b>Waiting on vendor</b> 12</span>
+      </div>
+      <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th>Issue</th><th>Vendor · tier</th><th>Status</th><th>Age / SLA</th><th>Owner</th><th>Risk impact</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><b>Credential dump referencing vendor domain</b><div class="sub">Category: Data exposure · Paste site</div></td><td>Halcyon Payments · Critical</td><td><span class="tag t-new">● New</span></td><td class="age">3 h <span class="sub">/ 24 h</span></td><td><span class="av un">?</span> Unassigned</td><td class="bad"><b>+2.1</b></td><td><button class="btn">Assign</button></td></tr>
+          <tr><td><b>Exposed S3 bucket, possible customer PII</b><div class="sub">Category: Misconfiguration</div></td><td>CloudLedger · Critical</td><td><span class="tag t-crit">▲ Critical</span></td><td class="age">1 d <span class="sub">/ 2 d</span></td><td><span class="av">PN</span> Priya</td><td class="bad"><b>+1.8</b></td><td><button class="btn">Open</button></td></tr>
+          <tr><td><b>Unpatched CVE on internet-facing VPN</b><div class="sub">Category: Vulnerability</div></td><td>Meridian Analytics · High</td><td><span class="tag t-stale">⏱ Past SLA</span></td><td class="age bad">9 d <span class="sub">/ 7 d</span></td><td><span class="av">MC</span> Marcus</td><td class="bad"><b>+1.2</b></td><td><button class="btn">Nudge</button></td></tr>
+          <tr><td><b>Expired TLS certificate on login portal</b><div class="sub">Category: Certificate hygiene</div></td><td>Orion HR Cloud · High</td><td><span class="tag t-stale">⏱ Past SLA</span></td><td class="age bad">21 d <span class="sub">/ 14 d</span></td><td><span class="av">MC</span> Marcus</td><td class="bad"><b>+0.9</b></td><td><button class="btn">Escalate</button></td></tr>
+          <tr><td><b>Breach disclosure by parent company</b><div class="sub">Category: Breach signal · Vendor unconfirmed</div></td><td>Vantage AI Labs · Critical</td><td><span class="tag t-wait">◔ Waiting on vendor</span></td><td class="age">5 d <span class="sub">/ 7 d</span></td><td><span class="av">PN</span> Priya</td><td class="warn"><b>+0.7</b></td><td><button class="btn">Open</button></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="why"><b>Why here:</b> This is the working surface. "Risk impact" shows how many points each task is currently adding to the portfolio score, so Dana can rank by consequence instead of by feel. Age is always shown against its SLA (9 d / 7 d) so "stale" is defined by the system, not by memory. Unassigned tasks come first because they are the only ones nobody is working on.</div>
+    </div>
+
+    <!-- 3. Keeping up -->
+    <div class="card c7">
+      <div class="head">
+        <div><div class="q"><span class="num">3</span><h2>Are we keeping up?</h2></div><div class="ask">New tasks arriving vs. tasks closed, last 14 days</div></div>
+      </div>
+      <svg viewBox="0 0 520 190" width="100%" role="img" aria-label="Daily new tasks versus closed tasks over 14 days. New tasks rise from 3 to 9 per day; closed stays between 2 and 5.">
+        <g stroke="var(--border)" stroke-width="1">
+          <line x1="30" y1="20" x2="510" y2="20"/><line x1="30" y1="60" x2="510" y2="60"/><line x1="30" y1="100" x2="510" y2="100"/><line x1="30" y1="140" x2="510" y2="140"/>
+        </g>
+        <text class="svgtxt" x="24" y="24" text-anchor="end">10</text><text class="svgtxt" x="24" y="64" text-anchor="end">7</text><text class="svgtxt" x="24" y="104" text-anchor="end">5</text><text class="svgtxt" x="24" y="144" text-anchor="end">2</text>
+        <!-- scale: 4px per unit... y = 160 - v*14 -->
+        <!-- gap shading between lines for last 7 days -->
+        <polygon fill="#D64545" opacity=".12" points="270,118 306,102 342,98 378,84 414,62 450,48 486,34 486,104 450,104 414,104 378,104 342,104 306,104 270,104"/>
+        <!-- new (in) -->
+        <polyline fill="none" stroke="#D64545" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"
+          points="50,118 82,90 114,132 146,104 178,76 210,118 242,146 274,132 306,104 338,90 370,62 402,76 434,48 466,34"/>
+        <!-- closed (out) -->
+        <polyline fill="none" stroke="#2F62AA" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"
+          points="50,104 82,118 114,104 146,118 178,90 210,104 242,132 274,118 306,118 338,104 370,118 402,104 434,118 466,104"/>
+        <circle cx="466" cy="34" r="4" fill="#D64545" stroke="var(--surface)" stroke-width="2"/>
+        <circle cx="466" cy="104" r="4" fill="#2F62AA" stroke="var(--surface)" stroke-width="2"/>
+        <text class="svgtxt" x="474" y="30" style="fill:var(--ink);font-weight:600">9 new</text>
+        <text class="svgtxt" x="474" y="120" style="fill:var(--ink);font-weight:600">4 closed</text>
+        <text class="svgtxt" x="50" y="176">Sep 7</text><text class="svgtxt" x="258" y="176">Sep 14</text><text class="svgtxt" x="440" y="176">Sep 20</text>
+      </svg>
+      <div class="legend">
+        <span><span class="sw" style="background:#D64545"></span>New tasks per day</span>
+        <span><span class="sw" style="background:#2F62AA"></span>Closed per day</span>
+        <span><span class="sw" style="background:#D64545;opacity:.25"></span>Gap = backlog growth</span>
+      </div>
+      <div class="why"><b>Why here:</b> This answers the "are we keeping up?" question as a shape, not a number. When the red line stays above the blue line, the shaded gap is the backlog growing. A single 14-day view is enough; a longer trend belongs on the Reports page.</div>
+    </div>
+
+    <div class="card c5">
+      <div class="head">
+        <div><div class="q"><span class="num">4</span><h2>How long are tasks open?</h2></div><div class="ask">Age of the 47 open tasks</div></div>
+      </div>
+      <div class="aging" role="img" aria-label="Open task ages: 14 under 3 days, 12 from 4 to 7 days, 9 from 8 to 14, 8 from 15 to 30, 4 over 30 days">
+        <div style="flex:14;background:#3FA873">14</div>
+        <div style="flex:12;background:#D9B23C;color:#26313D">12</div>
+        <div style="flex:9;background:#E0883C">9</div>
+        <div style="flex:8;background:#D64545">8</div>
+        <div style="flex:4;background:#8F2A2A">4</div>
+      </div>
+      <div class="aglbl"><div style="flex:14">0–3 d</div><div style="flex:12">4–7 d</div><div style="flex:9">8–14 d</div><div style="flex:8">15–30 d</div><div style="flex:4">30+</div></div>
+      <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="part"><div class="k">Waiting on vendor</div><div class="v">12 <span class="sub">tasks · avg 11 d</span></div></div>
+        <div class="part"><div class="k">Waiting on our team</div><div class="v">35 <span class="sub">tasks · avg 4 d</span></div></div>
+        <div class="part"><div class="k">Avg time to verify</div><div class="v">1.6 d <span class="sub trend good">▼ 0.3</span></div></div>
+        <div class="part"><div class="k">Avg time to fix</div><div class="v">8.4 d <span class="sub trend bad">▲ 1.1</span></div></div>
+      </div>
+      <div class="why"><b>Why here:</b> Stale tasks drive the risk score up, so age gets its own view. Splitting "waiting on vendor" from "waiting on us" tells Dana whether to coach her team or escalate with a vendor's executive contact. Those are very different actions.</div>
+    </div>
+
+    <!-- 5. Team -->
+    <div class="card c8">
+      <div class="head">
+        <div><div class="q"><span class="num">5</span><h2>Your team</h2></div><div class="ask">Who is working on what, and how is it going?</div></div>
+        <div class="sub">Team score 82 · last 30 days</div>
+      </div>
+
+      <div class="member">
+        <div class="avl">PN</div>
+        <div>
+          <div class="mname">Priya Nair <span class="mrole">· EU / critical vendors</span></div>
+          <div class="bar" title="14 open: 3 verifying, 6 with vendor, 5 in review"><span style="flex:3;background:#689AE2"></span><span style="flex:6;background:#B0CAEF"></span><span style="flex:5;background:#3FA873"></span></div>
+          <div class="mini">14 open · 3 verifying · 6 with vendor · 5 in review · 1 past SLA</div>
+          <div class="mini">Working now: <b style="color:var(--ink)">CloudLedger exposed bucket</b></div>
+        </div>
+        <div class="score"><div class="n">91</div><div class="t good">▲ 3</div></div>
+      </div>
+
+      <div class="member">
+        <div class="avl">MC</div>
+        <div>
+          <div class="mname">Marcus Chen <span class="mrole">· US / standard vendors</span></div>
+          <div class="bar" title="22 open: 8 verifying, 4 with vendor, 4 in review, 6 stale"><span style="flex:8;background:#689AE2"></span><span style="flex:4;background:#B0CAEF"></span><span style="flex:4;background:#3FA873"></span><span style="flex:6;background:#E0883C"></span></div>
+          <div class="mini">22 open · 8 verifying · 4 with vendor · 4 in review · <b class="warn">6 past SLA</b></div>
+          <div class="mini">Working now: <b style="color:var(--ink)">Meridian VPN follow-up</b> · <span class="warn">at capacity, consider rebalancing</span></div>
+        </div>
+        <div class="score"><div class="n">74</div><div class="t bad">▼ 2</div></div>
+      </div>
+
+      <div class="member">
+        <div class="avl">DV</div>
+        <div>
+          <div class="mname">Dana Vasquez <span class="mrole">· escalations + Canada</span></div>
+          <div class="bar"><span style="flex:4;background:#689AE2"></span><span style="flex:2;background:#B0CAEF"></span></div>
+          <div class="mini">6 open · 4 vendor escalations · 2 unassigned to review</div>
+        </div>
+        <div class="score"><div class="n">—</div><div class="t sub">not scored</div></div>
+      </div>
+
+      <div class="parts">
+        <div class="part"><div class="k">Closed on time (SLA)</div><div class="v">78%</div></div>
+        <div class="part"><div class="k">Time to verify</div><div class="v">1.6 d</div></div>
+        <div class="part"><div class="k">Vendor follow-ups sent</div><div class="v">93%</div></div>
+        <div class="part"><div class="k">Reopened / rework</div><div class="v">4%</div></div>
+      </div>
+      <div class="why"><b>Why here:</b> The segmented bars show where each person's work is stuck (verifying, with vendor, in review, or stale) rather than just how much they hold. The score is a composite of the four measures below it, always shown with its parts so nobody is judged by an opaque number. Presented as workload and coaching signals, not a leaderboard: Marcus in particular is motivated by credibility and growth, and a bare ranking would work against that.</div>
+    </div>
+
+    <!-- 6. Risk concentration -->
+    <div class="card c4">
+      <div class="head">
+        <div><div class="q"><span class="num">6</span><h2>Where risk is concentrated</h2></div><div class="ask">What is driving the score up?</div></div>
+      </div>
+      <div class="rank">
+        <div class="rk"><span>Halcyon Payments</span><b>+2.4</b><div class="meter"><span style="width:96%"></span></div></div>
+        <div class="rk"><span>CloudLedger</span><b>+2.0</b><div class="meter"><span style="width:80%"></span></div></div>
+        <div class="rk"><span>Meridian Analytics</span><b>+1.5</b><div class="meter"><span style="width:60%"></span></div></div>
+        <div class="rk"><span>Orion HR Cloud</span><b>+1.1</b><div class="meter"><span style="width:44%"></span></div></div>
+        <div class="rk"><span>Vantage AI Labs</span><b>+0.9</b><div class="meter"><span style="width:36%"></span></div></div>
+      </div>
+      <div class="sub" style="margin-top:10px">Points added to the portfolio score, by vendor. Top 5 explain 51% of the increase.</div>
+      <div class="why"><b>Why here:</b> Ties the score to specific vendors so it is actionable and defensible in front of an audit committee.</div>
+    </div>
+
+    <!-- 7. Ambient scanning -->
+    <div class="card c12">
+      <div class="head">
+        <div><div class="q"><span class="num">7</span><h2>Continuous scan · all 612 vendors</h2></div><div class="ask">Proof the system is watching, and where it found something</div></div>
+        <div class="legend" style="margin:0"><span><span class="sw" style="background:#D6E0EB"></span>Monitored, clear</span><span><span class="sw" style="background:#E0883C"></span>Open finding (15)</span><span><span class="sw" style="background:#D64545"></span>Critical signal (7)</span></div>
+      </div>
+      <div class="mosaic" id="mosaic" aria-label="612 vendor tiles, 7 critical and 15 with open findings"></div>
+      <div class="why"><b>Why last:</b> The mosaic is the product's differentiator and builds trust, but it is not where Dana takes action. It sits low and slim, as ambient reassurance, and hovering a tile links to that vendor. The existing "Continuous monitoring" feed on the current dashboard duplicates Section 2 and can be retired.</div>
+    </div>
+
+  </div>
+
+  <div class="foot">Sample data only. Risk-impact points, scores, and SLAs are illustrative and would need definitions agreed with Dana's team before build.</div>
+</div>
+
+<script>
+(function(){
+  var m=document.getElementById('mosaic'),html='';
+  var crit={5:1,61:1,118:1,177:1,240:1,333:1,470:1};
+  var open={};[14,29,47,88,102,140,163,198,222,271,305,352,401,444,520].forEach(function(i){open[i]=1});
+  for(var i=0;i<612;i++){html+='<i'+(crit[i]?' class="r"':open[i]?' class="o"':'')+'></i>'}
+  m.innerHTML=html;
+})();
+</script>
+</body>
+</html>
