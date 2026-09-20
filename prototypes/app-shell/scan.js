@@ -11,13 +11,14 @@
   var REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var SCAN = 5; // seconds per mosaic pass; matches --scan-pass in scan.css
 
-  /* Scripted signals. Vendors and owners match vendors.html; src is the index
-     of the public-internet source in the signal flow. */
+  /* Scripted signals. Vendors, tiers and owners match vendors.html; src is the index
+     of the public-internet source in the signal flow; impact is the points the new task
+     adds to the Dashboard's portfolio risk score (sample values). */
   var SIGNALS = [
-    { vendor: 'Vantage Identity Verify', sub: 'Identity & Access · US + EU', sev: 'critical', category: 'Credential exposure', title: 'Live API keys found in a public code repository',           source: 'Public code repositories',      src: 1, conf: 94, sla: '4 hours',  owner: 'Priya N.' },
-    { vendor: 'Solace Payments API',     sub: 'Payments · US',              sev: 'critical', category: 'Data breach',         title: 'Customer records appear in a newly posted breach dump',      source: 'Breach dumps & paste sites',    src: 0, conf: 89, sla: '4 hours',  owner: 'Priya N.' },
-    { vendor: 'Vertex Analytics',        sub: 'Data Platform · US',         sev: 'high',     category: 'Vulnerability',       title: 'Critical CVE unpatched on an internet-facing server',        source: 'Internet-wide scans',           src: 4, conf: 91, sla: '24 hours', owner: 'Marcus C.' },
-    { vendor: 'Cascade CRM',             sub: 'Sales Tooling · Canada',     sev: 'high',     category: 'Exposed service',     title: 'Staging server found through certificate logs, no login',    source: 'Certificate transparency logs', src: 3, conf: 88, sla: '24 hours', owner: 'Marcus C.' }
+    { vendor: 'Vantage Identity Verify', sub: 'Identity & Access · US + EU', sev: 'critical', category: 'Credential exposure', title: 'Live API keys found in a public code repository',           source: 'Public code repositories',      src: 1, conf: 94, sla: '4 hours',  owner: 'Priya N.',  tier: 'high',   impact: 2.0 },
+    { vendor: 'Solace Payments API',     sub: 'Payments · US',              sev: 'critical', category: 'Data breach',         title: 'Customer records appear in a newly posted breach dump',      source: 'Breach dumps & paste sites',    src: 0, conf: 89, sla: '4 hours',  owner: 'Priya N.',  tier: 'high',   impact: 1.9 },
+    { vendor: 'Vertex Analytics',        sub: 'Data Platform · US',         sev: 'high',     category: 'Vulnerability',       title: 'Critical CVE unpatched on an internet-facing server',        source: 'Internet-wide scans',           src: 4, conf: 91, sla: '24 hours', owner: 'Marcus C.', tier: 'medium', impact: 0.8 },
+    { vendor: 'Cascade CRM',             sub: 'Sales Tooling · Canada',     sev: 'high',     category: 'Exposed service',     title: 'Staging server found through certificate logs, no login',    source: 'Certificate transparency logs', src: 3, conf: 88, sla: '24 hours', owner: 'Marcus C.', tier: 'high',   impact: 1.0 }
   ];
 
   /* ---------- Small helpers ---------- */
@@ -126,8 +127,9 @@
 
   function mosaic(root, opts) {
     opts = opts || {};
-    var COLS = 34, N = 612;
+    var COLS = opts.cols || 34, N = 612;
     var grid = mk('div', 'mosaic__grid'), bar = mk('div', 'mosaic__bar'), tip = mk('div', 'mosaic__tip');
+    grid.style.gridTemplateColumns = 'repeat(' + COLS + ', 1fr)';
     root.appendChild(grid); root.appendChild(bar); root.appendChild(tip);
 
     var port = portfolio(N), r = rng(29), tiles = [];

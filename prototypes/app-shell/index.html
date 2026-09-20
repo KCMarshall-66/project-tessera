@@ -10,37 +10,134 @@
 <link rel="stylesheet" href="shell.css">
 <link rel="stylesheet" href="scan.css">
 <style>
-  /* Monitoring feed */
-  .feed { list-style: none; margin: 0; padding: 0 var(--space-5) var(--space-4); }
-  .feed li { display: flex; gap: var(--space-3); padding: var(--space-3) 0; border-top: 1px solid var(--surface-border); }
-  .feed li:first-child { border-top: none; }
-  .feed .dot-wrap { flex: none; padding-top: 4px; position: relative; }
-  .feed .dot { width: 8px; height: 8px; border-radius: 50%; display: block; }
-  .feed li.live .dot { background: var(--status-critical); }
-  .feed li.live .dot::after {
-    content: ""; position: absolute; inset: -4px; border-radius: 50%;
-    border: 2px solid var(--status-critical); opacity: 0.5;
-    animation: pulse 1.8s ease-out infinite;
+  /* Dashboard layout (dashboard-concept/README.md): a 12-column grid of faded cards */
+  .dash { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--space-4); margin-top: var(--space-5); }
+  .dash > .panel, .dash > .stat-card { margin-top: 0; min-width: 0; }
+  .d-3 { grid-column: span 3; } .d-4 { grid-column: span 4; } .d-5 { grid-column: span 5; }
+  .d-7 { grid-column: span 7; } .d-8 { grid-column: span 8; } .d-12 { grid-column: span 12; }
+  @media (max-width: 1180px) {
+    .d-4, .d-5, .d-7, .d-8 { grid-column: span 12; }
+    .d-3 { grid-column: span 6; }
   }
-  .feed li:not(.live) .dot { background: var(--gray); }
-  @keyframes pulse { to { transform: scale(2.1); opacity: 0; } }
-  .feed__title { font-size: 13px; font-weight: 600; color: var(--ink); }
-  .feed__meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
-  /* Team workload */
-  .team-list { list-style: none; margin: 0; padding: 0 var(--space-5) var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
-  .team-row { display: flex; align-items: center; gap: var(--space-3); }
-  .team-row img { width: 32px; height: 32px; border-radius: 50%; flex: none; }
-  .team-row__name { font-size: 13px; font-weight: 600; }
-  .team-row__task { font-size: 12px; color: var(--muted); }
-  .team-row__count { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--blue-primary); }
+  .panel__head .sub, .sub { color: var(--muted); font-size: 12.5px; font-weight: 400; }
+  .panel__body { padding: 0 var(--space-5) var(--space-5); }
+  .link-btn { font-family: inherit; font-size: 13px; font-weight: 600; color: var(--blue-primary); background: none; border: 0; padding: 0; cursor: pointer; }
+  .link-btn:hover { text-decoration: underline; }
 
-  .btn-ghost-block {
-    display: block; text-align: center; margin: 0 var(--space-5) var(--space-4);
-    padding: var(--space-3); border-radius: var(--radius-md); border: 1px dashed var(--surface-border);
-    color: var(--blue-primary); font-size: 13px; font-weight: 600; text-decoration: none;
+  /* Health-check tiles */
+  .stat-card__value small { font-size: 14px; font-weight: 400; color: var(--muted); }
+  .trend { font-size: 12px; font-weight: 600; margin-top: 6px; }
+  .trend.bad { color: var(--status-critical); }
+  .trend.good { color: #2C7D54; }
+  .trend.warn { color: #B5651C; }
+  .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .kpi-spark { display: block; margin-top: 8px; }
+
+  /* Needs your attention */
+  .chip-row { display: flex; gap: var(--space-2); flex-wrap: wrap; padding: 0 var(--space-5) var(--space-3); }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: inherit; font-size: 12.5px; font-weight: 400;
+    padding: 5px 12px; border-radius: 999px; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--surface-border); color: var(--muted);
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
   }
-  .btn-ghost-block:hover { background: var(--blue-tint); border-color: var(--blue-light); }
+  .chip b { font-weight: 600; }
+  .chip:hover { border-color: var(--blue-light); }
+  .chip.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .chip:focus-visible, .btn-row:focus-visible, .link-btn:focus-visible { outline: 2px solid var(--blue-accent); outline-offset: 2px; }
+
+  .table-scroll { overflow-x: auto; }
+  /* Seven columns share the card width, so tighten the shared table padding here */
+  table.vendor-table.attn th, table.vendor-table.attn td { padding-left: 10px; padding-right: 10px; }
+  table.vendor-table.attn th:first-child, table.vendor-table.attn td:first-child { padding-left: var(--space-5); }
+  table.vendor-table.attn th:last-child, table.vendor-table.attn td:last-child { padding-right: var(--space-5); }
+  table.vendor-table.attn th { white-space: nowrap; }
+  table.vendor-table.attn .col-issue { width: 31%; }
+  table.vendor-table.attn .col-vendor { width: 19%; }
+  table.vendor-table td.impact { font-weight: 600; white-space: nowrap; }
+  .impact.bad { color: var(--status-critical); }
+  .impact.warn { color: #B5651C; }
+  .age { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  .age.bad { color: var(--status-critical); }
+  .age .vendor-sub { font-weight: 400; }
+  tr.is-new td { animation: row-new 2.4s ease-out; }
+  @keyframes row-new { 0% { background: rgba(214, 69, 69, 0.14); } 100% { background: transparent; } }
+  .table-foot { padding: var(--space-3) var(--space-5) var(--space-4); font-size: 13px; color: var(--muted); border-top: 1px solid var(--surface-border); }
+  .empty-state { display: none; padding: var(--space-6) var(--space-5); text-align: center; color: var(--muted); font-size: 14px; }
+
+  .tag { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .t-new { background: var(--blue-tint); color: var(--blue-primary); }
+  .t-crit { background: rgba(214, 69, 69, 0.1); color: var(--status-critical); }
+  .t-stale { background: rgba(224, 136, 60, 0.14); color: #B5651C; }
+  .t-wait { background: var(--surface-border); color: var(--muted); }
+  .t-work { background: #EAF1FA; color: var(--blue-dark); }
+  .owner-cell { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .avatar-chip.un { background: transparent; border: 1.5px dashed #8A97A6; color: #5B6B7C; }
+  .btn-row { font-family: inherit; font-size: 12px; font-weight: 600; color: var(--blue-primary); background: none; border: 1px solid var(--blue-primary); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+  .btn-row:hover { background: var(--blue-primary); color: #fff; }
+
+  /* Are we keeping up? */
+  .chart { position: relative; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .svgtxt { font: 11px "IBM Plex Sans", sans-serif; fill: var(--muted); }
+  .svgtxt.strong { fill: var(--ink); font-weight: 600; }
+  .chart-tip {
+    position: absolute; top: 4px; transform: translateX(-50%); pointer-events: none; opacity: 0; transition: opacity .12s;
+    background: #fff; border: 1px solid var(--surface-border); border-radius: 8px; padding: 6px 10px; font-size: 12px; line-height: 1.4;
+    box-shadow: 0 8px 20px -8px rgba(16, 27, 48, 0.3); white-space: nowrap; z-index: 2;
+  }
+  .chart-tip.is-on { opacity: 1; }
+  .chart-tip b { display: block; font-weight: 600; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+  .chart-table { display: none; }
+  .chart-table.is-on { display: block; max-height: 260px; overflow: auto; }
+  .chart-table table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .chart-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); padding: 4px 8px; }
+  .chart-table td { padding: 5px 8px; border-top: 1px solid var(--surface-border); font-variant-numeric: tabular-nums; }
+
+  /* How long are tasks open? */
+  .aging { display: flex; gap: 2px; height: 26px; margin: 4px 0 6px; }
+  .aging div { display: grid; place-items: center; min-width: 0; border-radius: 3px; color: #fff; font-size: 11px; font-weight: 600; }
+  .aglbl { display: flex; gap: 2px; font-size: 11px; color: var(--muted); }
+  .aglbl div { min-width: 0; text-align: center; white-space: nowrap; overflow: hidden; }
+  .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .fact { background: var(--canvas); border-radius: 8px; padding: 8px 10px; }
+  .fact .k { font-size: 11px; color: var(--muted); }
+  .fact .v { font-size: 16px; font-weight: 600; }
+  .fact .v .sub { font-size: 12px; }
+
+  /* Your team */
+  .team-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); margin-bottom: var(--space-2); }
+  .member { display: grid; grid-template-columns: auto 1fr auto; gap: var(--space-3); padding: var(--space-3) 0; border-top: 1px solid var(--surface-border); align-items: start; }
+  .member:first-of-type { border-top: 0; }
+  .member img { width: 38px; height: 38px; border-radius: 50%; }
+  .mname { font-weight: 600; }
+  .mrole { font-size: 12px; font-weight: 400; color: var(--muted); }
+  .mbar { display: flex; gap: 2px; height: 8px; border-radius: 4px; overflow: hidden; background: var(--surface-border); margin: 6px 0 4px; }
+  .mbar span { display: block; height: 100%; }
+  .mini { font-size: 12px; color: var(--muted); }
+  .mini b { color: var(--ink); font-weight: 600; }
+  .mini .warn { color: #B5651C; font-weight: 600; }
+  .score { text-align: right; }
+  .score .n { font-size: 26px; font-weight: 600; line-height: 1; }
+  .score .t { font-size: 11px; font-weight: 600; }
+  .score .t.good { color: #2C7D54; } .score .t.bad { color: var(--status-critical); } .score .t.none { color: var(--muted); font-weight: 400; }
+  .parts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: var(--space-3); }
+  @media (max-width: 1180px) { .parts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+  /* Where risk is concentrated */
+  .rank { display: flex; flex-direction: column; gap: 10px; }
+  .rk { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; font-size: 13px; }
+  .rk b { font-weight: 600; }
+  .rk .meter { grid-column: 1 / -1; height: 6px; background: var(--surface-border); border-radius: 3px; overflow: hidden; }
+  .rk .meter span { display: block; height: 100%; background: var(--blue-primary); border-radius: 3px; transition: width .5s ease; }
+
+  /* Continuous scan (last, slim) */
+  .scan-card { padding: var(--space-5); }
+  .scan-card .scan-panel--open { margin-bottom: 0; }
 </style>
 </head>
 <body>
@@ -147,222 +244,402 @@
     <main class="content">
       <div class="page-heading">
         <div>
-          <h1>Good afternoon, Dana</h1>
-          <p>Thursday, September 18 · Northbridge Financial Group · US, EU &amp; Canada portfolio</p>
+          <h1>Good morning, Dana</h1>
+          <p>Sunday, September 20 · Northbridge Financial Group · US, EU &amp; Canada</p>
+        </div>
+        <div>
+          <p>Last scan <span id="lastScan">4 min ago</span> · 612 vendors monitored</p>
         </div>
       </div>
 
-      <section class="stat-grid">
-        <div class="stat-card">
-          <div class="stat-card__label">Active Vendors</div>
-          <div class="stat-card__value">612</div>
-          <div class="stat-card__bar">
-            <span style="width:4%; background:var(--status-critical)"></span>
-            <span style="width:19%; background:var(--status-high)"></span>
-            <span style="width:49%; background:var(--status-medium)"></span>
-            <span style="width:28%; background:var(--status-low)"></span>
-          </div>
-          <div class="stat-card__delta">24 critical · 118 high · 302 medium · 168 low</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card__label">Critical Alerts</div>
-          <div class="stat-card__value" data-live="critical-value">7</div>
-          <div class="stat-card__delta up" data-live="critical-delta">▲ 3 new since yesterday</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card__label">Overdue Remediations</div>
-          <div class="stat-card__value">15</div>
-          <div class="stat-card__delta">Across 11 vendors</div>
-        </div>
-        <a class="stat-card" href="assessments.html" style="text-decoration:none; color:inherit; display:block;">
-          <div class="stat-card__label">Assessments Due · 30d</div>
-          <div class="stat-card__value">42</div>
-          <div class="stat-card__delta">9 are DORA-critical renewals</div>
-        </a>
-      </section>
+      <div class="dash">
 
-      <section class="scan-panel scan-panel--open" id="scanPanel" aria-label="Continuous scanning of the public internet">
-        <div class="scan-head">
-          <div>
-            <span class="scan-eyebrow"><i class="scan-live"></i>Scanning the public internet</span>
-            <div class="scan-headline"><b id="scanCount">7</b><span>critical signals open across 612 monitored vendors</span></div>
-          </div>
-          <button type="button" class="scan-demo" id="scanDemo" title="Prototype control: replays a scripted signal">Simulate a signal</button>
+        <!-- 1. Health check -->
+        <div class="stat-card d-3">
+          <div class="stat-card__label">Portfolio risk score</div>
+          <div class="stat-card__value"><span id="kpiScore">68</span> <small>/ 100</small></div>
+          <div class="trend bad" id="kpiScoreTrend">▲ 4 pts vs 30 days ago</div>
+          <svg class="kpi-spark" width="100%" height="34" viewBox="0 0 200 34" preserveAspectRatio="none" role="img" aria-label="Risk score 30-day trend rising from 64 to 68">
+            <polyline fill="none" stroke="#D64545" stroke-width="2" stroke-linejoin="round" points="0,26 20,24 40,25 60,21 80,22 100,18 120,19 140,14 160,15 180,9 200,7"/>
+            <circle cx="200" cy="7" r="3" fill="#D64545"/>
+          </svg>
         </div>
-        <div class="scan-panel__grid">
-          <div>
+        <div class="stat-card d-3">
+          <div class="stat-card__label">Open investigation tasks</div>
+          <div class="stat-card__value" id="kpiOpen">47</div>
+          <div class="trend bad" id="kpiOpenTrend">▲ 17 net in the last 7 days</div>
+          <div class="kpi-sub" id="kpiOpenSub">15 past SLA · median age 6 days</div>
+        </div>
+        <div class="stat-card d-3">
+          <div class="stat-card__label">Arriving vs. closed · 7d</div>
+          <div class="stat-card__value"><span id="kpiIn">41</span> <small>in</small> · <span id="kpiOut">24</span> <small>out</small></div>
+          <div class="trend bad" id="kpiArrTrend">Backlog growing: +17</div>
+          <div class="kpi-sub" id="kpiArrSub">Close rate 59% of inflow</div>
+        </div>
+        <div class="stat-card d-3">
+          <div class="stat-card__label">Team score</div>
+          <div class="stat-card__value">82 <small>/ 100</small></div>
+          <div class="trend good">▲ 2 pts vs last month</div>
+          <div class="kpi-sub">Capacity, not effort, is the gap</div>
+        </div>
+
+        <!-- 2. Needs your attention now -->
+        <section class="panel d-12" aria-labelledby="attnTitle">
+          <div class="panel__head">
+            <h2 id="attnTitle">Needs your attention now</h2>
+            <span class="sub">Sorted by risk impact, not by date. Unassigned tasks come first.</span>
+          </div>
+          <div class="chip-row" id="taskChips" role="group" aria-label="Filter tasks">
+            <button type="button" class="chip active" data-f="all"><b>All</b> <span data-count="all">21</span></button>
+            <button type="button" class="chip" data-f="unassigned"><b>Unassigned / new</b> <span data-count="unassigned">6</span></button>
+            <button type="button" class="chip" data-f="critical"><b>Critical</b> <span data-count="critical">7</span></button>
+            <button type="button" class="chip" data-f="stale"><b>Stale, past SLA</b> <span data-count="stale">15</span></button>
+            <button type="button" class="chip" data-f="waiting"><b>Waiting on vendor</b> <span data-count="waiting">12</span></button>
+          </div>
+          <div class="table-scroll">
+            <table class="vendor-table attn">
+              <thead>
+                <tr><th class="col-issue">Issue</th><th class="col-vendor">Vendor · tier</th><th>Status</th><th>Age / SLA</th><th>Owner</th><th>Risk impact</th><th></th></tr>
+              </thead>
+              <tbody id="taskRows"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="taskEmpty">No tasks match this filter.</div>
+          <div class="table-foot" id="taskFoot">Showing 8 of 21 tasks that need attention</div>
+        </section>
+
+        <!-- 3. Are we keeping up? -->
+        <section class="panel d-7" aria-labelledby="keepTitle">
+          <div class="panel__head">
+            <h2 id="keepTitle">Are we keeping up?</h2>
+            <button type="button" class="link-btn" id="chartToggle" aria-pressed="false">View as table</button>
+          </div>
+          <div class="panel__body">
+            <div class="chart" id="chart">
+              <div id="chartSvg"></div>
+              <div class="chart-tip" id="chartTip" aria-hidden="true"></div>
+            </div>
+            <div class="chart-table" id="chartTable"></div>
+            <div class="legend">
+              <span><span class="sw" style="background:#D64545"></span>New tasks per day</span>
+              <span><span class="sw" style="background:#2F62AA"></span>Closed per day</span>
+              <span><span class="sw" style="background:#D64545;opacity:.25"></span>Gap = backlog growth</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. How long are tasks open? -->
+        <section class="panel d-5" aria-labelledby="ageTitle">
+          <div class="panel__head"><h2 id="ageTitle">How long are tasks open?</h2></div>
+          <div class="panel__body">
+            <div class="aging" id="aging" role="img"></div>
+            <div class="aglbl"><div style="flex:14">0–3 d</div><div style="flex:12">4–7 d</div><div style="flex:9">8–14 d</div><div style="flex:8">15–30 d</div><div style="flex:4">30+</div></div>
+            <div class="facts">
+              <div class="fact"><div class="k">Waiting on vendor</div><div class="v">12 <span class="sub">tasks · avg 11 d</span></div></div>
+              <div class="fact"><div class="k">Waiting on our team</div><div class="v"><span id="waitTeam">35</span> <span class="sub">tasks · avg 4 d</span></div></div>
+              <div class="fact"><div class="k">Avg time to verify</div><div class="v">1.6 d <span class="sub trend good">▼ 0.3</span></div></div>
+              <div class="fact"><div class="k">Avg time to fix</div><div class="v">8.4 d <span class="sub trend bad">▲ 1.1</span></div></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. Your team -->
+        <section class="panel d-8" aria-labelledby="teamTitle">
+          <div class="panel__head">
+            <h2 id="teamTitle">Your team</h2>
+            <span class="sub">Team score 82 · last 30 days</span>
+          </div>
+          <div class="panel__body">
+            <div class="team-legend">
+              <span><span class="sw" style="background:#689AE2"></span>Verifying</span>
+              <span><span class="sw" style="background:#B0CAEF"></span>With vendor</span>
+              <span><span class="sw" style="background:#3FA873"></span>In review</span>
+              <span><span class="sw" style="background:#E0883C"></span>Past SLA</span>
+            </div>
+
+            <div class="member">
+              <img src="../../personas/priya-nair.png" alt="Priya Nair">
+              <div>
+                <div class="mname">Priya Nair <span class="mrole">· EU / critical vendors</span></div>
+                <div class="mbar" title="14 open: 3 verifying, 6 with vendor, 5 in review"><span style="flex:3;background:#689AE2"></span><span style="flex:6;background:#B0CAEF"></span><span style="flex:5;background:#3FA873"></span></div>
+                <div class="mini">14 open · 3 verifying · 6 with vendor · 5 in review · 1 past SLA</div>
+                <div class="mini">Working now: <b>Harborlight admin console exposure</b></div>
+              </div>
+              <div class="score"><div class="n">91</div><div class="t good">▲ 3</div></div>
+            </div>
+
+            <div class="member">
+              <img src="../../personas/marcus-chen.png" alt="Marcus Chen">
+              <div>
+                <div class="mname">Marcus Chen <span class="mrole">· US / standard vendors</span></div>
+                <div class="mbar" title="22 open: 8 verifying, 4 with vendor, 4 in review, 6 past SLA"><span style="flex:8;background:#689AE2"></span><span style="flex:4;background:#B0CAEF"></span><span style="flex:4;background:#3FA873"></span><span style="flex:6;background:#E0883C"></span></div>
+                <div class="mini">22 open · 8 verifying · 4 with vendor · 4 in review · <span class="warn">6 past SLA</span></div>
+                <div class="mini">Working now: <b>Fortify CVE follow-up</b> · <span class="warn">at capacity, consider rebalancing</span></div>
+              </div>
+              <div class="score"><div class="n">74</div><div class="t bad">▼ 2</div></div>
+            </div>
+
+            <div class="member">
+              <img src="../../personas/dana-vasquez.png" alt="Dana Vasquez">
+              <div>
+                <div class="mname">Dana Vasquez <span class="mrole">· escalations + Canada</span></div>
+                <div class="mbar"><span style="flex:4;background:#689AE2"></span><span style="flex:2;background:#B0CAEF"></span></div>
+                <div class="mini">6 open · 4 vendor escalations · 2 unassigned to review</div>
+              </div>
+              <div class="score"><div class="n">—</div><div class="t none">not scored</div></div>
+            </div>
+
+            <div class="facts parts">
+              <div class="fact"><div class="k">Closed on time (SLA)</div><div class="v">78%</div></div>
+              <div class="fact"><div class="k">Time to verify</div><div class="v">1.6 d</div></div>
+              <div class="fact"><div class="k">Vendor follow-ups sent</div><div class="v">93%</div></div>
+              <div class="fact"><div class="k">Reopened / rework</div><div class="v">4%</div></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. Where risk is concentrated -->
+        <section class="panel d-4" aria-labelledby="riskTitle">
+          <div class="panel__head"><h2 id="riskTitle">Where risk is concentrated</h2></div>
+          <div class="panel__body">
+            <div class="rank" id="rank"></div>
+            <div class="sub" id="rankNote" style="margin-top:10px"></div>
+          </div>
+        </section>
+
+        <!-- 7. Continuous scan (last, slim) -->
+        <section class="panel scan-card d-12" aria-label="Continuous scan of all 612 vendors">
+          <div class="scan-panel scan-panel--open" id="scanPanel">
+            <div class="scan-head">
+              <div>
+                <span class="scan-eyebrow"><i class="scan-live"></i>Continuous scan · scanning the public internet</span>
+                <div class="scan-headline"><b id="scanCount">7</b><span>critical signals open across 612 monitored vendors</span></div>
+              </div>
+              <button type="button" class="scan-demo" id="scanDemo" title="Prototype control: replays a scripted signal">Simulate a signal</button>
+            </div>
             <div class="mosaic" id="mosaicView" role="img" aria-label="Grid of 612 tiles, one per monitored vendor, with a scan line moving across. Red tiles have a critical signal open; amber tiles have an open finding."></div>
             <div class="scan-legend">
               <span><i style="background:var(--tile-clear)"></i>Monitored, clear</span>
-              <span><i style="background:var(--tile-open)"></i>Open finding</span>
+              <span><i style="background:var(--tile-open)"></i>Open finding (15)</span>
               <span><i style="background:var(--tile-critical)"></i>Critical signal</span>
               <span>Hover a tile for the vendor</span>
             </div>
           </div>
-          <aside class="scan-queue" aria-live="polite">
-            <div class="scan-queue__head"><span>Investigation tasks</span><a href="monitoring.html">View all →</a></div>
-            <div class="scan-queue__list" id="scanQueue"></div>
-          </aside>
-        </div>
-      </section>
+        </section>
 
-
-      <div class="grid-2">
-        <!-- Left column -->
-        <div>
-          <div class="panel">
-            <div class="panel__head">
-              <h2>Attention needed</h2>
-              <a href="vendors.html?filter=attention">View all →</a>
-            </div>
-            <table class="vendor-table">
-              <thead>
-                <tr><th>Vendor</th><th>Tier</th><th>Issue</th><th>Owner</th><th>Due</th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><div class="vendor-name">Ironclad Identity</div><div class="vendor-sub">Identity &amp; Access · EU + US</div></td>
-                  <td><span class="pill critical">Critical</span></td>
-                  <td>SOC 2 report expired</td>
-                  <td><span class="avatar-chip">PN</span></td>
-                  <td>Today</td>
-                </tr>
-                <tr>
-                  <td><div class="vendor-name">Northwind AI Labs</div><div class="vendor-sub">AI / ML Vendor · EU</div></td>
-                  <td><span class="pill critical">Critical</span></td>
-                  <td>EU AI Act screening overdue</td>
-                  <td><span class="avatar-chip">DV</span></td>
-                  <td>Today</td>
-                </tr>
-                <tr>
-                  <td><div class="vendor-name">Solace Payments API</div><div class="vendor-sub">Payments · US</div></td>
-                  <td><span class="pill high">High</span></td>
-                  <td>Security rating dropped B → C</td>
-                  <td><span class="avatar-chip">PN</span></td>
-                  <td>2 days</td>
-                </tr>
-                <tr>
-                  <td><div class="vendor-name">Cascade CRM</div><div class="vendor-sub">Sales Tooling · Canada</div></td>
-                  <td><span class="pill high">High</span></td>
-                  <td>Remediation plan past due</td>
-                  <td><span class="avatar-chip">MC</span></td>
-                  <td>3 days</td>
-                </tr>
-                <tr>
-                  <td><div class="vendor-name">Vertex Analytics</div><div class="vendor-sub">Data Platform · US</div></td>
-                  <td><span class="pill medium">Medium</span></td>
-                  <td>Annual questionnaire due</td>
-                  <td><span class="avatar-chip">MC</span></td>
-                  <td>5 days</td>
-                </tr>
-                <tr>
-                  <td><div class="vendor-name">Nimbus Cloud Storage</div><div class="vendor-sub">Infrastructure · EU</div></td>
-                  <td><span class="pill medium">Medium</span></td>
-                  <td>ISO 27001 cert renewal</td>
-                  <td><span class="avatar-chip">DV</span></td>
-                  <td>6 days</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Right column -->
-        <div>
-          <div class="panel">
-            <div class="panel__head"><h2>Continuous monitoring</h2></div>
-            <ul class="feed">
-              <li class="live">
-                <div class="dot-wrap"><span class="dot"></span></div>
-                <div>
-                  <div class="feed__title">SOC 2 report expired — Ironclad Identity</div>
-                  <div class="feed__meta">AI-flagged · 12 minutes ago</div>
-                </div>
-              </li>
-              <li>
-                <div class="dot-wrap"><span class="dot"></span></div>
-                <div>
-                  <div class="feed__title">New CVE affecting vendor stack — Northwind AI Labs</div>
-                  <div class="feed__meta">AI-flagged · 1 hour ago</div>
-                </div>
-              </li>
-              <li>
-                <div class="dot-wrap"><span class="dot"></span></div>
-                <div>
-                  <div class="feed__title">Rating dropped B → C — Solace Payments API</div>
-                  <div class="feed__meta">AI-flagged · 3 hours ago</div>
-                </div>
-              </li>
-              <li>
-                <div class="dot-wrap"><span class="dot"></span></div>
-                <div>
-                  <div class="feed__title">DORA criticality re-tiered — Vertex Analytics</div>
-                  <div class="feed__meta">Auto-tiered · Yesterday</div>
-                </div>
-              </li>
-            </ul>
-            <a class="btn-ghost-block" href="monitoring.html">Open monitoring &amp; alerts</a>
-          </div>
-
-          <div class="panel">
-            <div class="panel__head"><h2>Team workload</h2></div>
-            <ul class="team-list">
-              <li class="team-row">
-                <img src="../../personas/priya-nair.png" alt="Priya Nair">
-                <div>
-                  <div class="team-row__name">Priya Nair</div>
-                  <div class="team-row__task">Critical deep-dives in progress</div>
-                </div>
-                <div class="team-row__count">3</div>
-              </li>
-              <li class="team-row">
-                <img src="../../personas/marcus-chen.png" alt="Marcus Chen">
-                <div>
-                  <div class="team-row__name">Marcus Chen</div>
-                  <div class="team-row__task">Intake reviews in queue</div>
-                </div>
-                <div class="team-row__count">18</div>
-              </li>
-            </ul>
-          </div>
-        </div>
       </div>
     </main>
   </div>
 </div>
 
+<script src="scan.js"></script>
 <script>
   const sidebar = document.getElementById('sidebar');
   const toggle = document.getElementById('navToggle');
   toggle.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
-</script>
 
-<script src="scan.js"></script>
-<script>
-  // Continuous scanning: the Tessera mosaic plus the live investigation queue.
-  // Sample data; a scripted signal replays every ~14s (max 4), or on demand.
+  // Dashboard for Dana (see dashboard-concept/README.md). All figures are sample data.
+  // A scripted signal from the scan (below) adds an unassigned task to the list and
+  // updates the health-check tiles, the charts, and the concentration list together.
   (function () {
-    var panel = document.getElementById('scanPanel');
-    var mos = TesseraScan.mosaic(document.getElementById('mosaicView'), { countEl: document.getElementById('scanCount') });
-    var q = TesseraScan.queue(document.getElementById('scanQueue'), { max: 2 });
-    q.seed([
-      { agoMs: 12 * 60000, signal: { vendor: 'Ironclad Identity', sev: 'critical', category: 'Assurance lapse', title: 'SOC 2 report expired', source: 'Vendor trust center', conf: 99, sla: '8 hours', owner: 'Priya N.' } },
-      { agoMs: 60 * 60000, signal: { vendor: 'Northwind AI Labs', sev: 'critical', category: 'Vulnerability', title: 'New CVE affecting vendor stack', source: 'CVE & vendor advisories', conf: 92, sla: '4 hours', owner: 'Dana V.' } }
-    ]);
+    'use strict';
+    const $ = id => document.getElementById(id);
+    const TIER = { critical: 'Critical', high: 'High', medium: 'Medium', low: 'Low' };
+    const OWNER = { PN: ['PN', 'Priya'], MC: ['MC', 'Marcus'], DV: ['DV', 'Dana'] };
 
-    var newSinceYesterday = 3;
-    function bump(s) {
-      if (s.sev !== 'critical') return;
-      var v = document.querySelector('[data-live="critical-value"]');
-      v.textContent = Number(v.textContent) + 1;
-      v.classList.remove('stat-flash'); void v.offsetWidth; v.classList.add('stat-flash');
-      document.querySelector('[data-live="critical-delta"]').textContent = '▲ ' + (++newSinceYesterday) + ' new since yesterday';
-      document.querySelectorAll('.nav-item[href="monitoring.html"] .nav-badge').forEach(function (b) { b.textContent = Number(b.textContent) + 1; });
+    /* ---- State ---- */
+    const S = {
+      score: 68, scoreDelta: 4, scoreAdded: 0,
+      open: 47, pastSLA: 15, waitingVendor: 12,
+      ages: [14, 12, 9, 8, 4],                                   // 0-3, 4-7, 8-14, 15-30, 30+ days
+      newDaily:    [3, 5, 2, 4, 6, 3, 1, 2, 4, 5, 7, 6, 8, 9],   // Sep 7 .. Sep 20
+      closedDaily: [4, 3, 4, 3, 5, 4, 2, 3, 3, 4, 3, 4, 3, 4],
+      counts: { all: 21, unassigned: 6, critical: 7, stale: 15, waiting: 12 },
+      pts: { 'Ironclad Identity': 2.4, 'Harborlight Cloud': 2.0, 'Northwind AI Labs': 1.7, 'Keystone Payroll': 1.5, 'Fortify Endpoint Security': 1.2 },
+      restPts: 8.5,                                              // impact from all other vendors
+      lastScanAt: Date.now() - 4 * 60000
+    };
+    const sum = a => a.reduce((x, y) => x + y, 0);
+
+    /* ---- Task list: the sample tasks that need attention (8 of 21) ---- */
+    const TASKS = [
+      { issue: 'SOC 2 report expired',                                   cat: 'Assurance lapse',     vendor: 'Ironclad Identity',         tier: 'critical', sev: 'critical', state: 'new',     age: '12 min', sla: '24 h', owner: null, impact: 2.1, action: 'Assign' },
+      { issue: 'Admin console reachable from the public internet',       cat: 'Exposed service',     vendor: 'Harborlight Cloud',         tier: 'critical', sev: 'critical', state: 'working', age: '1 d',    sla: '2 d',  owner: 'PN', impact: 1.8, action: 'Open' },
+      { issue: 'New CVE affecting vendor stack',                         cat: 'Vulnerability',       vendor: 'Northwind AI Labs',         tier: 'critical', sev: 'critical', state: 'working', age: '1 h',    sla: '24 h', owner: 'PN', impact: 1.6, action: 'Open' },
+      { issue: 'Employee records offered on a paste site',               cat: 'Data breach',         vendor: 'Keystone Payroll',          tier: 'high',     sev: 'critical', state: 'stale',   age: '3 d',    sla: '2 d',  ageBad: true, owner: 'MC', impact: 1.5, action: 'Nudge' },
+      { issue: 'Unpatched critical CVE on an internet-facing host',      cat: 'Vulnerability',       vendor: 'Fortify Endpoint Security', tier: 'high',     sev: 'critical', state: 'stale',   age: '9 d',    sla: '7 d',  ageBad: true, owner: 'MC', impact: 1.2, action: 'Nudge' },
+      { issue: 'Expired TLS certificate on the login portal',            cat: 'Certificate hygiene', vendor: 'Aurora HR Suite',           tier: 'medium',   sev: 'medium',   state: 'stale',   age: '21 d',   sla: '14 d', ageBad: true, owner: 'MC', impact: 0.9, action: 'Escalate' },
+      { issue: 'Named in a regulator enforcement notice',                cat: 'Regulatory',          vendor: 'Glasswing Contract AI',     tier: 'critical', sev: 'critical', state: 'waiting', age: '5 d',    sla: '7 d',  owner: 'PN', impact: 0.7, action: 'Open' },
+      { issue: 'Model-serving endpoint answers without authentication',  cat: 'Exposed service',     vendor: 'Onyx Fraud Detection',      tier: 'high',     sev: 'critical', state: 'waiting', age: '4 d',    sla: '7 d',  owner: 'MC', impact: 0.6, action: 'Open' }
+    ];
+    let filter = 'all';
+
+    const tagFor = t =>
+      !t.owner              ? '<span class="tag t-new">● New</span>' :
+      t.state === 'stale'   ? '<span class="tag t-stale">⏱ Past SLA</span>' :
+      t.state === 'waiting' ? '<span class="tag t-wait">◔ Waiting on vendor</span>' :
+      t.sev === 'critical'  ? '<span class="tag t-crit">▲ Critical</span>' :
+                              '<span class="tag t-work">◐ In progress</span>';
+    const ownerFor = t => t.owner
+      ? '<span class="owner-cell"><span class="avatar-chip">' + OWNER[t.owner][0] + '</span>' + OWNER[t.owner][1] + '</span>'
+      : '<span class="owner-cell"><span class="avatar-chip un">?</span>Unassigned</span>';
+    const matches = t =>
+      filter === 'all' ? true :
+      filter === 'unassigned' ? !t.owner :
+      filter === 'critical' ? t.sev === 'critical' :
+      filter === 'stale' ? t.state === 'stale' :
+      t.state === 'waiting';
+    const ageText = ms => { const m = Math.floor(ms / 60000); return m < 1 ? 'Just now' : m < 60 ? m + ' min' : Math.floor(m / 60) + ' h'; };
+
+    function renderTasks() {
+      TASKS.sort((a, b) => (!!a.owner - !!b.owner) || b.impact - a.impact);
+      const list = TASKS.filter(matches);
+      $('taskRows').innerHTML = list.map(t =>
+        '<tr' + (t.isNew ? ' class="is-new"' : '') + '>' +
+          '<td><div class="vendor-name">' + t.issue + '</div><div class="vendor-sub">Category: ' + t.cat + '</div></td>' +
+          '<td><div class="vendor-name">' + t.vendor + '</div><div class="vendor-sub">' + TIER[t.tier] + ' tier</div></td>' +
+          '<td>' + tagFor(t) + '</td>' +
+          '<td class="age' + (t.ageBad ? ' bad' : '') + '"><span' + (t.t0 ? ' data-t0="' + t.t0 + '"' : '') + '>' + (t.t0 ? ageText(Date.now() - t.t0) : t.age) + '</span> <span class="vendor-sub">/ ' + t.sla + '</span></td>' +
+          '<td>' + ownerFor(t) + '</td>' +
+          '<td class="impact ' + (t.impact >= 0.8 ? 'bad' : 'warn') + '">+' + t.impact.toFixed(1) + '</td>' +
+          '<td><button type="button" class="btn-row">' + t.action + '</button></td>' +
+        '</tr>').join('');
+      TASKS.forEach(t => { t.isNew = false; });
+      $('taskEmpty').style.display = list.length ? 'none' : 'block';
+      $('taskFoot').textContent = 'Showing ' + list.length + ' of ' + (filter === 'all' ? S.counts.all : S.counts[filter]) + ' tasks' + (filter === 'all' ? ' that need attention' : ' in this view');
+      document.querySelectorAll('[data-count]').forEach(el => { el.textContent = S.counts[el.dataset.count]; });
+    }
+    $('taskChips').addEventListener('click', e => {
+      const b = e.target.closest('.chip'); if (!b) return;
+      filter = b.dataset.f;
+      document.querySelectorAll('#taskChips .chip').forEach(c => c.classList.toggle('active', c === b));
+      renderTasks();
+    });
+    setInterval(() => document.querySelectorAll('[data-t0]').forEach(el => { el.textContent = ageText(Date.now() - Number(el.dataset.t0)); }), 30000);
+
+    /* ---- Health-check tiles ---- */
+    function renderKpis() {
+      const inn = sum(S.newDaily.slice(7)), out = sum(S.closedDaily.slice(7)), net = inn - out;
+      $('kpiScore').textContent = Math.round(S.score + S.scoreAdded);
+      $('kpiScoreTrend').textContent = '▲ ' + (S.scoreDelta + Math.round(S.scoreAdded)) + ' pts vs 30 days ago';
+      $('kpiOpen').textContent = S.open;
+      $('kpiOpenTrend').textContent = '▲ ' + net + ' net in the last 7 days';
+      $('kpiOpenSub').textContent = S.pastSLA + ' past SLA · median age 6 days';
+      $('kpiIn').textContent = inn; $('kpiOut').textContent = out;
+      $('kpiArrTrend').textContent = 'Backlog growing: +' + net;
+      $('kpiArrSub').textContent = 'Close rate ' + Math.round(out / inn * 100) + '% of inflow';
     }
 
-    TesseraScan.runner(panel, function (s, done) {
-      mos.flag(s, function () { q.push(s); bump(s); done(); });
-    }, { button: document.getElementById('scanDemo') });
+    /* ---- Are we keeping up? ---- */
+    const DAYS = ['Sep 7', 'Sep 8', 'Sep 9', 'Sep 10', 'Sep 11', 'Sep 12', 'Sep 13', 'Sep 14', 'Sep 15', 'Sep 16', 'Sep 17', 'Sep 18', 'Sep 19', 'Sep 20'];
+    const X0 = 50, DX = 32, Y0 = 160, U = 14, VW = 520;
+    const px = i => X0 + i * DX, py = v => Y0 - v * U;
+    function gapPath(n, c) {           // shaded where new > closed, cut exactly where the lines cross
+      let d = '';
+      for (let i = 0; i < n.length - 1; i++) {
+        const a = n[i] - c[i], b = n[i + 1] - c[i + 1], x0 = px(i), x1 = px(i + 1);
+        if (a >= 0 && b >= 0 && (a > 0 || b > 0)) {
+          d += 'M' + x0 + ',' + py(n[i]) + 'L' + x1 + ',' + py(n[i + 1]) + 'L' + x1 + ',' + py(c[i + 1]) + 'L' + x0 + ',' + py(c[i]) + 'Z';
+        } else if (a > 0 && b < 0) {
+          const t = a / (a - b), xc = x0 + t * DX, vc = n[i] + t * (n[i + 1] - n[i]);
+          d += 'M' + x0 + ',' + py(n[i]) + 'L' + xc + ',' + py(vc) + 'L' + x0 + ',' + py(c[i]) + 'Z';
+        } else if (a < 0 && b > 0) {
+          const t = -a / (b - a), xc = x0 + t * DX, vc = n[i] + t * (n[i + 1] - n[i]);
+          d += 'M' + xc + ',' + py(vc) + 'L' + x1 + ',' + py(n[i + 1]) + 'L' + x1 + ',' + py(c[i + 1]) + 'Z';
+        }
+      }
+      return d;
+    }
+    function renderChart() {
+      const n = S.newDaily, c = S.closedDaily, last = n.length - 1;
+      const pts = arr => arr.map((v, i) => px(i) + ',' + py(v)).join(' ');
+      let svg = '<svg viewBox="0 0 ' + VW + ' 190" role="img" aria-label="Daily new tasks versus closed tasks over 14 days. New tasks rise from ' + n[0] + ' to ' + n[last] + ' per day; closed stays between 1 and 5.">';
+      [0, 2, 4, 6, 8, 10].forEach(t => {
+        svg += '<line x1="30" x2="510" y1="' + py(t) + '" y2="' + py(t) + '" stroke="#E2E5EC"/>' +
+               '<text class="svgtxt" x="24" y="' + (py(t) + 4) + '" text-anchor="end">' + t + '</text>';
+      });
+      svg += '<path d="' + gapPath(n, c) + '" fill="#D64545" opacity=".12"/>' +
+             '<polyline fill="none" stroke="#D64545" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="' + pts(n) + '"/>' +
+             '<polyline fill="none" stroke="#2F62AA" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="' + pts(c) + '"/>' +
+             '<circle cx="' + px(last) + '" cy="' + py(n[last]) + '" r="4" fill="#D64545" stroke="#fff" stroke-width="2"/>' +
+             '<circle cx="' + px(last) + '" cy="' + py(c[last]) + '" r="4" fill="#2F62AA" stroke="#fff" stroke-width="2"/>' +
+             '<text class="svgtxt strong" x="' + (px(last) + 9) + '" y="' + (py(n[last]) + 4) + '">' + n[last] + ' new</text>' +
+             '<text class="svgtxt strong" x="' + (px(last) + 9) + '" y="' + (py(c[last]) + 4) + '">' + c[last] + ' closed</text>' +
+             [0, 7, 13].map(i => '<text class="svgtxt" x="' + px(i) + '" y="182" text-anchor="middle">' + DAYS[i] + '</text>').join('') +
+             '<line id="chartGuide" x1="0" x2="0" y1="20" y2="' + Y0 + '" stroke="#5B6B7C" stroke-dasharray="3 3" opacity="0"/>';
+      for (let i = 0; i <= last; i++) svg += '<rect data-i="' + i + '" x="' + (px(i) - DX / 2) + '" y="10" width="' + DX + '" height="' + (Y0 - 10) + '" fill="transparent"/>';
+      $('chartSvg').innerHTML = svg + '</svg>';
+
+      let t = '<table><thead><tr><th>Day</th><th>New</th><th>Closed</th><th>Net</th></tr></thead><tbody>';
+      DAYS.forEach((d, i) => { const net = n[i] - c[i]; t += '<tr><td>' + d + '</td><td>' + n[i] + '</td><td>' + c[i] + '</td><td>' + (net > 0 ? '+' : '') + net + '</td></tr>'; });
+      $('chartTable').innerHTML = t + '</tbody></table>';
+    }
+    $('chart').addEventListener('mousemove', e => {
+      const r = e.target.closest('rect[data-i]');
+      const tip = $('chartTip'), guide = document.getElementById('chartGuide');
+      if (!r) { tip.classList.remove('is-on'); if (guide) guide.setAttribute('opacity', 0); return; }
+      const i = Number(r.dataset.i), net = S.newDaily[i] - S.closedDaily[i];
+      tip.innerHTML = '<b>' + DAYS[i] + '</b>New ' + S.newDaily[i] + ' · Closed ' + S.closedDaily[i] + ' · Net ' + (net > 0 ? '+' : '') + net;
+      tip.style.left = (px(i) / VW * 100) + '%';
+      tip.classList.add('is-on');
+      guide.setAttribute('x1', px(i)); guide.setAttribute('x2', px(i)); guide.setAttribute('opacity', 0.6);
+    });
+    $('chart').addEventListener('mouseleave', () => { $('chartTip').classList.remove('is-on'); const g = document.getElementById('chartGuide'); if (g) g.setAttribute('opacity', 0); });
+    $('chartToggle').addEventListener('click', e => {
+      const on = $('chartTable').classList.toggle('is-on');
+      $('chart').style.display = on ? 'none' : '';
+      e.target.textContent = on ? 'View as chart' : 'View as table';
+      e.target.setAttribute('aria-pressed', on);
+    });
+
+    /* ---- How long are tasks open? ---- */
+    const AGE_COLORS = ['#3FA873', '#D9B23C', '#E0883C', '#D64545', '#8F2A2A'];   // oldest bucket stays distinct for colour-blind users
+    const AGE_LABELS = ['under 3 days', '4 to 7 days', '8 to 14 days', '15 to 30 days', 'over 30 days'];
+    function renderAging() {
+      $('aging').setAttribute('aria-label', 'Open task ages: ' + S.ages.map((v, i) => v + ' ' + AGE_LABELS[i]).join(', '));
+      $('aging').innerHTML = S.ages.map((v, i) => '<div style="flex:' + v + ';background:' + AGE_COLORS[i] + (i === 1 ? ';color:#26313D' : '') + '">' + v + '</div>').join('');
+      document.querySelectorAll('.aglbl div').forEach((el, i) => { el.style.flex = S.ages[i]; });
+      $('waitTeam').textContent = S.open - S.waitingVendor;
+    }
+
+    /* ---- Where risk is concentrated ---- */
+    function renderRank() {
+      const top = Object.entries(S.pts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const scale = Math.max(2.5, top[0][1]);
+      $('rank').innerHTML = top.map(([v, p]) =>
+        '<div class="rk"><span>' + v + '</span><b>+' + p.toFixed(1) + '</b><div class="meter"><span style="width:' + (p / scale * 100) + '%"></span></div></div>').join('');
+      const total = sum(Object.values(S.pts)) + S.restPts;
+      $('rankNote').textContent = 'Points each vendor’s open tasks add to the portfolio score. Top 5 account for ' + Math.round(sum(top.map(x => x[1])) / total * 100) + '% of open-task impact.';
+    }
+
+    /* ---- Last scan ---- */
+    function renderLastScan() {
+      const m = Math.floor((Date.now() - S.lastScanAt) / 60000);
+      $('lastScan').textContent = m < 1 ? 'just now' : m + ' min ago';
+    }
+    setInterval(renderLastScan, 15000);
+
+    function renderAll() { renderTasks(); renderKpis(); renderChart(); renderAging(); renderRank(); renderLastScan(); }
+
+    /* ---- A signal from the scan becomes an unassigned task ---- */
+    function addTask(s) {
+      TASKS.push({ issue: s.title, cat: s.category + ' · ' + s.source, vendor: s.vendor, tier: s.tier, sev: s.sev, state: 'new',
+                   t0: Date.now(), sla: s.sev === 'critical' ? '24 h' : '2 d', owner: null, impact: s.impact, action: 'Assign', isNew: true });
+      S.open++; S.newDaily[S.newDaily.length - 1]++; S.ages[0]++;
+      S.counts.all++; S.counts.unassigned++; if (s.sev === 'critical') S.counts.critical++;
+      S.scoreAdded += s.impact;
+      S.pts[s.vendor] = (S.pts[s.vendor] || 0) + s.impact;
+      S.lastScanAt = Date.now();
+      renderAll();
+      const v = $('kpiOpen'); v.classList.remove('stat-flash'); void v.offsetWidth; v.classList.add('stat-flash');
+      if (s.sev === 'critical') document.querySelectorAll('.nav-item[href="monitoring.html"] .nav-badge').forEach(b => { b.textContent = Number(b.textContent) + 1; });
+    }
+
+    renderAll();
+
+    /* ---- Continuous scan mosaic (bottom, slim: 51 columns x 12 rows) ---- */
+    const mos = TesseraScan.mosaic($('mosaicView'), { countEl: $('scanCount'), cols: 51 });
+    TesseraScan.runner($('scanPanel'), (s, done) => mos.flag(s, () => { addTask(s); done(); }), { button: $('scanDemo') });
   })();
 </script>
 </body>
