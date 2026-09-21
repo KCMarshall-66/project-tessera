@@ -32,7 +32,19 @@
   .trend.good { color: #2C7D54; }
   .trend.warn { color: #B5651C; }
   .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 8px; }
-  .kpi-spark { display: block; margin-top: 8px; }
+  .kpi-spark { display: block; margin-top: 8px; width: calc(100% - 34px); }   /* leaves room for the AI button */
+
+  /* AI sparkle: opens Tessera's advanced chat (modal not built yet). Bottom-right of each tile. */
+  .stat-card { position: relative; }
+  .ai-spark {
+    position: absolute; right: 8px; bottom: 8px; width: 28px; height: 28px; padding: 0;
+    display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent; cursor: pointer;
+    transition: background .15s ease, transform .15s ease;
+  }
+  .ai-spark img { display: block; width: 16px; height: 16px; }
+  .ai-spark:hover { background: rgba(104, 154, 226, 0.16); }
+  .ai-spark:active { transform: scale(0.94); }
+  .ai-spark:focus-visible { outline: 2px solid var(--blue-accent); outline-offset: 2px; }
 
   /* Needs your attention */
   .chip-row { display: flex; gap: var(--space-2); flex-wrap: wrap; padding: 0 var(--space-5) var(--space-3); }
@@ -263,24 +275,28 @@
             <polyline fill="none" stroke="#D64545" stroke-width="2" stroke-linejoin="round" points="0,26 20,24 40,25 60,21 80,22 100,18 120,19 140,14 160,15 180,9 200,7"/>
             <circle cx="200" cy="7" r="3" fill="#D64545"/>
           </svg>
+          <button type="button" class="ai-spark" data-ai="risk-score" aria-label="Ask Tessera AI about the portfolio risk score" title="Ask Tessera AI"><img src="../../brand/ai-sparkle.svg" alt="" width="16" height="16"></button>
         </div>
         <div class="stat-card d-3">
           <div class="stat-card__label">Open investigation tasks</div>
           <div class="stat-card__value" id="kpiOpen">47</div>
           <div class="trend bad" id="kpiOpenTrend">▲ 17 net in the last 7 days</div>
           <div class="kpi-sub" id="kpiOpenSub">15 past SLA · median age 6 days</div>
+          <button type="button" class="ai-spark" data-ai="open-tasks" aria-label="Ask Tessera AI about open investigation tasks" title="Ask Tessera AI"><img src="../../brand/ai-sparkle.svg" alt="" width="16" height="16"></button>
         </div>
         <div class="stat-card d-3">
           <div class="stat-card__label">Arriving vs. closed · 7d</div>
           <div class="stat-card__value"><span id="kpiIn">41</span> <small>in</small> · <span id="kpiOut">24</span> <small>out</small></div>
           <div class="trend bad" id="kpiArrTrend">Backlog growing: +17</div>
           <div class="kpi-sub" id="kpiArrSub">Close rate 59% of inflow</div>
+          <button type="button" class="ai-spark" data-ai="arriving-vs-closed" aria-label="Ask Tessera AI about arriving versus closed tasks" title="Ask Tessera AI"><img src="../../brand/ai-sparkle.svg" alt="" width="16" height="16"></button>
         </div>
         <div class="stat-card d-3">
           <div class="stat-card__label">Team score</div>
           <div class="stat-card__value">82 <small>/ 100</small></div>
           <div class="trend good">▲ 2 pts vs last month</div>
           <div class="kpi-sub">Capacity, not effort, is the gap</div>
+          <button type="button" class="ai-spark" data-ai="team-score" aria-label="Ask Tessera AI about the team score" title="Ask Tessera AI"><img src="../../brand/ai-sparkle.svg" alt="" width="16" height="16"></button>
         </div>
 
         <!-- 2. Needs your attention now -->
@@ -636,6 +652,13 @@
     }
 
     renderAll();
+
+    /* ---- AI sparkle on each health-check tile ----
+       Broadcasts which tile was pressed; the advanced chat modal will listen for this
+       event (not built yet, so pressing it does nothing visible for now). */
+    document.querySelectorAll('.ai-spark').forEach(b => b.addEventListener('click', () => {
+      document.dispatchEvent(new CustomEvent('tessera:ai-chat', { detail: { source: 'kpi', context: b.dataset.ai } }));
+    }));
 
     /* ---- Continuous scan mosaic (bottom, slim: 51 columns x 12 rows) ---- */
     const mos = TesseraScan.mosaic($('mosaicView'), { countEl: $('scanCount'), cols: 51 });
