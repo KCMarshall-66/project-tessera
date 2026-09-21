@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@200;400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shell.css">
 <link rel="stylesheet" href="scan.css">
+<link rel="stylesheet" href="ai-chat.css">
 <style>
   /* Dashboard layout (dashboard-concept/README.md): a 12-column grid of faded cards */
   .dash { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--space-4); margin-top: var(--space-5); }
@@ -34,7 +35,7 @@
   .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 8px; }
   .kpi-spark { display: block; margin-top: 8px; width: calc(100% - 34px); }   /* leaves room for the AI button */
 
-  /* AI sparkle: opens Tessera's advanced chat (modal not built yet). Bottom-right of each tile. */
+  /* AI sparkle: opens Tessera AI, the advanced chat modal (ai-chat.js). Bottom-right of each tile. */
   .stat-card { position: relative; }
   .ai-spark {
     position: absolute; right: 8px; bottom: 8px; width: 28px; height: 28px; padding: 0;
@@ -275,28 +276,28 @@
             <polyline fill="none" stroke="#D64545" stroke-width="2" stroke-linejoin="round" points="0,26 20,24 40,25 60,21 80,22 100,18 120,19 140,14 160,15 180,9 200,7"/>
             <circle cx="200" cy="7" r="3" fill="#D64545"/>
           </svg>
-          <button type="button" class="ai-spark" data-ai="risk-score" aria-label="Ask Tessera AI about the portfolio risk score" title="Ask Tessera AI"><img src="../../brand/ai-sparkle.svg" alt="" width="16" height="16"></button>
+          <button type="button" class="ai-spark" aria-haspopup="dialog" data-ai="risk-score" aria-label="Ask Tessera AI about the portfolio risk score" title="Ask Tessera AI"><img src="../../brand/ai-sparkle.svg" alt="" width="16" height="16"></button>
         </div>
         <div class="stat-card d-3">
           <div class="stat-card__label">Open investigation tasks</div>
           <div class="stat-card__value" id="kpiOpen">47</div>
           <div class="trend bad" id="kpiOpenTrend">▲ 17 net in the last 7 days</div>
           <div class="kpi-sub" id="kpiOpenSub">15 past SLA · median age 6 days</div>
-          <button type="button" class="ai-spark" data-ai="open-tasks" aria-label="Ask Tessera AI about open investigation tasks" title="Ask Tessera AI"><img src="../../brand/ai-sparkle.svg" alt="" width="16" height="16"></button>
+          <button type="button" class="ai-spark" aria-haspopup="dialog" data-ai="open-tasks" aria-label="Ask Tessera AI about open investigation tasks" title="Ask Tessera AI"><img src="../../brand/ai-sparkle.svg" alt="" width="16" height="16"></button>
         </div>
         <div class="stat-card d-3">
           <div class="stat-card__label">Arriving vs. closed · 7d</div>
           <div class="stat-card__value"><span id="kpiIn">41</span> <small>in</small> · <span id="kpiOut">24</span> <small>out</small></div>
           <div class="trend bad" id="kpiArrTrend">Backlog growing: +17</div>
           <div class="kpi-sub" id="kpiArrSub">Close rate 59% of inflow</div>
-          <button type="button" class="ai-spark" data-ai="arriving-vs-closed" aria-label="Ask Tessera AI about arriving versus closed tasks" title="Ask Tessera AI"><img src="../../brand/ai-sparkle.svg" alt="" width="16" height="16"></button>
+          <button type="button" class="ai-spark" aria-haspopup="dialog" data-ai="arriving-vs-closed" aria-label="Ask Tessera AI about arriving versus closed tasks" title="Ask Tessera AI"><img src="../../brand/ai-sparkle.svg" alt="" width="16" height="16"></button>
         </div>
         <div class="stat-card d-3">
           <div class="stat-card__label">Team score</div>
           <div class="stat-card__value">82 <small>/ 100</small></div>
           <div class="trend good">▲ 2 pts vs last month</div>
           <div class="kpi-sub">Capacity, not effort, is the gap</div>
-          <button type="button" class="ai-spark" data-ai="team-score" aria-label="Ask Tessera AI about the team score" title="Ask Tessera AI"><img src="../../brand/ai-sparkle.svg" alt="" width="16" height="16"></button>
+          <button type="button" class="ai-spark" aria-haspopup="dialog" data-ai="team-score" aria-label="Ask Tessera AI about the team score" title="Ask Tessera AI"><img src="../../brand/ai-sparkle.svg" alt="" width="16" height="16"></button>
         </div>
 
         <!-- 2. Needs your attention now -->
@@ -449,6 +450,7 @@
 </div>
 
 <script src="scan.js"></script>
+<script src="ai-chat.js"></script>
 <script>
   const sidebar = document.getElementById('sidebar');
   const toggle = document.getElementById('navToggle');
@@ -655,10 +657,27 @@
 
     /* ---- AI sparkle on each health-check tile ----
        Broadcasts which tile was pressed; the advanced chat modal will listen for this
-       event (not built yet, so pressing it does nothing visible for now). */
+       event, which ai-chat.js turns into the chat modal for that tile. */
     document.querySelectorAll('.ai-spark').forEach(b => b.addEventListener('click', () => {
-      document.dispatchEvent(new CustomEvent('tessera:ai-chat', { detail: { source: 'kpi', context: b.dataset.ai } }));
+      document.dispatchEvent(new CustomEvent('tessera:ai-chat', { detail: { source: 'kpi', context: b.dataset.ai, card: b.closest('.stat-card') } }));
     }));
+
+    /* Live figures for the chat's answers (ai-chat.js reads these each time it answers) */
+    const dayCount = t => t.t0 ? (Date.now() - t.t0) / 864e5 : /\bd$/.test(t.age) ? parseFloat(t.age) : /\bh$/.test(t.age) ? parseFloat(t.age) / 24 : 0;
+    TesseraAI.setData(() => {
+      const top = Object.entries(S.pts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const total = sum(Object.values(S.pts)) + S.restPts;
+      const inn = sum(S.newDaily.slice(7)), out = sum(S.closedDaily.slice(7));
+      return {
+        score: Math.round(S.score + S.scoreAdded), scoreDelta: S.scoreDelta + Math.round(S.scoreAdded),
+        open: S.open, pastSLA: S.pastSLA, inn, out, net: inn - out,
+        newDaily: S.newDaily.slice(), closedDaily: S.closedDaily.slice(),
+        ages: S.ages.slice(), waitingVendor: S.waitingVendor, waitingTeam: S.open - S.waitingVendor,
+        topVendors: top, topShare: Math.round(sum(top.map(x => x[1])) / total * 100),
+        tasks: TASKS.map(t => ({ vendor: t.vendor, issue: t.issue, cat: t.cat, tier: t.tier, owner: t.owner, impact: t.impact, state: t.state,
+                                 age: t.t0 ? ageText(Date.now() - t.t0) : t.age, sla: t.sla, days: dayCount(t) }))
+      };
+    });
 
     /* ---- Continuous scan mosaic (bottom, slim: 51 columns x 12 rows) ---- */
     const mos = TesseraScan.mosaic($('mosaicView'), { countEl: $('scanCount'), cols: 51 });
