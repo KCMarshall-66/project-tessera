@@ -68,5 +68,5 @@ The chat and the actions it can take follow these rules, which come from the hum
 - Status is never colour alone.
 - Chat messages sit in a live region.
 - Every animation is off under `prefers-reduced-motion`.
-- Known contrast gaps are listed in [`colors.md`](colors.md#known-contrast-gaps).
+- Text contrast was audited across the app pages on 2026-09-21 and passes AA; see [`colors.md`](colors.md#contrast-audit-2026-09-21).
 - Not yet done: a keyboard route into the vendor mosaic (tiles show a name on hover only).

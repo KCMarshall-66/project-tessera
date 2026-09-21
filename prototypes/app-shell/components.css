@@ -16,9 +16,9 @@
   /* Health-check tiles */
   .stat-card__value small { font-size: 14px; font-weight: 400; color: var(--muted); }
   .trend { font-size: 12px; font-weight: 600; margin-top: 6px; }
-  .trend.bad { color: var(--status-critical); }
+  .trend.bad { color: var(--status-critical-text); }
   .trend.good { color: #2C7D54; }
-  .trend.warn { color: #B5651C; }
+  .trend.warn { color: var(--status-warn-text); }
   .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 8px; }
   .kpi-spark { display: block; margin-top: 8px; width: calc(100% - 34px); }   /* leaves room for the AI button */
 
@@ -32,7 +32,7 @@
   .head-left .tag .link-btn { font-size: 11px; margin-left: 6px; color: var(--blue-primary); }
   .btn-row[disabled] { opacity: .5; cursor: default; background: none; color: var(--blue-primary); }
   tr.is-changed td { animation: row-changed 2.6s ease-out; }
-  @keyframes row-changed { 0% { background: rgba(104, 154, 226, 0.22); } 100% { background: transparent; } }
+  @keyframes row-changed { 0% { background: rgba(104, 154, 226, 0.16); } 100% { background: transparent; } }
   .member.is-changed { animation: row-changed 2.6s ease-out; }
   @media (prefers-reduced-motion: reduce) { tr.is-changed td, tr.is-new td, .member.is-changed { animation: none; } }
   .ai-spark {
@@ -65,22 +65,22 @@
 
 /* Table rows, footers, empty state */
   table.vendor-table td.impact { font-weight: 600; white-space: nowrap; }
-  .impact.bad { color: var(--status-critical); }
-  .impact.warn { color: #B5651C; }
+  .impact.bad { color: var(--status-critical-text); }
+  .impact.warn { color: var(--status-warn-text); }
   .age { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
-  .age.bad { color: var(--status-critical); }
+  .age.bad { color: var(--status-critical-text); }
   .age .vendor-sub { font-weight: 400; }
   tr.is-new td { animation: row-new 2.4s ease-out; }
-  @keyframes row-new { 0% { background: rgba(214, 69, 69, 0.14); } 100% { background: transparent; } }
+  @keyframes row-new { 0% { background: rgba(196, 63, 63, 0.14); } 100% { background: transparent; } }
   .table-foot { padding: var(--space-3) var(--space-5) var(--space-4); font-size: 13px; color: var(--muted); border-top: 1px solid var(--surface-border); }
   .empty-state { display: none; padding: var(--space-6) var(--space-5); text-align: center; color: var(--muted); font-size: 14px; }
 
 /* Status tags, owners and row buttons */
   .tag { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
-  .t-new { background: var(--blue-tint); color: var(--blue-primary); }
-  .t-crit { background: rgba(214, 69, 69, 0.1); color: var(--status-critical); }
-  .t-stale { background: rgba(224, 136, 60, 0.14); color: #B5651C; }
-  .t-wait { background: var(--surface-border); color: var(--muted); }
+  .t-new { background: var(--blue-tint); color: var(--blue-dark); }
+  .t-crit { background: rgba(196, 63, 63, 0.1); color: var(--status-critical-text); }
+  .t-stale { background: rgba(224, 136, 60, 0.14); color: var(--status-warn-text); }
+  .t-wait { background: var(--surface-border); color: #4E5E70; }
   .t-work { background: #EAF1FA; color: var(--blue-dark); }
   .owner-cell { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
   .avatar-chip.un { background: transparent; border: 1.5px dashed #8A97A6; color: #5B6B7C; }

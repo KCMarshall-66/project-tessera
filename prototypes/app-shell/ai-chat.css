@@ -37,9 +37,9 @@
 .ai-context__value { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .ai-context__value small { font-size: 12px; font-weight: 400; color: var(--muted); }
 .ai-context__trend { font-size: 12px; font-weight: 600; }
-.ai-context__trend.bad { color: var(--status-critical); }
+.ai-context__trend.bad { color: var(--status-critical-text); }
 .ai-context__trend.good { color: #2C7D54; }
-.ai-context__trend.warn { color: #B5651C; }
+.ai-context__trend.warn { color: var(--status-warn-text); }
 .ai-context__sub { font-size: 12px; color: var(--muted); }
 
 /* Conversation */

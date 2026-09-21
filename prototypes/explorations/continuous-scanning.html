@@ -37,7 +37,7 @@
   /* ---------- Option block ---------- */
   .option { margin-top: 72px; scroll-margin-top: 24px; }
   .option__head { display: flex; align-items: flex-end; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
-  .option__num { font-size: 56px; font-weight: 200; line-height: 0.9; color: var(--blue-accent); }
+  .option__num { font-size: 56px; font-weight: 200; line-height: 0.9; color: #4A82D0; }
   .option__title { flex: 1 1 320px; }
   .option__title h2 { font-size: 24px; font-weight: 600; margin: 0 0 4px; color: var(--ink); }
   .option__title p { margin: 0; font-size: 15px; color: var(--muted); line-height: 1.5; max-width: 640px; }
@@ -103,9 +103,9 @@
   .flag-tag {
     position: absolute; white-space: nowrap; z-index: 5; pointer-events: none;
     font-size: 12px; font-weight: 600; color: #fff; padding: 4px 9px; border-radius: 6px;
-    background: rgba(214, 69, 69, 0.92); animation: tagIn .4s var(--ease) both;
+    background: rgba(196, 63, 63, 0.92); animation: tagIn .4s var(--ease) both;
   }
-  .flag-tag--high { background: rgba(224, 136, 60, 0.95); }
+  .flag-tag--high { background: rgba(224, 136, 60, 0.95); color: var(--ink); }
   @keyframes tagIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
   /* =====================================================

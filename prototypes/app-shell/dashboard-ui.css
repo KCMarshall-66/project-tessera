@@ -29,7 +29,7 @@
 .pop-item span { display: flex; flex-direction: column; min-width: 0; }
 .pop-item b { font-weight: 600; }
 .pop-item small { font-size: 12px; color: var(--muted); }
-.pop-item em { margin-left: auto; font-style: normal; font-size: 11px; font-weight: 600; color: var(--blue-primary); background: var(--blue-tint); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+.pop-item em { margin-left: auto; font-style: normal; font-size: 11px; font-weight: 600; color: var(--blue-dark); background: var(--blue-tint); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
 .dash-pop--form label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin: 0 8px 4px; }
 .dash-pop--form select, .dash-pop--form textarea {
   display: block; width: calc(100% - 16px); margin: 0 8px 10px; font: inherit; font-size: 13.5px; color: var(--ink);
@@ -71,7 +71,7 @@
 .drawer-facts div { background: var(--canvas); border-radius: 10px; padding: 10px 12px; }
 .drawer-facts dt { font-size: 11px; color: var(--muted); }
 .drawer-facts dd { margin: 2px 0 0; font-size: 15px; font-weight: 600; }
-.drawer-facts dd.bad { color: var(--status-critical); }
+.drawer-facts dd.bad { color: var(--status-critical-text); }
 .drawer-note { color: var(--muted); font-size: 13px !important; }
 .drawer-timeline { list-style: none; margin: 0; padding: 0 0 0 4px; }
 .drawer-timeline li { position: relative; display: flex; flex-direction: column; padding: 0 0 12px 18px; font-size: 13.5px; border-left: 2px solid var(--surface-border); }
@@ -84,13 +84,13 @@
 .drawer-ask { display: inline-flex; align-items: center; gap: 6px; }
 .drawer-exceptions { list-style: none; padding: 0 !important; display: flex; flex-direction: column; gap: 8px; }
 .drawer-exceptions li { display: flex; gap: 10px; align-items: baseline; background: var(--canvas); border-radius: 10px; padding: 10px 12px; }
-.pg { flex: none; font-size: 11px; font-weight: 600; color: var(--blue-primary); background: var(--blue-tint); border-radius: 4px; padding: 1px 7px; white-space: nowrap; }
+.pg { flex: none; font-size: 11px; font-weight: 600; color: var(--blue-dark); background: var(--blue-tint); border-radius: 4px; padding: 1px 7px; white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .dash-pop, .dash-drawer[open], .dash-toast { animation: none; transition: none; } }
 
 /* ---------- Analyst dashboards ---------- */
 .dash > .panel.plain-head .panel__head { padding-bottom: var(--space-3); }
 .count-pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--blue-tint); color: var(--blue-dark); vertical-align: 1px; }
-.count-pill.bad { background: rgba(214, 69, 69, 0.1); color: var(--status-critical); }
+.count-pill.bad { background: rgba(196, 63, 63, 0.1); color: var(--status-critical-text); }
 
 .row-list { list-style: none; margin: 0; padding: 0 var(--space-5); }
 .row-list li { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-3) 0; border-top: 1px solid var(--surface-border); }
@@ -102,13 +102,13 @@
 .doc-badge { font-size: 11px; font-weight: 600; color: var(--muted); border: 1px solid var(--surface-border); border-radius: 4px; padding: 0 6px; }
 .fw-badge { font-size: 11px; font-weight: 600; color: #fff; background: var(--blue-dark); border-radius: 4px; padding: 1px 7px; }
 .done-note { font-size: 12.5px; font-weight: 600; color: #2C7D54; white-space: nowrap; }
-.over-note { font-size: 12.5px; font-weight: 600; color: #B5651C; white-space: nowrap; }
+.over-note { font-size: 12.5px; font-weight: 600; color: var(--status-warn-text); white-space: nowrap; }
 .muted { color: var(--muted); }
 
 /* Marcus: intake queue */
 .sla-cell b { font-variant-numeric: tabular-nums; }
-.sla-cell.bad b { color: var(--status-critical); }
-.sla-cell.warn b { color: #B5651C; }
+.sla-cell.bad b { color: var(--status-critical-text); }
+.sla-cell.warn b { color: var(--status-warn-text); }
 .qbar { height: 6px; width: 120px; background: var(--surface-border); border-radius: 3px; overflow: hidden; margin-bottom: 4px; }
 .qbar span { display: block; height: 100%; background: var(--blue-primary); border-radius: 3px; }
 .qbar.done span { background: var(--status-low); }

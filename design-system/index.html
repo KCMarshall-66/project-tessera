@@ -118,24 +118,25 @@
 
     <h3>Status</h3>
     <div class="swatches">
-      <div class="sw-card"><div class="sw-chip" style="background:#D64545"></div><div class="sw-meta"><b>Critical</b><code>#D64545</code><span>Fills, dots, bars. As text on white: 4.4:1.</span></div></div>
-      <div class="sw-card"><div class="sw-chip" style="background:#E0883C"></div><div class="sw-meta"><b>High</b><code>#E0883C</code><span>Fills, dots, bars only. 2.7:1 on white.</span></div></div>
-      <div class="sw-card"><div class="sw-chip" style="background:#D9B23C"></div><div class="sw-meta"><b>Medium</b><code>#D9B23C</code><span>Fills, dots, bars only. 2.0:1 on white.</span></div></div>
-      <div class="sw-card"><div class="sw-chip" style="background:#3FA873"></div><div class="sw-meta"><b>Low / OK</b><code>#3FA873</code><span>Fills, dots, bars only. 3.0:1 on white.</span></div></div>
-      <div class="sw-card"><div class="sw-chip" style="background:#B5651C"></div><div class="sw-meta"><b>Warning text</b><code>#B5651C</code><span>Orange text in use today. 4.3:1 on white.</span></div></div>
-      <div class="sw-card"><div class="sw-chip" style="background:#2C7D54"></div><div class="sw-meta"><b>Good text</b><code>#2C7D54</code><span>Green text in use today. 5.0:1 on white.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#C43F3F"></div><div class="sw-meta"><b>Critical (fill)</b><code>--status-critical #C43F3F</code><span>Dots, bars, tiles, badges. White text on it: 5.1:1.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#B03737"></div><div class="sw-meta"><b>Critical (text)</b><code>--status-critical-text #B03737</code><span>Red text. 6.1:1 on white, 5.5:1 on canvas, 4.8:1 on its own tint.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#E0883C"></div><div class="sw-meta"><b>High (fill)</b><code>#E0883C</code><span>Fills only. Ink text on it: 4.9:1.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#8F4F12"></div><div class="sw-meta"><b>Warning (text)</b><code>--status-warn-text #8F4F12</code><span>Orange text. 6.4:1 on white, 5.7:1 on canvas, 5.1:1 on its own tint.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#D9B23C"></div><div class="sw-meta"><b>Medium (fill)</b><code>#D9B23C</code><span>Fills only. Ink text on it: 6.5:1. Pill text: <code>#7A6316</code>.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#3FA873"></div><div class="sw-meta"><b>Low / OK (fill)</b><code>#3FA873</code><span>Fills only. Pill text: <code>#28734D</code>.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#2C7D54"></div><div class="sw-meta"><b>Good (text)</b><code>#2C7D54</code><span>Green text. 5.0:1 on white, 4.5:1 on canvas.</span></div></div>
     </div>
-    <div class="warnbox"><b>Known contrast gaps, found while documenting.</b> The status colours are fills, not text colours. Where the UI uses them as small text, two fall just under WCAG AA (4.5:1): critical red on white (4.4:1, and 3.9:1 on the canvas) and warning orange (4.3:1). In the task age bar, white numbers on the orange and green segments measure 2.7:1 and 3.0:1. The nav group labels (<code>#5A6C8A</code> on the nav) are 3.3:1. Recommended fixes: critical text <code>#B53A3A</code> (5.8:1 on white, 5.2:1 on canvas), warning text <code>#A85E1A</code> (4.9:1), ink numbers on the orange and green age segments. Status is never colour alone: every tag carries an icon or a word.</div>
+    <div class="warnbox"><b>Contrast, audited and fixed (2026-09-21).</b> The status colours are fills; text uses its own darker tokens. An audit of every text element on the app pages (Dashboard for all three roles, Vendors, Assessments, Data Mapping, Monitoring &amp; Alerts, and the drawer, popover, toast and chat), measured against white, the canvas and each element's own tint, now finds nothing under 4.5:1 for normal text or 3:1 for large text. What changed: the critical fill went from <code>#D64545</code> to <code>#C43F3F</code> (white text on it was 4.4:1), red text uses <code>#B03737</code>, orange text uses <code>#8F4F12</code> (was 4.3:1), the orange and green age-bar segments no longer carry white numbers, tag and pill text was darkened on their tints, and the nav group labels went from 3.3:1 to 5.1:1. Status is never colour alone: every tag carries an icon or a word. The index, brand, persona, research and exploration pages pass too. Not covered by the audit: graphics such as the yellow tile (2.0:1 on white, always beside a label), and the mosaic has no keyboard route yet.</div>
 
     <h3>Product sets</h3>
     <div class="swatches">
       <div class="sw-card"><div class="sw-chip" style="background:#131929"></div><div class="sw-meta"><b>Nav</b><code>#131929</code><span>Sidebar and dark panels. Raised: <code>#1D2740</code>.</span></div></div>
       <div class="sw-card"><div class="sw-chip" style="background:#D6E0EB"></div><div class="sw-meta"><b>Tile: clear</b><code>#D6E0EB</code><span>A vendor monitored with nothing open.</span></div></div>
       <div class="sw-card"><div class="sw-chip" style="background:#D9B23C"></div><div class="sw-meta"><b>Tile: open finding</b><code>--status-medium</code><span>Same yellow as medium.</span></div></div>
-      <div class="sw-card"><div class="sw-chip" style="background:#D64545"></div><div class="sw-meta"><b>Tile: critical</b><code>--status-critical</code><span>Also the critical count tile.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#C43F3F"></div><div class="sw-meta"><b>Tile: critical</b><code>--status-critical</code><span>Also the critical count tile.</span></div></div>
     </div>
     <div class="spec" style="margin-top:12px"><div class="spec__label">Task age bar (green to dark red; the oldest bucket stays distinct for colour-blind users)</div>
-      <div class="aging" style="max-width:520px"><div style="flex:14;background:#3FA873">14</div><div style="flex:12;background:#D9B23C;color:#26313D">12</div><div style="flex:9;background:#E0883C">9</div><div style="flex:8;background:#D64545">8</div><div style="flex:4;background:#8F2A2A">4</div></div>
+      <div class="aging" style="max-width:520px"><div style="flex:14;background:#2C7D54">14</div><div style="flex:12;background:#D9B23C;color:#26313D">12</div><div style="flex:9;background:#E0883C;color:#26313D">9</div><div style="flex:8;background:#C43F3F">8</div><div style="flex:4;background:#8F2A2A">4</div></div>
       <div class="aglbl" style="max-width:520px"><div style="flex:14">0–3 d</div><div style="flex:12">4–7 d</div><div style="flex:9">8–14 d</div><div style="flex:8">15–30 d</div><div style="flex:4">30+</div></div>
     </div>
   </section>

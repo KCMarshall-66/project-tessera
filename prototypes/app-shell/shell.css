@@ -33,7 +33,7 @@
   --nav-border: rgba(255, 255, 255, 0.07);
   --nav-text: #96A7C2;
   --nav-text-active: #F3F6FC;
-  --nav-group-label: #5A6C8A;
+  --nav-group-label: #7B8CA8;
   --nav-radius: 9.138px;
 
   /* Nav collapse motion — exact spec from Figma's prototype interaction on
@@ -52,7 +52,11 @@
   );
 
   /* Status */
-  --status-critical: #D64545;
+  /* Fills (dots, bars, tiles, badges with white text). Text colours are the -text tokens below,
+     darker so small text passes WCAG AA (4.5:1) on white, the canvas and their own tints. */
+  --status-critical: #C43F3F;
+  --status-critical-text: #B03737;
+  --status-warn-text: #8F4F12;
   --status-high: #E0883C;
   --status-medium: #D9B23C;
   --status-low: #3FA873;
@@ -395,7 +399,7 @@ body {
 }
 .stat-card__value { font-size: 30px; font-weight: 600; letter-spacing: -0.01em; line-height: 1; }
 .stat-card__delta { font-size: 12px; color: var(--muted); margin-top: 6px; }
-.stat-card__delta.up { color: var(--status-critical); }
+.stat-card__delta.up { color: var(--status-critical-text); }
 .stat-card__bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; margin-top: var(--space-3); }
 .stat-card__bar span { display: block; }
 
@@ -432,13 +436,13 @@ table.vendor-table tr:hover td { background: #FBFCFE; }
   white-space: nowrap;
 }
 .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; flex: none; }
-.pill.critical { background: rgba(214,69,69,0.1); color: var(--status-critical); }
+.pill.critical { background: rgba(196,63,63,0.1); color: var(--status-critical-text); }
 .pill.critical::before { background: var(--status-critical); }
-.pill.high { background: rgba(224,136,60,0.12); color: var(--status-high); }
+.pill.high { background: rgba(224,136,60,0.12); color: var(--status-warn-text); }
 .pill.high::before { background: var(--status-high); }
-.pill.medium { background: rgba(217,178,60,0.14); color: #93791f; }
+.pill.medium { background: rgba(217,178,60,0.14); color: #7A6316; }
 .pill.medium::before { background: var(--status-medium); }
-.pill.low { background: rgba(63,168,115,0.12); color: #2c7d54; }
+.pill.low { background: rgba(63,168,115,0.12); color: #28734D; }
 .pill.low::before { background: var(--status-low); }
 
 .avatar-chip {

@@ -72,11 +72,11 @@
   .mbar span { display: block; height: 100%; }
   .mini { font-size: 12px; color: var(--muted); }
   .mini b { color: var(--ink); font-weight: 600; }
-  .mini .warn { color: #B5651C; font-weight: 600; }
+  .mini .warn { color: var(--status-warn-text); font-weight: 600; }
   .score { text-align: right; }
   .score .n { font-size: 26px; font-weight: 600; line-height: 1; }
   .score .t { font-size: 11px; font-weight: 600; }
-  .score .t.good { color: #2C7D54; } .score .t.bad { color: var(--status-critical); } .score .t.none { color: var(--muted); font-weight: 400; }
+  .score .t.good { color: #2C7D54; } .score .t.bad { color: var(--status-critical-text); } .score .t.none { color: var(--muted); font-weight: 400; }
   .parts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: var(--space-3); }
   @media (max-width: 1180px) { .parts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
@@ -216,8 +216,8 @@
           <div class="stat-card__value"><span id="kpiScore">68</span> <small>/ 100</small></div>
           <div class="trend bad" id="kpiScoreTrend">▲ 4 pts vs 30 days ago</div>
           <svg class="kpi-spark" width="100%" height="34" viewBox="0 0 200 34" preserveAspectRatio="none" role="img" aria-label="Risk score 30-day trend rising from 64 to 68">
-            <polyline fill="none" stroke="#D64545" stroke-width="2" stroke-linejoin="round" points="0,26 20,24 40,25 60,21 80,22 100,18 120,19 140,14 160,15 180,9 200,7"/>
-            <circle cx="200" cy="7" r="3" fill="#D64545"/>
+            <polyline fill="none" stroke="#C43F3F" stroke-width="2" stroke-linejoin="round" points="0,26 20,24 40,25 60,21 80,22 100,18 120,19 140,14 160,15 180,9 200,7"/>
+            <circle cx="200" cy="7" r="3" fill="#C43F3F"/>
           </svg>
           <button type="button" class="ai-spark" aria-haspopup="dialog" data-ai="risk-score" aria-label="Ask Tessera AI about the portfolio risk score" title="Ask Tessera AI"><img src="../../brand/ai-sparkle.svg" alt="" width="16" height="16"></button>
         </div>
@@ -285,9 +285,9 @@
             </div>
             <div class="chart-table" id="chartTable"></div>
             <div class="legend">
-              <span><span class="sw" style="background:#D64545"></span>New tasks per day</span>
+              <span><span class="sw" style="background:#C43F3F"></span>New tasks per day</span>
               <span><span class="sw" style="background:#2F62AA"></span>Closed per day</span>
-              <span><span class="sw" style="background:#D64545;opacity:.25"></span>Gap = backlog growth</span>
+              <span><span class="sw" style="background:#C43F3F;opacity:.25"></span>Gap = backlog growth</span>
             </div>
           </div>
           <button type="button" class="ai-spark" aria-haspopup="dialog" data-ai="keeping-up" aria-label="Ask Tessera AI about the arrivals versus closed chart" title="Ask Tessera AI"><img src="../../brand/ai-sparkle.svg" alt="" width="16" height="16"></button>
@@ -484,10 +484,10 @@
         svg += '<line x1="30" x2="510" y1="' + py(t) + '" y2="' + py(t) + '" stroke="#E2E5EC"/>' +
                '<text class="svgtxt" x="24" y="' + (py(t) + 4) + '" text-anchor="end">' + t + '</text>';
       });
-      svg += '<path d="' + gapPath(n, c) + '" fill="#D64545" opacity=".12"/>' +
-             '<polyline fill="none" stroke="#D64545" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="' + pts(n) + '"/>' +
+      svg += '<path d="' + gapPath(n, c) + '" fill="#C43F3F" opacity=".12"/>' +
+             '<polyline fill="none" stroke="#C43F3F" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="' + pts(n) + '"/>' +
              '<polyline fill="none" stroke="#2F62AA" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="' + pts(c) + '"/>' +
-             '<circle cx="' + px(last) + '" cy="' + py(n[last]) + '" r="4" fill="#D64545" stroke="#fff" stroke-width="2"/>' +
+             '<circle cx="' + px(last) + '" cy="' + py(n[last]) + '" r="4" fill="#C43F3F" stroke="#fff" stroke-width="2"/>' +
              '<circle cx="' + px(last) + '" cy="' + py(c[last]) + '" r="4" fill="#2F62AA" stroke="#fff" stroke-width="2"/>' +
              '<text class="svgtxt strong" x="' + (px(last) + 9) + '" y="' + (py(n[last]) + 4) + '">' + n[last] + ' new</text>' +
              '<text class="svgtxt strong" x="' + (px(last) + 9) + '" y="' + (py(c[last]) + 4) + '">' + c[last] + ' closed</text>' +
@@ -519,11 +519,11 @@
     });
 
     /* ---- How long are tasks open? ---- */
-    const AGE_COLORS = ['#3FA873', '#D9B23C', '#E0883C', '#D64545', '#8F2A2A'];   // oldest bucket stays distinct for colour-blind users
+    const AGE_COLORS = ['#2C7D54', '#D9B23C', '#E0883C', '#C43F3F', '#8F2A2A'];   // oldest bucket stays distinct for colour-blind users
     const AGE_LABELS = ['under 3 days', '4 to 7 days', '8 to 14 days', '15 to 30 days', 'over 30 days'];
     function renderAging() {
       $('aging').setAttribute('aria-label', 'Open task ages: ' + S.ages.map((v, i) => v + ' ' + AGE_LABELS[i]).join(', '));
-      $('aging').innerHTML = S.ages.map((v, i) => '<div style="flex:' + v + ';background:' + AGE_COLORS[i] + (i === 1 ? ';color:#26313D' : '') + '">' + v + '</div>').join('');
+      $('aging').innerHTML = S.ages.map((v, i) => '<div style="flex:' + v + ';background:' + AGE_COLORS[i] + (i === 1 || i === 2 ? ';color:#26313D' : '') + '">' + v + '</div>').join('');
       document.querySelectorAll('.aglbl div').forEach((el, i) => { el.style.flex = S.ages[i]; });
       $('waitTeam').textContent = S.open - S.waitingVendor;
     }
