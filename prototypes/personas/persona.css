@@ -150,3 +150,11 @@ footer {
 }
 footer a { color: var(--blue-primary); text-decoration: none; }
 footer a:hover { text-decoration: underline; }
+
+/* Link from a persona to the dashboard built for them */
+.hero__cta {
+  display: inline-block; margin-top: var(--space-4); font-size: 14px; font-weight: 600; color: #fff; text-decoration: none;
+  padding: 9px 18px; border-radius: 999px; background: var(--blue-primary); transition: background 0.15s ease;
+}
+.hero__cta:hover { background: var(--blue-accent); }
+.hero__cta:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }

@@ -1,0 +1,98 @@
+/* Shared dashboard components: filter chips, status tags, row buttons, KPI trend text,
+   the AI sparkle button, table footers, legends and the row highlight animations.
+   Used by the Dashboard (index.html) and shown in the style guide
+   (../../design-system/index.html). Tokens come from shell.css. */
+
+/* Author display rules (.tag, .chip...) would otherwise beat the hidden attribute */
+[hidden] { display: none !important; }
+
+/* Panels, links */
+  .panel__head .sub, .sub { color: var(--muted); font-size: 12.5px; font-weight: 400; }
+  .panel__body { padding: 0 var(--space-5) var(--space-5); }
+  .link-btn { font-family: inherit; font-size: 13px; font-weight: 600; color: var(--blue-primary); background: none; border: 0; padding: 0; cursor: pointer; }
+  .link-btn:hover { text-decoration: underline; }
+
+/* Health-check tiles */
+  /* Health-check tiles */
+  .stat-card__value small { font-size: 14px; font-weight: 400; color: var(--muted); }
+  .trend { font-size: 12px; font-weight: 600; margin-top: 6px; }
+  .trend.bad { color: var(--status-critical); }
+  .trend.good { color: #2C7D54; }
+  .trend.warn { color: #B5651C; }
+  .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .kpi-spark { display: block; margin-top: 8px; width: calc(100% - 34px); }   /* leaves room for the AI button */
+
+/* AI sparkle (opens Tessera AI, ai-chat.js) and row highlights */
+  /* AI sparkle: opens Tessera AI, the advanced chat modal (ai-chat.js). Bottom-right of each tile. */
+  .stat-card, .panel { position: relative; }
+  .panel.has-ai .panel__body { padding-bottom: 44px; }
+  .panel.has-ai .table-foot { padding-right: 48px; }
+  .panel.scan-card.has-ai { padding-bottom: 44px; }
+  .head-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .head-left .tag .link-btn { font-size: 11px; margin-left: 6px; color: var(--blue-primary); }
+  .btn-row[disabled] { opacity: .5; cursor: default; background: none; color: var(--blue-primary); }
+  tr.is-changed td { animation: row-changed 2.6s ease-out; }
+  @keyframes row-changed { 0% { background: rgba(104, 154, 226, 0.22); } 100% { background: transparent; } }
+  .member.is-changed { animation: row-changed 2.6s ease-out; }
+  @media (prefers-reduced-motion: reduce) { tr.is-changed td, tr.is-new td, .member.is-changed { animation: none; } }
+  .ai-spark {
+    position: absolute; right: 8px; bottom: 8px; width: 28px; height: 28px; padding: 0;
+    display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent; cursor: pointer;
+    transition: background .15s ease, transform .15s ease;
+  }
+  .ai-spark img { display: block; width: 16px; height: 16px; }
+  .ai-spark:hover { background: rgba(104, 154, 226, 0.16); }
+  .ai-spark:active { transform: scale(0.94); }
+  .ai-spark:focus-visible { outline: 2px solid var(--blue-accent); outline-offset: 2px; }
+
+/* Filter chips */
+  /* Needs your attention */
+  .chip-row { display: flex; gap: var(--space-2); flex-wrap: wrap; padding: 0 var(--space-5) var(--space-3); }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: inherit; font-size: 12.5px; font-weight: 400;
+    padding: 5px 12px; border-radius: 999px; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--surface-border); color: var(--muted);
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .chip b { font-weight: 600; }
+  .chip:hover { border-color: var(--blue-light); }
+  .chip.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .chip:focus-visible, .btn-row:focus-visible, .link-btn:focus-visible { outline: 2px solid var(--blue-accent); outline-offset: 2px; }
+
+/* Tables */
+  .table-scroll { overflow-x: auto; }
+
+/* Table rows, footers, empty state */
+  table.vendor-table td.impact { font-weight: 600; white-space: nowrap; }
+  .impact.bad { color: var(--status-critical); }
+  .impact.warn { color: #B5651C; }
+  .age { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  .age.bad { color: var(--status-critical); }
+  .age .vendor-sub { font-weight: 400; }
+  tr.is-new td { animation: row-new 2.4s ease-out; }
+  @keyframes row-new { 0% { background: rgba(214, 69, 69, 0.14); } 100% { background: transparent; } }
+  .table-foot { padding: var(--space-3) var(--space-5) var(--space-4); font-size: 13px; color: var(--muted); border-top: 1px solid var(--surface-border); }
+  .empty-state { display: none; padding: var(--space-6) var(--space-5); text-align: center; color: var(--muted); font-size: 14px; }
+
+/* Status tags, owners and row buttons */
+  .tag { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .t-new { background: var(--blue-tint); color: var(--blue-primary); }
+  .t-crit { background: rgba(214, 69, 69, 0.1); color: var(--status-critical); }
+  .t-stale { background: rgba(224, 136, 60, 0.14); color: #B5651C; }
+  .t-wait { background: var(--surface-border); color: var(--muted); }
+  .t-work { background: #EAF1FA; color: var(--blue-dark); }
+  .owner-cell { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .avatar-chip.un { background: transparent; border: 1.5px dashed #8A97A6; color: #5B6B7C; }
+  .btn-row { font-family: inherit; font-size: 12px; font-weight: 600; color: var(--blue-primary); background: none; border: 1px solid var(--blue-primary); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+  .btn-row:hover { background: var(--blue-primary); color: #fff; }
+
+/* Legends */
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+
+/* Task age bar */
+.aging { display: flex; gap: 2px; height: 26px; margin: 4px 0 6px; }
+.aging div { display: grid; place-items: center; min-width: 0; border-radius: 3px; color: #fff; font-size: 11px; font-weight: 600; }
+.aglbl { display: flex; gap: 2px; font-size: 11px; color: var(--muted); }
+.aglbl div { min-width: 0; text-align: center; white-space: nowrap; overflow: hidden; }

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tessera — Design System</title>
+<link rel="icon" type="image/svg+xml" href="../brand/logos/tessera-mark-condensed.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@200;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../prototypes/app-shell/shell.css">
+<link rel="stylesheet" href="../prototypes/app-shell/scan.css">
+<link rel="stylesheet" href="../prototypes/app-shell/components.css">
+<link rel="stylesheet" href="../prototypes/app-shell/ai-chat.css">
+<link rel="stylesheet" href="../prototypes/app-shell/dashboard-ui.css">
+<style>
+  /* Style guide chrome. The components shown below are the real ones, from the files linked above. */
+  body { height: auto; background: #FBFCFE; }
+  .ds-hero { background: var(--nav-bg); color: #E8EEF9; padding: 40px 24px 36px; }
+  .ds-hero__in { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  .ds-hero a.back { font-size: 13px; color: var(--nav-text); text-decoration: none; }
+  .ds-hero a.back:hover { color: #fff; }
+  .ds-hero h1 { margin: 18px 0 8px; font-size: 40px; font-weight: 200; letter-spacing: -0.01em; color: #fff; }
+  .ds-hero p { margin: 0; max-width: 680px; font-size: 15px; line-height: 1.6; color: var(--nav-text); }
+  .ds-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+  .ds-nav a { font-size: 13px; color: #E8EEF9; text-decoration: none; padding: 6px 14px; border: 1px solid var(--nav-border); border-radius: 999px; }
+  .ds-nav a:hover { border-color: rgba(150, 167, 194, 0.5); background: rgba(255, 255, 255, 0.05); }
+
+  .ds { max-width: 1120px; margin: 0 auto; padding: 8px 24px 96px; }
+  .ds section { margin-top: 64px; scroll-margin-top: 16px; }
+  .ds h2 { margin: 0 0 6px; font-size: 26px; font-weight: 600; letter-spacing: -0.01em; }
+  .ds h3 { margin: 32px 0 12px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .ds .lede { margin: 0 0 8px; max-width: 720px; font-size: 15px; line-height: 1.6; color: var(--muted); }
+  .ds code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; background: #EEF2F7; border-radius: 4px; padding: 1px 6px; color: var(--ink); }
+  .src { font-size: 12.5px; color: var(--muted); margin: 6px 0 0; }
+
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+  .sw-card { background: #fff; border: 1px solid var(--surface-border); border-radius: 12px; overflow: hidden; }
+  .sw-chip { height: 64px; }
+  .sw-meta { padding: 10px 12px 12px; font-size: 12.5px; line-height: 1.45; }
+  .sw-meta b { display: block; font-size: 13px; font-weight: 600; }
+  .sw-meta code { display: inline-block; margin: 2px 0; }
+  .sw-meta span { display: block; color: var(--muted); }
+  .warnbox { margin-top: 14px; padding: 14px 16px; background: #FFF9F2; border: 1px solid #F3D9BC; border-radius: 12px; font-size: 13.5px; line-height: 1.55; max-width: 820px; }
+  .warnbox b { font-weight: 600; }
+
+  .spec { background: #fff; border: 1px solid var(--surface-border); border-radius: 12px; padding: 20px; }
+  .spec + .spec { margin-top: 12px; }
+  .spec__label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+  .spec__note { margin: 12px 0 0; font-size: 12.5px; color: var(--muted); }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .grid-2c { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 820px) { .grid-2c { grid-template-columns: 1fr; } }
+  .on-canvas { background: var(--canvas); border: 1px solid var(--surface-border); border-radius: 12px; padding: 24px; }
+  .on-dark { background: var(--nav-bg); border-radius: 12px; padding: 20px; }
+
+  .type-row { display: grid; grid-template-columns: 150px 1fr; gap: 16px; align-items: baseline; padding: 12px 0; border-top: 1px solid var(--surface-border); }
+  .type-row:first-child { border-top: 0; }
+  .type-row small { font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .space-row { display: grid; grid-template-columns: 120px 1fr; gap: 16px; align-items: center; padding: 6px 0; font-size: 13px; }
+  .space-bar { height: 12px; background: var(--blue-accent); border-radius: 3px; }
+
+  /* Static renderings of components that are normally overlays */
+  .static-pop.dash-pop { position: static; animation: none; min-width: 330px; }
+  .static-toast.dash-toast.is-on { position: static; transform: none; opacity: 1; display: inline-block; }
+  .static-chat.ai-dialog { position: static; width: 100%; max-width: 640px; box-shadow: 0 12px 30px -16px rgba(16, 27, 48, 0.3); animation: none; display: block; }
+  .static-chat .ai-shell { height: auto; }
+  .static-chat .ai-thread { overflow: visible; }
+  .static-drawer.dash-drawer { position: static; width: 100%; max-width: 440px; height: auto; box-shadow: none; border: 1px solid var(--surface-border); border-radius: 12px; animation: none; display: block; }
+  .static-drawer .drawer-shell { height: auto; overflow: visible; }
+  .tiles-demo .tile { animation: none; }
+  .tiles-demo .mosaic__grid { grid-template-columns: repeat(34, 1fr); }
+  .nav-demo { width: 240px; }
+  .stat-card.demo { width: 260px; }
+  .doc-links { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 12px; font-size: 13.5px; }
+  .doc-links a { color: var(--blue-primary); text-decoration: none; font-weight: 600; }
+  .doc-links a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<header class="ds-hero">
+  <div class="ds-hero__in">
+    <a class="back" href="../index.html">← Tessera prototypes</a>
+    <h1>Design system</h1>
+    <p>The tokens and components behind the Tessera prototype. Everything on this page is rendered from the same files the app uses, so it cannot drift from what is built. IBM Plex Sans throughout, in three weights.</p>
+    <nav class="ds-nav" aria-label="Sections">
+      <a href="#colors">Colour</a><a href="#type">Type</a><a href="#space">Spacing</a><a href="#card">Card</a><a href="#components">Components</a><a href="#ai">AI patterns</a><a href="#motion">Motion</a>
+    </nav>
+  </div>
+</header>
+
+<main class="ds">
+
+  <!-- ===================== COLOUR ===================== -->
+  <section id="colors">
+    <h2>Colour</h2>
+    <p class="lede">A brand blue family sampled from the logo, a blue-grey neutral set, four status colours, and a few product-specific sets for the vendor mosaic and task age bar. Source: <code>colors.md</code>.</p>
+
+    <h3>Brand blues</h3>
+    <div class="swatches">
+      <div class="sw-card"><div class="sw-chip" style="background:#255292"></div><div class="sw-meta"><b>Blue dark</b><code>#255292</code><span>Headers, hover on primary. 7.8:1 on white.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#2F62AA"></div><div class="sw-meta"><b>Blue primary</b><code>#2F62AA</code><span>Buttons, links, active states. 6.1:1 on white.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#689AE2"></div><div class="sw-meta"><b>Blue accent</b><code>#689AE2</code><span>Focus rings, highlights, data accents. Not for text.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#B0CAEF"></div><div class="sw-meta"><b>Blue light</b><code>#B0CAEF</code><span>Hover borders, soft fills.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#C6D9F4"></div><div class="sw-meta"><b>Blue tint</b><code>#C6D9F4</code><span>Selected rows, "New" tags.</span></div></div>
+    </div>
+
+    <h3>Neutrals and surfaces</h3>
+    <div class="swatches">
+      <div class="sw-card"><div class="sw-chip" style="background:#26313D"></div><div class="sw-meta"><b>Ink</b><code>#26313D</code><span>Body text. 13.2:1 on white.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#5B6B7C"></div><div class="sw-meta"><b>Muted</b><code>#5B6B7C</code><span>Secondary text. 5.5:1 on white, 4.9:1 on canvas.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#C9C9C9"></div><div class="sw-meta"><b>Gray</b><code>#C9C9C9</code><span>Wordmark, disabled, dividers. Never text.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#EFF3F7;border-bottom:1px solid #E2E5EC"></div><div class="sw-meta"><b>Canvas</b><code>#EFF3F7</code><span>Page background. Cards fade into it.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#FFFFFF;border-bottom:1px solid #E2E5EC"></div><div class="sw-meta"><b>Surface</b><code>#FFFFFF</code><span>Card and input fill.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#E2E5EC"></div><div class="sw-meta"><b>Border</b><code>#E2E5EC</code><span>Card, input and table borders.</span></div></div>
+    </div>
+
+    <h3>Status</h3>
+    <div class="swatches">
+      <div class="sw-card"><div class="sw-chip" style="background:#D64545"></div><div class="sw-meta"><b>Critical</b><code>#D64545</code><span>Fills, dots, bars. As text on white: 4.4:1.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#E0883C"></div><div class="sw-meta"><b>High</b><code>#E0883C</code><span>Fills, dots, bars only. 2.7:1 on white.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#D9B23C"></div><div class="sw-meta"><b>Medium</b><code>#D9B23C</code><span>Fills, dots, bars only. 2.0:1 on white.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#3FA873"></div><div class="sw-meta"><b>Low / OK</b><code>#3FA873</code><span>Fills, dots, bars only. 3.0:1 on white.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#B5651C"></div><div class="sw-meta"><b>Warning text</b><code>#B5651C</code><span>Orange text in use today. 4.3:1 on white.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#2C7D54"></div><div class="sw-meta"><b>Good text</b><code>#2C7D54</code><span>Green text in use today. 5.0:1 on white.</span></div></div>
+    </div>
+    <div class="warnbox"><b>Known contrast gaps, found while documenting.</b> The status colours are fills, not text colours. Where the UI uses them as small text, two fall just under WCAG AA (4.5:1): critical red on white (4.4:1, and 3.9:1 on the canvas) and warning orange (4.3:1). In the task age bar, white numbers on the orange and green segments measure 2.7:1 and 3.0:1. The nav group labels (<code>#5A6C8A</code> on the nav) are 3.3:1. Recommended fixes: critical text <code>#B53A3A</code> (5.8:1 on white, 5.2:1 on canvas), warning text <code>#A85E1A</code> (4.9:1), ink numbers on the orange and green age segments. Status is never colour alone: every tag carries an icon or a word.</div>
+
+    <h3>Product sets</h3>
+    <div class="swatches">
+      <div class="sw-card"><div class="sw-chip" style="background:#131929"></div><div class="sw-meta"><b>Nav</b><code>#131929</code><span>Sidebar and dark panels. Raised: <code>#1D2740</code>.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#D6E0EB"></div><div class="sw-meta"><b>Tile: clear</b><code>#D6E0EB</code><span>A vendor monitored with nothing open.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#D9B23C"></div><div class="sw-meta"><b>Tile: open finding</b><code>--status-medium</code><span>Same yellow as medium.</span></div></div>
+      <div class="sw-card"><div class="sw-chip" style="background:#D64545"></div><div class="sw-meta"><b>Tile: critical</b><code>--status-critical</code><span>Also the critical count tile.</span></div></div>
+    </div>
+    <div class="spec" style="margin-top:12px"><div class="spec__label">Task age bar (green to dark red; the oldest bucket stays distinct for colour-blind users)</div>
+      <div class="aging" style="max-width:520px"><div style="flex:14;background:#3FA873">14</div><div style="flex:12;background:#D9B23C;color:#26313D">12</div><div style="flex:9;background:#E0883C">9</div><div style="flex:8;background:#D64545">8</div><div style="flex:4;background:#8F2A2A">4</div></div>
+      <div class="aglbl" style="max-width:520px"><div style="flex:14">0–3 d</div><div style="flex:12">4–7 d</div><div style="flex:9">8–14 d</div><div style="flex:8">15–30 d</div><div style="flex:4">30+</div></div>
+    </div>
+  </section>
+
+  <!-- ===================== TYPE ===================== -->
+  <section id="type">
+    <h2>Typography</h2>
+    <p class="lede">IBM Plex Sans in ExtraLight (200), Regular (400) and SemiBold (600) only. Hierarchy comes from size, spacing and colour, not from extra weights. ExtraLight is for large numbers and headlines (24px and up). Source: <code>typography.md</code>.</p>
+    <div class="spec">
+      <div class="type-row"><small>Display · 48/56<br>ExtraLight</small><div style="font-size:48px;line-height:56px;font-weight:200;letter-spacing:-0.01em">Never stops looking</div></div>
+      <div class="type-row"><small>H1 · 36/44<br>SemiBold</small><div style="font-size:36px;line-height:44px;font-weight:600;letter-spacing:-0.01em">Portfolio risk score</div></div>
+      <div class="type-row"><small>H2 · 28/36<br>SemiBold</small><div style="font-size:28px;line-height:36px;font-weight:600">Needs your attention now</div></div>
+      <div class="type-row"><small>H3 · 22/30<br>SemiBold</small><div style="font-size:22px;line-height:30px;font-weight:600">Where risk is concentrated</div></div>
+      <div class="type-row"><small>H4 · 18/26<br>SemiBold</small><div style="font-size:18px;line-height:26px;font-weight:600">Evidence to review</div></div>
+      <div class="type-row"><small>Body · 16/24<br>Regular</small><div style="font-size:16px;line-height:24px">Tessera scans the public internet for signals about your vendors and turns high-risk findings into investigation tasks.</div></div>
+      <div class="type-row"><small>Body small · 14/20<br>Regular</small><div style="font-size:14px;line-height:20px">Used for dense tables and secondary text, such as a vendor's category and tier.</div></div>
+      <div class="type-row"><small>Caption · 12/16<br>Regular</small><div style="font-size:12px;line-height:16px;color:var(--muted)">Detected 12 min ago · Source: public code repositories</div></div>
+      <div class="type-row"><small>Eyebrow · 12/16<br>SemiBold, +0.04em</small><div style="font-size:12px;line-height:16px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted)">Investigation tasks</div></div>
+      <div class="type-row"><small>Big number · 30<br>SemiBold (tile) or ExtraLight (hero)</small><div><span style="font-size:30px;font-weight:600">68</span> <span style="font-size:14px;color:var(--muted)">/ 100</span> &nbsp;&nbsp; <span style="font-size:34px;font-weight:200">612</span></div></div>
+    </div>
+  </section>
+
+  <!-- ===================== SPACING ===================== -->
+  <section id="space">
+    <h2>Spacing and radius</h2>
+    <p class="lede">An 8px grid with a 4px half-step for dense tables. Source: <code>spacing.md</code>.</p>
+    <div class="spec">
+      <div class="space-row"><code>--space-1</code><div class="space-bar" style="width:4px"></div></div>
+      <div class="space-row"><code>--space-2</code><div class="space-bar" style="width:8px"></div></div>
+      <div class="space-row"><code>--space-3</code><div class="space-bar" style="width:12px"></div></div>
+      <div class="space-row"><code>--space-4</code><div class="space-bar" style="width:16px"></div></div>
+      <div class="space-row"><code>--space-5</code><div class="space-bar" style="width:24px"></div></div>
+      <div class="space-row"><code>--space-6</code><div class="space-bar" style="width:32px"></div></div>
+      <div class="space-row"><code>--space-7</code><div class="space-bar" style="width:48px"></div></div>
+      <div class="row" style="margin-top:14px">
+        <div style="width:64px;height:40px;border:1px solid var(--surface-border);border-radius:4px;display:grid;place-items:center;font-size:11px;background:#fff">4 sm</div>
+        <div style="width:64px;height:40px;border:1px solid var(--surface-border);border-radius:8px;display:grid;place-items:center;font-size:11px;background:#fff">8 md</div>
+        <div style="width:64px;height:40px;border:1px solid var(--surface-border);border-radius:12px;display:grid;place-items:center;font-size:11px;background:#fff">12 lg</div>
+        <div style="width:64px;height:40px;border:1px solid var(--surface-border);border-radius:0 0 15px 15px;border-top:0;display:grid;place-items:center;font-size:11px;background:#fff">15 card</div>
+        <div style="width:64px;height:40px;border:1px solid var(--surface-border);border-radius:999px;display:grid;place-items:center;font-size:11px;background:#fff">pill</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CARD ===================== -->
+  <section id="card">
+    <h2>The faded card</h2>
+    <p class="lede">Every card surface fades in from the page background: a transparent-to-white gradient, borders on the sides and bottom only, and rounded bottom corners. It has no top edge, so it reads as rising out of the page. Cards taller than 143px fade over the first 143px and are solid below, so table rows stay legible. Source: <code>card.md</code>, Figma node <code>19:1232</code>.</p>
+    <div class="on-canvas">
+      <div class="row" style="align-items:stretch">
+        <div class="stat-card demo"><div class="stat-card__label">Portfolio risk score</div><div class="stat-card__value">68 <small>/ 100</small></div><div class="trend bad">▲ 4 pts vs 30 days ago</div><div class="kpi-sub">Fades in from the canvas</div></div>
+        <div class="panel" style="width:320px;min-height:143px"><div class="panel__head"><h2>Panel</h2><span class="sub">Same spec</span></div><div class="panel__body"><span class="sub">Taller cards hold solid white below the fade.</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== COMPONENTS ===================== -->
+  <section id="components">
+    <h2>Components</h2>
+    <p class="lede">Live renderings from <code>shell.css</code>, <code>components.css</code>, <code>scan.css</code>, <code>ai-chat.css</code> and <code>dashboard-ui.css</code>. Full notes for each are in <code>components.md</code>.</p>
+
+    <h3>Buttons and links</h3>
+    <div class="spec"><div class="row">
+      <button class="btn-primary" type="button">Add Vendor</button>
+      <button class="ai-btn ai-btn--primary" type="button">Approve</button>
+      <button class="ai-btn ai-btn--ghost" type="button">Not now</button>
+      <button class="btn-row" type="button">Assign</button>
+      <button class="btn-row" type="button" disabled>Nudged</button>
+      <button class="link-btn" type="button">View as table</button>
+    </div>
+    <p class="spec__note">Primary for the one main action; ghost for the alternative; row buttons for actions inside a table row; link button for low-emphasis switches. Focus is a 2px accent ring.</p></div>
+
+    <h3>Filter chips</h3>
+    <div class="spec"><div class="chip-row" style="padding:0"><button class="chip active" type="button"><b>All</b> 21</button><button class="chip" type="button"><b>Unassigned / new</b> 6</button><button class="chip" type="button"><b>Critical</b> 7</button><button class="chip" type="button"><b>Stale, past SLA</b> 15</button></div>
+    <p class="spec__note">Counts are the portfolio totals; the list beneath is a sample.</p></div>
+
+    <h3>Status tags, pills and badges</h3>
+    <div class="spec"><div class="row">
+      <span class="tag t-new">● New</span><span class="tag t-crit">▲ Critical</span><span class="tag t-stale">⏱ Past SLA</span><span class="tag t-wait">◔ Waiting on vendor</span><span class="tag t-work">◐ In progress</span><span class="tag t-routine">Routine</span><span class="tag t-new">↗ From Marcus</span>
+    </div>
+    <div class="row" style="margin-top:12px"><span class="pill critical">Critical</span><span class="pill high">High</span><span class="pill medium">Medium</span><span class="pill low">Low</span><span class="count-pill">Renewal in 6 weeks</span><span class="count-pill bad">3 exceptions</span><span class="fw-badge">DORA</span><span class="doc-badge">SOC 2 Type II</span><span class="pg">p. 47</span></div>
+    <div class="row" style="margin-top:12px"><span class="owner-cell"><span class="avatar-chip">PN</span>Priya</span><span class="owner-cell"><span class="avatar-chip un">?</span>Unassigned</span></div>
+    <p class="spec__note">Tags describe state, pills describe severity or tier. Every one carries a word or an icon, never colour alone.</p></div>
+
+    <h3>KPI tile with the AI sparkle</h3>
+    <div class="on-canvas"><div class="stat-card demo"><div class="stat-card__label">Open investigation tasks</div><div class="stat-card__value">47</div><div class="trend bad">▲ 17 net in the last 7 days</div><div class="kpi-sub">15 past SLA · median age 6 days</div>
+      <button type="button" class="ai-spark" aria-label="Ask Tessera AI about open investigation tasks" title="Ask Tessera AI"><img src="../brand/ai-sparkle.svg" alt="" width="16" height="16"></button></div></div>
+    <p class="src">The sparkle sits bottom-right of every dashboard card and opens the chat scoped to that card.</p>
+
+    <h3>Task table</h3>
+    <div class="panel" style="max-width:980px"><div class="table-scroll"><table class="vendor-table attn"><thead><tr><th class="col-issue">Issue</th><th class="col-vendor">Vendor · tier</th><th>Status</th><th>Age / SLA</th><th>Owner</th><th>Risk impact</th><th></th></tr></thead><tbody>
+      <tr class="is-changed"><td><div class="vendor-name">SOC 2 report expired</div><div class="vendor-sub">Category: Assurance lapse</div></td><td><div class="vendor-name">Ironclad Identity</div><div class="vendor-sub">Critical tier</div></td><td><span class="tag t-new">● New</span></td><td class="age"><span>12 min</span> <span class="vendor-sub">/ 24 h</span></td><td><span class="owner-cell"><span class="avatar-chip un">?</span>Unassigned</span></td><td class="impact bad">+2.1</td><td><button class="btn-row" type="button">Assign</button></td></tr>
+      <tr><td><div class="vendor-name">Unpatched critical CVE on an internet-facing host</div><div class="vendor-sub">Category: Vulnerability</div></td><td><div class="vendor-name">Fortify Endpoint Security</div><div class="vendor-sub">High tier</div></td><td><span class="tag t-stale">⏱ Past SLA</span></td><td class="age bad"><span>9 d</span> <span class="vendor-sub">/ 7 d</span></td><td><span class="owner-cell"><span class="avatar-chip">MC</span>Marcus</span></td><td class="impact bad">+1.2</td><td><button class="btn-row" type="button">Nudge</button></td></tr>
+    </tbody></table></div><div class="table-foot">Showing 2 of 21 tasks that need attention</div></div>
+    <p class="src">Unassigned tasks first, then by risk impact. Age is always shown against its SLA and turns red once past it. The first row shows the blue "just changed" highlight.</p>
+
+    <h3>Popovers and toast</h3>
+    <div class="spec"><div class="row" style="align-items:flex-start;gap:24px">
+      <div class="dash-pop dash-pop--menu static-pop"><div class="pop-title">Assign to</div>
+        <button type="button" class="pop-item"><img src="../personas/priya-nair.png" alt=""><span><b>Priya</b><small>EU / critical vendors · 14 open</small></span><em>Suggested · critical vendor</em></button>
+        <button type="button" class="pop-item"><img src="../personas/marcus-chen.png" alt=""><span><b>Marcus</b><small>US / standard vendors · 22 open (at capacity)</small></span></button>
+        <button type="button" class="pop-item"><img src="../personas/dana-vasquez.png" alt=""><span><b>Dana</b><small>escalations + Canada · 6 open</small></span></button></div>
+      <div class="dash-pop dash-pop--confirm static-pop"><div class="pop-title">Escalate to the vendor?</div><p class="pop-body">This sends <b>Aurora HR Suite</b>'s senior contact a formal escalation, and Dana takes ownership.</p><div class="pop-actions"><button type="button" class="ai-btn ai-btn--primary">Escalate</button><button type="button" class="ai-btn ai-btn--ghost">Cancel</button></div></div>
+    </div>
+    <div style="margin-top:16px"><div class="dash-toast is-on static-toast" role="presentation">Follow-up sent to <b>Keystone Payroll</b>. The row now shows “Follow-up sent”.</div></div>
+    <p class="spec__note">Popovers hold a choice or a confirmation for one action, and close on Esc or an outside click. Consequential actions confirm first; reversible ones just do it and say so in a toast.</p></div>
+
+    <h3>Detail drawer</h3>
+    <div class="spec"><div class="dash-drawer static-drawer"><div class="drawer-shell">
+      <div class="drawer-eyebrow">Exposed service</div><h2 style="margin-right:0">Harborlight Cloud</h2><p class="drawer-issue">Admin console reachable from the public internet</p>
+      <div class="drawer-tags"><span class="tag t-crit">▲ Critical</span><span class="pill critical">critical</span><span class="drawer-tier">Critical tier vendor</span></div>
+      <dl class="drawer-facts"><div><dt>Age / SLA</dt><dd>1 d / 2 d</dd></div><div><dt>Owner</dt><dd>Priya Nair</dd></div><div><dt>Risk impact</dt><dd>+1.8 points</dd></div><div><dt>Region</dt><dd>US</dd></div></dl>
+      <h3>Timeline</h3><ol class="drawer-timeline"><li><b>Detected</b><span>1 d ago, by the continuous scan</span></li><li><b>Task created</b><span>Investigation task with a 2 d SLA</span></li><li><b>Assigned</b><span>Priya</span></li></ol>
+      <div class="drawer-actions"><button type="button" class="ai-btn ai-btn--ghost">Mark resolved</button><button type="button" class="ai-btn ai-btn--ghost drawer-ask"><img src="../brand/ai-sparkle.svg" alt="" width="14" height="14">Ask Tessera AI</button></div>
+    </div></div>
+    <p class="spec__note">Opens from a task or evidence row. What Tessera found, why it matters, a timeline, and the actions that apply to this item.</p></div>
+
+    <h3>Vendor mosaic tiles</h3>
+    <div class="spec tiles-demo">
+      <div class="scan-panel scan-panel--open" style="margin:0"><div class="scan-head"><div><span class="scan-eyebrow"><i class="scan-live"></i>Continuous scan</span><div class="scan-headline"><b>7</b><span>critical signals open across 612 monitored vendors</span></div></div></div>
+      <div class="mosaic"><div class="mosaic__grid" id="demoMosaic"></div></div>
+      <div class="scan-legend"><span><i style="background:var(--tile-clear)"></i>Monitored, clear</span><span><i style="background:var(--tile-open)"></i>Open finding</span><span><i style="background:var(--tile-critical)"></i>Critical signal</span></div></div>
+      <p class="spec__note">One tile per vendor. A scan line tints tiles as it passes; a flagged tile gets a glow and a ripple. The count sits on a tile of the same red as the legend.</p>
+    </div>
+
+    <h3>Navigation items</h3>
+    <div class="on-dark"><div class="nav-demo">
+      <a class="nav-item active" href="#components"><svg viewBox="0 0 20 20" fill="none"><rect x="2.5" y="2.5" width="6.5" height="6.5" rx="1.3" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2.5" width="6.5" height="6.5" rx="1.3" stroke="currentColor" stroke-width="1.5"/><rect x="2.5" y="11" width="6.5" height="6.5" rx="1.3" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="6.5" height="6.5" rx="1.3" stroke="currentColor" stroke-width="1.5"/></svg><span class="label">Active</span></a>
+      <a class="nav-item" href="#components"><svg viewBox="0 0 20 20" fill="none"><path d="M3 17V6.5L10 3l7 3.5V17" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="label">Default</span></a>
+      <a class="nav-item" href="#components"><svg viewBox="0 0 20 20" fill="none"><path d="M2.5 11l2.8-6 2.7 9 2.4-11 2.3 8h4.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="label">With badge</span><span class="nav-badge">7</span></a>
+      <a class="nav-item is-soon" aria-disabled="true" title="Not built yet in this prototype"><svg viewBox="0 0 20 20" fill="none"><path d="M5.5 2.5h6l3 3v12h-9z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="label">Not built yet</span><span class="nav-soon">Soon</span></a>
+    </div></div>
+    <p class="src">The sidebar collapses to a rail with a spring motion read from the Figma prototype (see Motion). Sections not yet built are dimmed and marked Soon.</p>
+  </section>
+
+  <!-- ===================== AI PATTERNS ===================== -->
+  <section id="ai">
+    <h2>AI patterns: Tessera AI chat</h2>
+    <p class="lede">Every dashboard card has a sparkle that opens a chat about that card. It starts by asking what you want to learn or act on, shows the card's figures, and never acts without approval. This follows the human-oversight and explainability expectations in the compliance notes.</p>
+    <div class="ai-dialog static-chat" role="presentation"><div class="ai-shell">
+      <header class="ai-head"><span class="ai-head__icon"><img src="../brand/ai-sparkle.svg" alt=""></span><div><h2 style="font-size:16px;margin:0">Tessera AI</h2><p class="ai-head__sub">Asking about <b>portfolio risk score</b></p></div></header>
+      <div class="ai-context"><span class="ai-context__label">Portfolio risk score</span><span class="ai-context__value">68 <small>/ 100</small></span><span class="ai-context__trend bad">▲ 4 pts vs 30 days ago</span></div>
+      <div class="ai-threadhost"><div class="ai-thread">
+        <div class="ai-msg ai-msg--ai"><span class="ai-avatar"><img src="../brand/ai-sparkle.svg" alt=""></span><div class="ai-bubble"><p>What would you like to learn about, or take action on, for the <b>portfolio risk score</b>?</p>
+          <div class="ai-chips"><div class="ai-chipgroup"><div class="ai-chipgroup__label">Learn</div><div class="ai-chipgroup__row"><button type="button" class="ai-chip">Why did the score go up?</button><button type="button" class="ai-chip">How is the score calculated?</button></div></div>
+          <div class="ai-chipgroup"><div class="ai-chipgroup__label">Take action</div><div class="ai-chipgroup__row"><button type="button" class="ai-chip ai-chip--act">Assign the unassigned tasks</button></div></div></div></div></div>
+        <div class="ai-msg ai-msg--user"><div class="ai-bubble">Assign the unassigned tasks</div></div>
+        <div class="ai-msg ai-msg--ai"><span class="ai-avatar"><img src="../brand/ai-sparkle.svg" alt=""></span><div class="ai-bubble"><p>6 tasks are unassigned, adding <b>+6.2 points</b> to the score.</p>
+          <div class="ai-proposal"><div class="ai-proposal__title">Proposed action · assign 6 tasks</div><ul><li><b>Ironclad Identity</b> → Priya (critical vendor)</li><li><b>Sentinel Background Checks</b> → Dana (Canada)</li></ul><div class="ai-proposal__actions"><button type="button" class="ai-btn ai-btn--primary">Approve assignments</button><button type="button" class="ai-btn ai-btn--ghost">Not now</button></div></div></div></div>
+      </div></div>
+      <form class="ai-composer" onsubmit="return false"><textarea rows="1" aria-label="Message Tessera AI" placeholder="Ask about portfolio risk score…"></textarea><button type="submit" class="ai-send" aria-label="Send message" disabled><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8l12-5.5L9.5 14l-1.8-4.7L2 8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button></form>
+      <p class="ai-foot">Tessera AI can make mistakes. Answers here are sample content for this prototype.</p>
+    </div></div>
+    <div class="spec" style="margin-top:16px"><div class="spec__label">Rules this pattern follows</div>
+      <ul style="margin:0;padding-left:20px;line-height:1.7;font-size:14px">
+        <li><b>Scoped:</b> the chat opens with the card's own figures, so the question has a subject.</li>
+        <li><b>Propose, then approve:</b> an action shows exactly what will change and waits for a click. "Not now" changes nothing.</li>
+        <li><b>Explainable:</b> the score, a call and an action each say why, in plain words and with the numbers behind them.</li>
+        <li><b>Overrides need a reason,</b> and the reason is kept for the audit record.</li>
+        <li><b>Honest about limits:</b> the footer says it can be wrong, and an unknown question gets "I can't answer that yet" plus what it can answer.</li>
+      </ul></div>
+  </section>
+
+  <!-- ===================== MOTION ===================== -->
+  <section id="motion">
+    <h2>Motion</h2>
+    <p class="lede">Motion explains a change; it never decorates. Every animation is switched off under <code>prefers-reduced-motion</code>.</p>
+    <div class="spec">
+      <table style="width:100%;border-collapse:collapse;font-size:13.5px">
+        <thead><tr style="text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em"><th style="padding:6px 8px 8px 0">What</th><th style="padding:6px 8px 8px 0">Timing</th><th style="padding:6px 0 8px">Why</th></tr></thead>
+        <tbody>
+          <tr style="border-top:1px solid var(--surface-border)"><td style="padding:10px 8px 10px 0">Nav collapse and expand</td><td>744 ms, spring (overshoot ~8%)</td><td>Exact duration from the Figma Smart Animate reaction; the curve is an approximation.</td></tr>
+          <tr style="border-top:1px solid var(--surface-border)"><td style="padding:10px 8px 10px 0">Scan line across the mosaic</td><td>5 s per pass, linear</td><td>Shows the scan is continuous and covers every vendor.</td></tr>
+          <tr style="border-top:1px solid var(--surface-border)"><td style="padding:10px 8px 10px 0">New or changed row highlight</td><td>2.4–2.6 s fade</td><td>Shows what an action just changed, then gets out of the way.</td></tr>
+          <tr style="border-top:1px solid var(--surface-border)"><td style="padding:10px 8px 10px 0">Popover, toast, drawer, chat</td><td>160–300 ms ease-out</td><td>Enters from the direction it came from.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="doc-links"><a href="https://github.com/KCMarshall-66/project-tessera/blob/main/design-system/README.md">Design system docs on GitHub →</a><a href="https://github.com/KCMarshall-66/project-tessera/blob/main/design-system/components.md">Component notes →</a><a href="../brand/index.html">Brand assets →</a></div>
+  </section>
+</main>
+
+<script>
+  // Fill the demo mosaic with a fixed pattern (no animation; this is a specimen)
+  (function () {
+    var g = document.getElementById('demoMosaic'), html = '', red = { 20: 1, 61: 1, 88: 1 }, open = { 11: 1, 29: 1, 47: 1, 66: 1, 92: 1 };
+    for (var i = 0; i < 102; i++) html += '<span class="tile' + (red[i] ? ' red' : open[i] ? ' amber' : '') + '"></span>';
+    g.innerHTML = html;
+  })();
+</script>
+</body>
+</html>

@@ -263,6 +263,15 @@ body {
 }
 .sidebar.collapsed .nav-badge { display: none; }
 
+/* Sections that are in the nav but not built in this prototype yet */
+.nav-item.is-soon { opacity: 0.55; cursor: not-allowed; padding-right: 8px; }
+.nav-item.is-soon:hover { background: none; color: var(--nav-text); }
+.nav-soon {
+  margin-left: auto; flex: none; font-size: 9px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--nav-text); border: 1px solid var(--nav-border); border-radius: 999px; padding: 2px 5px; line-height: 1;
+}
+.sidebar.collapsed .nav-soon { display: none; }
+
 /* Footer / user */
 .nav-footer {
   border-top: 1px solid var(--nav-border);
