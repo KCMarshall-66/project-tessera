@@ -531,7 +531,9 @@
 
   global.TesseraAI = {
     setData: function (fn) { provider = fn; },
-    setActions: function (obj) { actions = obj || {}; },
+    setActions: function (obj) { Object.keys(obj || {}).forEach(function (k) { actions[k] = obj[k]; }); },
+    // Register a card: { title, snap(d), intro(d), prompts: [{ id, kind: 'learn'|'act', label, answer(d) }] }
+    define: function (key, def) { CONTEXTS[key] = def; if (key.indexOf(':') > 0) delete threads[key]; },
     open: open
   };
 })(window);

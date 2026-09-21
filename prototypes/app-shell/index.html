@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="shell.css">
 <link rel="stylesheet" href="scan.css">
 <link rel="stylesheet" href="ai-chat.css">
+<link rel="stylesheet" href="dashboard-ui.css">
 <style>
   /* Dashboard layout (dashboard-concept/README.md): a 12-column grid of faded cards */
   .dash { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--space-4); margin-top: var(--space-5); }
@@ -265,6 +266,7 @@
     </header>
 
     <main class="content">
+      <div id="view-dana">
       <div class="page-heading">
         <div>
           <h1>Good morning, Dana</h1>
@@ -434,111 +436,45 @@
         </section>
 
       </div>
+      </div>
+      <div id="view-priya" hidden></div>
+      <div id="view-marcus" hidden></div>
     </main>
   </div>
 </div>
 
 <script src="scan.js"></script>
 <script src="ai-chat.js"></script>
+<script src="dashboard-state.js"></script>
+<script src="dashboard-ui.js"></script>
 <script>
   const sidebar = document.getElementById('sidebar');
   const toggle = document.getElementById('navToggle');
   toggle.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
 
-  // Dashboard for Dana (see dashboard-concept/README.md). All figures are sample data.
-  // A scripted signal from the scan (below) adds an unassigned task to the list and
-  // updates the health-check tiles, the charts, and the concentration list together.
+  // Dashboard for Dana (see dashboard-concept/README.md). All figures are sample data and
+  // live in dashboard-state.js, which the analyst dashboards share. A scripted signal from
+  // the scan adds a task and every view updates together.
   (function () {
     'use strict';
     const $ = id => document.getElementById(id);
-    const TIER = { critical: 'Critical', high: 'High', medium: 'Medium', low: 'Low' };
-    const OWNER = { PN: ['PN', 'Priya'], MC: ['MC', 'Marcus'], DV: ['DV', 'Dana'] };
+    const D = TesseraDash, UI = TesseraUI, act = D.act;
+    const { S, TEAM, TASKS, sum, teamOpen, counts } = D;
+    const TIER = D.TIER, AT_CAPACITY = D.AT_CAPACITY;
 
-    /* ---- State ---- */
-    const S = {
-      score: 68, scoreDelta: 4, scoreAdded: 0,
-      open: 47, pastSLA: 15, waitingVendor: 12,
-      ages: [14, 12, 9, 8, 4],                                   // 0-3, 4-7, 8-14, 15-30, 30+ days
-      newDaily:    [3, 5, 2, 4, 6, 3, 1, 2, 4, 5, 7, 6, 8, 9],   // Sep 7 .. Sep 20
-      closedDaily: [4, 3, 4, 3, 5, 4, 2, 3, 3, 4, 3, 4, 3, 4],
-      counts: { all: 21, critical: 7, stale: 15, waiting: 12 },   // unassigned is counted from the list
-      autoAssign: false,
-      pts: { 'Ironclad Identity': 2.4, 'Harborlight Cloud': 2.0, 'Northwind AI Labs': 1.7, 'Keystone Payroll': 1.5, 'Fortify Endpoint Security': 1.2 },
-      restPts: 8.5,                                              // impact from all other vendors
-      lastScanAt: Date.now() - 4 * 60000
-    };
-    const sum = a => a.reduce((x, y) => x + y, 0);
-
-    /* ---- Team (drives the "Your team" rows and the assignment rules) ---- */
-    const TEAM = {
-      PN: { name: 'Priya Nair',   role: 'EU / critical vendors', img: 'priya-nair',   verifying: 3, vendor: 6, review: 4, pastSla: 1, score: 91,   delta: '▲ 3', dcls: 'good', now: 'Harborlight admin console exposure' },
-      MC: { name: 'Marcus Chen',  role: 'US / standard vendors', img: 'marcus-chen',  verifying: 8, vendor: 4, review: 4, pastSla: 6, score: 74,   delta: '▼ 2', dcls: 'bad',  now: 'Fortify CVE follow-up' },
-      DV: { name: 'Dana Vasquez', role: 'escalations + Canada',  img: 'dana-vasquez', verifying: 4, vendor: 2, review: 0, pastSla: 0, score: null, now: null }
-    };
-    const teamOpen = k => TEAM[k].verifying + TEAM[k].vendor + TEAM[k].review + TEAM[k].pastSla;
-    const AT_CAPACITY = 22;
-
-    // Who a new task should go to: critical-tier and EU vendors to Priya, Canada to Dana,
-    // US to Marcus, or to Priya while Marcus is at capacity.
-    function pickOwner(t) {
-      if (t.tier === 'critical') return { owner: 'PN', why: 'critical vendor' };
-      if (/EU/.test(t.region)) return { owner: 'PN', why: 'EU vendor' };
-      if (/Canada/.test(t.region)) return { owner: 'DV', why: 'Canada' };
-      return teamOpen('MC') >= AT_CAPACITY ? { owner: 'PN', why: 'Marcus at capacity' } : { owner: 'MC', why: 'US vendor' };
-    }
-    function assignTo(t, o) { t.owner = o; t.state = 'working'; t.action = 'Open'; t.flash = true; TEAM[o].verifying++; TEAM[o].flash = true; }
-
-    /* ---- Task list: 12 sample tasks that need attention (of 21). The 6 unassigned come first. ---- */
-    let seq = 0;
-    const TASKS = [
-      { issue: 'SOC 2 report expired',                                   cat: 'Assurance lapse',     vendor: 'Ironclad Identity',         tier: 'critical', region: 'EU + US',     sev: 'critical', state: 'new',     age: '12 min', sla: '24 h', owner: null, impact: 2.1, action: 'Assign' },
-      { issue: 'Build server login page exposed to the internet',        cat: 'Exposed service',     vendor: 'Foundry DevOps Platform',   tier: 'medium',   region: 'US',          sev: 'high',     state: 'new',     age: '3 h',    sla: '2 d',  owner: null, impact: 1.3, action: 'Assign' },
-      { issue: 'Two staff credentials found in a public code repository', cat: 'Credential exposure', vendor: 'Sentinel Background Checks', tier: 'medium',  region: 'US + Canada', sev: 'high',     state: 'new',     age: '6 h',    sla: '2 d',  owner: null, impact: 1.0, action: 'Assign' },
-      { issue: 'Storage endpoint listing publicly, contents unverified', cat: 'Exposed service',     vendor: 'Lattice Data Warehouse',    tier: 'medium',   region: 'US',          sev: 'medium',   state: 'new',     age: '1 d',    sla: '5 d',  owner: null, impact: 0.9, action: 'Assign' },
-      { issue: 'Older TLS protocol still enabled after certificate renewal', cat: 'Certificate hygiene', vendor: 'Coppermill Payments',   tier: 'medium',   region: 'Canada',      sev: 'medium',   state: 'new',     age: '1 d',    sla: '5 d',  owner: null, impact: 0.5, action: 'Assign' },
-      { issue: 'ISO 27001 certificate due for renewal in 30 days',       cat: 'Assurance lapse',     vendor: 'Nimbus Cloud Storage',      tier: 'medium',   region: 'EU',          sev: 'low',      state: 'new',     age: '2 d',    sla: '10 d', owner: null, impact: 0.4, action: 'Assign' },
-      { issue: 'Admin console reachable from the public internet',       cat: 'Exposed service',     vendor: 'Harborlight Cloud',         tier: 'critical', region: 'US',          sev: 'critical', state: 'working', age: '1 d',    sla: '2 d',  owner: 'PN', impact: 1.8, action: 'Open' },
-      { issue: 'New CVE affecting vendor stack',                         cat: 'Vulnerability',       vendor: 'Northwind AI Labs',         tier: 'critical', region: 'EU',          sev: 'critical', state: 'working', age: '1 h',    sla: '24 h', owner: 'PN', impact: 1.6, action: 'Open' },
-      { issue: 'Employee records offered on a paste site',               cat: 'Data breach',         vendor: 'Keystone Payroll',          tier: 'high',     region: 'Canada',      sev: 'critical', state: 'stale',   age: '3 d',    sla: '2 d',  ageBad: true, owner: 'MC', impact: 1.5, action: 'Nudge' },
-      { issue: 'Unpatched critical CVE on an internet-facing host',      cat: 'Vulnerability',       vendor: 'Fortify Endpoint Security', tier: 'high',     region: 'US + EU',     sev: 'critical', state: 'stale',   age: '9 d',    sla: '7 d',  ageBad: true, owner: 'MC', impact: 1.2, action: 'Nudge' },
-      { issue: 'Expired TLS certificate on the login portal',            cat: 'Certificate hygiene', vendor: 'Aurora HR Suite',           tier: 'medium',   region: 'US + Canada', sev: 'medium',   state: 'stale',   age: '21 d',   sla: '14 d', ageBad: true, owner: 'MC', impact: 0.9, action: 'Escalate' },
-      { issue: 'Named in a regulator enforcement notice',                cat: 'Regulatory',          vendor: 'Glasswing Contract AI',     tier: 'critical', region: 'EU',          sev: 'critical', state: 'waiting', age: '5 d',    sla: '7 d',  owner: 'PN', impact: 0.7, action: 'Open' }
-    ].map(t => Object.assign({ id: 't' + (++seq) }, t));
+    /* ---- Task list: what needs attention (12 shown of 21). Unassigned come first. ---- */
     let filter = 'all';
-
-    const tagFor = t =>
-      t.escalated           ? '<span class="tag t-crit">↑ Escalated</span>' :
-      !t.owner              ? '<span class="tag t-new">● New</span>' :
-      t.state === 'stale'   ? '<span class="tag t-stale">⏱ Past SLA</span>' :
-      t.state === 'waiting' ? '<span class="tag t-wait">◔ Waiting on vendor</span>' :
-      t.sev === 'critical'  ? '<span class="tag t-crit">▲ Critical</span>' :
-                              '<span class="tag t-work">◐ In progress</span>';
-    const ownerFor = t => t.owner
-      ? '<span class="owner-cell"><span class="avatar-chip">' + t.owner + '</span>' + TEAM[t.owner].name.split(' ')[0] + '</span>'
-      : '<span class="owner-cell"><span class="avatar-chip un">?</span>Unassigned</span>';
     const matches = t =>
       filter === 'all' ? true :
       filter === 'unassigned' ? !t.owner :
       filter === 'critical' ? t.sev === 'critical' :
       filter === 'stale' ? t.state === 'stale' :
       t.state === 'waiting';
-    const ageText = ms => { const m = Math.floor(ms / 60000); return m < 1 ? 'Just now' : m < 60 ? m + ' min' : Math.floor(m / 60) + ' h'; };
-    const counts = () => Object.assign({}, S.counts, { unassigned: TASKS.filter(t => !t.owner).length });
 
     function renderTasks() {
-      TASKS.sort((a, b) => (!!a.owner - !!b.owner) || b.impact - a.impact);
-      const list = TASKS.filter(matches), c = counts();
-      $('taskRows').innerHTML = list.map(t =>
-        '<tr' + (t.isNew ? ' class="is-new"' : t.flash ? ' class="is-changed"' : '') + '>' +
-          '<td><div class="vendor-name">' + t.issue + '</div><div class="vendor-sub">Category: ' + t.cat + '</div></td>' +
-          '<td><div class="vendor-name">' + t.vendor + '</div><div class="vendor-sub">' + TIER[t.tier] + ' tier</div></td>' +
-          '<td>' + tagFor(t) + (t.nudged ? '<div class="vendor-sub">Follow-up sent</div>' : '') + (t.escalated ? '<div class="vendor-sub">Sent to vendor’s senior contact</div>' : '') + '</td>' +
-          '<td class="age' + (t.ageBad ? ' bad' : '') + '"><span' + (t.t0 ? ' data-t0="' + t.t0 + '"' : '') + '>' + (t.t0 ? ageText(Date.now() - t.t0) : t.age) + '</span> <span class="vendor-sub">/ ' + t.sla + '</span></td>' +
-          '<td>' + ownerFor(t) + '</td>' +
-          '<td class="impact ' + (t.impact >= 0.8 ? 'bad' : 'warn') + '">+' + t.impact.toFixed(1) + '</td>' +
-          '<td><button type="button" class="btn-row"' + (t.nudged ? ' disabled' : '') + '>' + (t.nudged ? 'Nudged' : t.action) + '</button></td>' +
-        '</tr>').join('');
-      TASKS.forEach(t => { t.isNew = false; t.flash = false; });
+      const att = TASKS.filter(t => t.attention !== false).sort((a, b) => (!!a.owner - !!b.owner) || b.impact - a.impact);
+      const list = att.filter(matches), c = counts();
+      $('taskRows').innerHTML = list.map(t => UI.taskRow(t)).join('');
       $('taskEmpty').style.display = list.length ? 'none' : 'block';
       $('taskFoot').textContent = 'Showing ' + list.length + ' of ' + c[filter] + ' tasks' + (filter === 'all' ? ' that need attention' : ' in this view');
       document.querySelectorAll('[data-count]').forEach(el => { el.textContent = c[el.dataset.count]; });
@@ -550,7 +486,7 @@
       document.querySelectorAll('#taskChips .chip').forEach(c => c.classList.toggle('active', c === b));
       renderTasks();
     });
-    $('autoOff').addEventListener('click', () => { S.autoAssign = false; renderTasks(); });
+    $('autoOff').addEventListener('click', () => act.autoAssign(false));
 
     /* ---- Your team ---- */
     function renderTeam() {
@@ -570,21 +506,22 @@
           '<div class="score">' + (m.score == null ? '<div class="n">—</div><div class="t none">not scored</div>' : '<div class="n">' + m.score + '</div><div class="t ' + m.dcls + '">' + m.delta + '</div>') + '</div>' +
         '</div>';
       }).join('');
-      Object.values(TEAM).forEach(m => { m.flash = false; });
     }
 
-    setInterval(() => document.querySelectorAll('[data-t0]').forEach(el => { el.textContent = ageText(Date.now() - Number(el.dataset.t0)); }), 30000);
 
     /* ---- Health-check tiles ---- */
     function renderKpis() {
       const inn = sum(S.newDaily.slice(7)), out = sum(S.closedDaily.slice(7)), net = inn - out;
       $('kpiScore').textContent = Math.round(S.score + S.scoreAdded);
-      $('kpiScoreTrend').textContent = '▲ ' + (S.scoreDelta + Math.round(S.scoreAdded)) + ' pts vs 30 days ago';
+      const delta = S.scoreDelta + Math.round(S.scoreAdded);
+      $('kpiScoreTrend').textContent = (delta >= 0 ? '▲ ' : '▼ ') + Math.abs(delta) + ' pts vs 30 days ago';
+      $('kpiScoreTrend').className = 'trend ' + (delta > 0 ? 'bad' : 'good');
       $('kpiOpen').textContent = S.open;
-      $('kpiOpenTrend').textContent = '▲ ' + net + ' net in the last 7 days';
+      $('kpiOpenTrend').textContent = (net >= 0 ? '▲ ' : '▼ ') + Math.abs(net) + ' net in the last 7 days';
       $('kpiOpenSub').textContent = S.pastSLA + ' past SLA · median age 6 days';
       $('kpiIn').textContent = inn; $('kpiOut').textContent = out;
-      $('kpiArrTrend').textContent = 'Backlog growing: +' + net;
+      $('kpiArrTrend').textContent = net > 0 ? 'Backlog growing: +' + net : 'Backlog shrinking: ' + net;
+      $('kpiArrTrend').className = 'trend ' + (net > 0 ? 'bad' : 'good');
       $('kpiArrSub').textContent = 'Close rate ' + Math.round(out / inn * 100) + '% of inflow';
     }
 
@@ -678,32 +615,10 @@
     setInterval(renderLastScan, 15000);
 
     function renderAll() { renderTasks(); renderTeam(); renderKpis(); renderChart(); renderAging(); renderRank(); renderLastScan(); }
-
-    /* ---- A signal from the scan becomes a task (unassigned, or assigned if auto-assign is on) ---- */
-    function addTask(s) {
-      const t = { id: 'n' + (++seq), issue: s.title, cat: s.category + ' · ' + s.source, vendor: s.vendor, tier: s.tier, region: (s.sub.split(' · ')[1] || ''), sev: s.sev,
-                  state: 'new', t0: Date.now(), fresh: true, sla: s.sev === 'critical' ? '24 h' : '2 d', owner: null, impact: s.impact, action: 'Assign', isNew: true };
-      if (S.autoAssign) assignTo(t, pickOwner(t).owner);
-      TASKS.push(t);
-      S.open++; S.newDaily[S.newDaily.length - 1]++; S.ages[0]++;
-      S.counts.all++; if (s.sev === 'critical') S.counts.critical++;
-      S.scoreAdded += s.impact;
-      S.pts[s.vendor] = (S.pts[s.vendor] || 0) + s.impact;
-      S.lastScanAt = Date.now();
-      renderAll();
-      const v = $('kpiOpen'); v.classList.remove('stat-flash'); void v.offsetWidth; v.classList.add('stat-flash');
-      if (s.sev === 'critical') document.querySelectorAll('.nav-item[href="monitoring.html"] .nav-badge').forEach(b => { b.textContent = Number(b.textContent) + 1; });
-    }
-
+    D.onChange(renderAll);
     renderAll();
 
-    /* ---- AI sparkle on each card: tells ai-chat.js which card was pressed ---- */
-    document.querySelectorAll('.ai-spark').forEach(b => b.addEventListener('click', () => {
-      document.dispatchEvent(new CustomEvent('tessera:ai-chat', { detail: { source: 'card', context: b.dataset.ai, card: b.closest('.stat-card, .panel') } }));
-    }));
-
     /* Live figures for the chat's answers (ai-chat.js reads these each time it answers) */
-    const dayCount = t => t.t0 ? (Date.now() - t.t0) / 864e5 : /\bd$/.test(t.age) ? parseFloat(t.age) : /\bh$/.test(t.age) ? parseFloat(t.age) / 24 : 0;
     TesseraAI.setData(() => {
       const top = Object.entries(S.pts).sort((a, b) => b[1] - a[1]).slice(0, 5);
       const total = sum(Object.values(S.pts)) + S.restPts;
@@ -716,53 +631,42 @@
         ages: S.ages.slice(), waitingVendor: S.waitingVendor, waitingTeam: S.open - S.waitingVendor,
         topVendors: top, topShare: Math.round(sum(top.map(x => x[1])) / total * 100),
         counts: counts(), team, autoAssign: S.autoAssign, scanCount: $('scanCount').textContent,
-        tasks: TASKS.map(t => { const p = t.owner ? null : pickOwner(t); return {
+        tasks: TASKS.filter(t => t.attention !== false).map(t => { const p = t.owner ? null : D.pickOwner(t); return {
           id: t.id, vendor: t.vendor, issue: t.issue, cat: t.cat, tier: t.tier, sev: t.sev, owner: t.owner, impact: t.impact, state: t.state, action: t.action,
           nudged: !!t.nudged, escalated: !!t.escalated, fresh: !!t.fresh,
           suggestOwner: p && p.owner, suggestWhy: p && p.why,
-          age: t.t0 ? ageText(Date.now() - t.t0) : t.age, sla: t.sla, days: dayCount(t) }; })
+          age: D.taskAge(t), sla: t.sla, days: D.dayCount(t) }; })
       };
     });
 
     /* ---- Approved actions from the chat carry out real changes here ---- */
     const byIds = p => TASKS.filter(t => (p.ids || []).includes(t.id));
     const scanRunnerRef = {};
+    const first = k => TEAM[k].name.split(' ')[0];
     TesseraAI.setActions({
       assign(p) {
         const list = byIds(p).filter(t => !t.owner), by = {};
-        list.forEach(t => { const o = pickOwner(t).owner; assignTo(t, o); by[o] = (by[o] || 0) + 1; });
-        renderAll();
+        list.forEach(t => { const o = D.pickOwner(t).owner; act.assign(t, o); by[o] = (by[o] || 0) + 1; });
         return { reveal: '#taskChips', message: '<p>Done. <b>' + list.length + (list.length === 1 ? ' task' : ' tasks') + ' assigned</b>: ' +
-          Object.entries(by).map(([o, n]) => TEAM[o].name.split(' ')[0] + ' ' + n).join(', ') + '.</p><p class="ai-note">The list, the “Unassigned / new” count and the team workload have updated.</p>' };
+          Object.entries(by).map(([o, n]) => first(o) + ' ' + n).join(', ') + '.</p><p class="ai-note">The list, the \u201cUnassigned / new\u201d count and the team workload have updated.</p>' };
       },
       nudge(p) {
         const list = byIds(p).filter(t => !t.nudged);
-        list.forEach(t => { t.nudged = true; t.flash = true; });
-        renderAll();
-        return { reveal: '#taskChips', message: '<p>Follow-ups sent to <b>' + list.map(t => t.vendor).join(' and ') + '</b>.</p><p class="ai-note">Those rows now show “Follow-up sent”. Nothing actually leaves this prototype.</p>' };
+        list.forEach(t => act.nudge(t));
+        return { reveal: '#taskChips', message: '<p>Follow-ups sent to <b>' + list.map(t => t.vendor).join(' and ') + '</b>.</p><p class="ai-note">Those rows now show \u201cFollow-up sent\u201d. Nothing actually leaves this prototype.</p>' };
       },
       escalate(p) {
         const list = byIds(p).filter(t => !t.escalated);
-        list.forEach(t => {
-          if (t.owner && t.owner !== 'DV') { TEAM[t.owner].pastSla = Math.max(0, TEAM[t.owner].pastSla - 1); TEAM[t.owner].flash = true; TEAM.DV.vendor++; TEAM.DV.flash = true; t.owner = 'DV'; }
-          t.escalated = true; t.action = 'Open'; t.flash = true;
-        });
-        renderAll();
-        return { reveal: '#taskChips', message: '<p>Escalated <b>' + list.map(t => t.vendor).join(' and ') + '</b> to the vendor’s senior contact. You are now the owner.</p><p class="ai-note">The row shows “Escalated” and the team workload has updated.</p>' };
+        list.forEach(t => act.escalate(t));
+        return { reveal: '#taskChips', message: '<p>Escalated <b>' + list.map(t => t.vendor).join(' and ') + '</b> to the vendor\u2019s senior contact. You are now the owner.</p><p class="ai-note">The row shows \u201cEscalated\u201d and the team workload has updated.</p>' };
       },
       rebalance() {
-        const m = TEAM.MC, p = TEAM.PN, n = Math.min(4, Math.floor((teamOpen('MC') - teamOpen('PN')) / 2));
-        for (let i = 0; i < n; i++) {
-          const from = (i % 2 === 0 && m.verifying > 0) || m.review === 0 ? 'verifying' : 'review';
-          m[from]--; p[from]++;
-        }
-        m.flash = p.flash = true;
-        renderAll();
+        const n = act.rebalance();
         return { reveal: '#teamTitle', message: '<p>Moved <b>' + n + (n === 1 ? ' task' : ' tasks') + '</b> from Marcus to Priya. Marcus now has ' + teamOpen('MC') + ' open and Priya has ' + teamOpen('PN') + '.</p><p class="ai-note">The team rows are updated' + (teamOpen('MC') < AT_CAPACITY ? ', and Marcus is no longer flagged at capacity' : '') + '.</p>' };
       },
       autoassign() {
-        S.autoAssign = true; renderAll();
-        return { reveal: '#taskChips', message: '<p>Auto-assign is <b>on</b>. New tasks from the scan are now assigned as they arrive, by the rule above.</p><p class="ai-note">Press “Simulate a signal” in the scan card to see it. You can turn it off from the task list.</p>' };
+        act.autoAssign(true);
+        return { reveal: '#taskChips', message: '<p>Auto-assign is <b>on</b>. New tasks from the scan are now assigned as they arrive, by the rule above.</p><p class="ai-note">Press \u201cSimulate a signal\u201d in the scan card to see it. You can turn it off from the task list.</p>' };
       },
       scan() {
         scanRunnerRef.go && scanRunnerRef.go();
@@ -772,8 +676,17 @@
 
     /* ---- Continuous scan mosaic (bottom, slim: 51 columns x 12 rows) ---- */
     const mos = TesseraScan.mosaic($('mosaicView'), { countEl: $('scanCount'), cols: 51 });
-    Object.assign(scanRunnerRef, TesseraScan.runner($('scanPanel'), (s, done) => mos.flag(s, () => { addTask(s); done(); }), { button: $('scanDemo') }));
+    Object.assign(scanRunnerRef, TesseraScan.runner($('scanPanel'), (s, done) => mos.flag(s, () => {
+      act.addSignal(s);
+      const v = $('kpiOpen'); v.classList.remove('stat-flash'); void v.offsetWidth; v.classList.add('stat-flash');
+      if (s.sev === 'critical') document.querySelectorAll('.nav-item[href="monitoring.html"] .nav-badge').forEach(b => { b.textContent = Number(b.textContent) + 1; });
+      done();
+    }), { button: $('scanDemo') }));
+    // Resolving a critical task clears its vendor's tile when nothing else critical is open for it
+    D.onResolve(t => { if (t.sev === 'critical' && !TASKS.some(x => x.vendor === t.vendor && x.sev === 'critical')) mos.clear(t.vendor); });
   })();
 </script>
+<script src="dashboard-analyst.js"></script>
+<script>TesseraUI.initPersona();</script>
 </body>
 </html>

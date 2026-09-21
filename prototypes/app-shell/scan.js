@@ -208,7 +208,13 @@
         done();
       }, wait);
     }
-    return { flag: flag };
+    // Back to "monitored, clear" once a vendor's critical work is resolved
+    function clear(name) {
+      var idx = port.byName[name]; if (idx === undefined) return;
+      var t = tiles[idx]; if (t.state === 'clear') return;
+      t.state = 'clear'; t.sev = null; t.el.className = 'tile'; recount();
+    }
+    return { flag: flag, clear: clear };
   }
 
   /* ---------- Signal flow ---------- */
