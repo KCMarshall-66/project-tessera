@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tessera — AI compliance map</title>
+<link rel="icon" type="image/svg+xml" href="../brand/logos/tessera-mark-condensed.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@200;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue-dark:#255292; --blue-primary:#2F62AA; --blue-accent:#689AE2; --ink:#26313D; --muted:#5B6B7C;
+    --surface-border:#E2E5EC; --canvas:#F3F6FA; --nav-bg:#131929; --nav-text:#96A7C2;
+    --built-bg:#E4F3EA; --built-tx:#1F6B45; --part-bg:#FBF0DC; --part-tx:#8F4F12;
+    --gap-bg:#F9E3E3; --gap-tx:#B03737; --proc-bg:#E8EDF4; --proc-tx:#3E4E63;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #FBFCFE; color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .hero { background: var(--nav-bg); padding: 40px 24px; }
+  .hero__in, main { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  .hero a.back { font-size: 13px; color: var(--nav-text); text-decoration: none; }
+  .hero a.back:hover { color: #fff; }
+  .hero h1 { margin: 18px 0 8px; font-size: 40px; font-weight: 200; letter-spacing: -0.01em; color: #fff; }
+  .hero p { margin: 0; max-width: 700px; font-size: 15px; line-height: 1.6; color: var(--nav-text); }
+  main { padding-bottom: 96px; }
+  h2 { margin: 56px 0 6px; font-size: 26px; font-weight: 600; letter-spacing: -0.01em; }
+  h3 { margin: 0; font-size: 17px; font-weight: 600; }
+  .lede { margin: 0 0 20px; max-width: 720px; font-size: 15px; line-height: 1.6; color: var(--muted); }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; background: #EEF2F7; border-radius: 4px; padding: 1px 6px; }
+  a { color: var(--blue-primary); }
+  :focus-visible { outline: 2px solid var(--blue-accent); outline-offset: 2px; }
+
+  .note { padding: 14px 16px; background: #FFF9F2; border: 1px solid #F3D9BC; border-radius: 12px; font-size: 13.5px; line-height: 1.55; max-width: 820px; margin-top: 28px; }
+
+  /* Status pills */
+  .st { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .st--built { background: var(--built-bg); color: var(--built-tx); }
+  .st--partial { background: var(--part-bg); color: var(--part-tx); }
+  .st--gap { background: var(--gap-bg); color: var(--gap-tx); }
+  .st--process { background: var(--proc-bg); color: var(--proc-tx); }
+
+  /* Findings */
+  .findings { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin-top: 8px; }
+  .finding { background: #fff; border: 1px solid var(--surface-border); border-radius: 14px; padding: 16px 18px 18px; }
+  .finding .st { margin-bottom: 10px; }
+  .finding h3 { font-size: 15px; margin-bottom: 6px; }
+  .finding p { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--muted); }
+
+  /* Legend + filter */
+  .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin: 4px 0 18px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; }
+  .filters button { font: inherit; font-size: 13px; color: var(--ink); background: #fff; border: 1px solid var(--surface-border); border-radius: 999px; padding: 6px 13px; cursor: pointer; }
+  .filters button:hover { border-color: var(--blue-accent); }
+  .filters button[aria-pressed="true"] { background: var(--blue-primary); border-color: var(--blue-primary); color: #fff; }
+  .count { font-size: 13px; color: var(--muted); }
+
+  /* Feature cards */
+  .feats { display: grid; gap: 16px; }
+  .feat { background: #fff; border: 1px solid var(--surface-border); border-radius: 14px; overflow: hidden; }
+  .feat__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; padding: 16px 20px 0; }
+  .feat__head .st { margin-left: auto; align-self: center; }
+  .feat__where { width: 100%; font-size: 12.5px; color: var(--muted); margin: 0; }
+  .feat__cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 14px 20px 16px; }
+  .feat__cols h4 { margin: 0 0 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .feat__cols p { margin: 0; font-size: 13.5px; line-height: 1.55; }
+  .feat__maps { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 12px 20px; border-top: 1px solid var(--surface-border); background: var(--canvas); }
+  .maprow { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); }
+  .maprow b { font-weight: 600; color: var(--ink); margin-right: 2px; }
+  .chip { font-size: 12px; font-weight: 600; color: var(--blue-dark); background: #EAF1FA; border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
+  .chip--other { color: var(--proc-tx); background: var(--proc-bg); }
+
+  /* Framework tables */
+  .tbl-wrap { overflow-x: auto; background: #fff; border: 1px solid var(--surface-border); border-radius: 14px; }
+  table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 13.5px; }
+  th { text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding: 12px 16px; border-bottom: 1px solid var(--surface-border); background: var(--canvas); }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--surface-border); vertical-align: top; line-height: 1.5; }
+  tr:last-child td { border-bottom: 0; }
+  td.ref { font-weight: 600; white-space: nowrap; color: var(--blue-dark); }
+  td.ref small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; white-space: normal; }
+
+  .twocol { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+  .card { background: #fff; border: 1px solid var(--surface-border); border-radius: 14px; padding: 16px 18px; }
+  .card h3 { font-size: 15px; margin-bottom: 4px; }
+  .card p { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--muted); }
+
+  ol.next { margin: 0; padding: 0; list-style: none; counter-reset: n; display: grid; gap: 10px; }
+  ol.next li { counter-increment: n; display: grid; grid-template-columns: 34px 1fr; gap: 12px; background: #fff; border: 1px solid var(--surface-border); border-radius: 12px; padding: 14px 16px; font-size: 13.5px; line-height: 1.55; }
+  ol.next li::before { content: counter(n); width: 26px; height: 26px; border-radius: 8px; background: #EAF1FA; color: var(--blue-dark); font-weight: 600; display: grid; place-items: center; }
+  ol.next b { font-weight: 600; }
+  ol.next span { display: block; color: var(--muted); }
+
+  .links { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 13.5px; }
+  .links a { font-weight: 600; text-decoration: none; }
+  .links a:hover { text-decoration: underline; }
+
+  @media (max-width: 860px) { .feat__cols { grid-template-columns: 1fr; gap: 12px; } .hero h1 { font-size: 32px; } }
+</style>
+</head>
+<body>
+
+<header class="hero"><div class="hero__in">
+  <a class="back" href="../index.html">← Tessera prototypes</a>
+  <h1>AI compliance map</h1>
+  <p>Where each thing Tessera's AI does in the prototype meets the EU AI Act and the NIST AI Risk Management Framework: what is already built, what is partial, and what is still open.</p>
+</div></header>
+
+<main>
+  <div class="note"><b>Grounding, not legal advice.</b> Tessera is fictional. This map is a design tool for a portfolio: it shows how the product's human-oversight, explanation and audit features trace back to real frameworks. Article and subcategory references are to the EU AI Act (Regulation 2024/1689) and NIST AI RMF 1.0. Application dates for parts of the EU Act have been under revision, so check current dates before relying on any of this.</div>
+
+  <h2>What the map found</h2>
+  <p class="lede">Two directions of compliance are in play. This page covers the first: the rules Tessera's <em>own</em> AI has to meet. The second, where the AI helps customers meet DORA, NIS2 or the EU AI Act for their vendors, shows up here only where a wrong AI answer would carry a regulatory cost (regulatory calls, evidence review).</p>
+  <div class="findings">
+    <div class="finding"><span class="st st--built">Good news</span><h3>Vendor scoring is probably not high-risk</h3><p>Annex III lists uses such as employment, credit scoring of people, and essential services. Scoring companies for vendor risk is not on the list. Tessera still designs to the high-risk bar for human oversight (Arts. 12 to 15), which is the differentiator.</p></div>
+    <div class="finding"><span class="st st--gap">Decision needed</span><h3>The team score is the exception</h3><p>The Team block scores each analyst and the chat coaches on it. Evaluating people at work is an Annex III(4)(b) use. Either show team-level measures only, or build it as high-risk, with notice to workers (Art. 26(7)).</p></div>
+    <div class="finding"><span class="st st--built">Strongest</span><h3>Human oversight is built</h3><p>Chat proposals wait for approval. Regulatory calls need a reason to override. Evidence exceptions cite their page. That covers most of Art. 14(4) and NIST GOVERN 3.2 and MAP 3.5.</p></div>
+    <div class="finding"><span class="st st--partial">Biggest gap</span><h3>No record you can look at</h3><p>Approvals and overrides are captured, but there is no history view (Art. 12, MANAGE 4.1), and no way to say "this signal or exception is wrong" (MEASURE 3.3).</p></div>
+  </div>
+
+  <h2>Feature by feature</h2>
+  <p class="lede">Nine AI behaviours in the prototype. Each shows what the AI does, the human control in the interface today, and the gap, with the framework references it maps to.</p>
+  <div class="bar">
+    <div class="filters" id="filters" role="group" aria-label="Filter by status"></div>
+    <span class="count" id="count" aria-live="polite"></span>
+  </div>
+  <div class="feats" id="feats"></div>
+
+  <h2>EU AI Act, article by article</h2>
+  <p class="lede">The articles that shape the interface. "Outside the UI" means the obligation is met by process and documentation, so a screen alone cannot show it.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th scope="col">Article</th><th scope="col">Asks for</th><th scope="col">In Tessera today</th><th scope="col">Status</th></tr></thead>
+    <tbody id="euRows"></tbody>
+  </table></div>
+
+  <h2>NIST AI RMF, by function</h2>
+  <p class="lede">Govern, Map, Measure and Manage. Subcategories are listed only where the prototype gives evidence for or against.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th scope="col">Subcategory</th><th scope="col">Asks for</th><th scope="col">In Tessera today</th><th scope="col">Status</th></tr></thead>
+    <tbody id="nistRows"></tbody>
+  </table></div>
+
+  <h2>Also touching the AI</h2>
+  <p class="lede">Frameworks from <a href="README.md">the reference list</a> that apply to Tessera's own AI, beyond the two above.</p>
+  <div class="twocol">
+    <div class="card"><h3>GDPR</h3><p>Breach dumps and paste sites hold personal data, so the scan should keep the vendor-attributable indicator and not the records (Art. 5(1)(c)). Art. 22 is unlikely to apply because a person confirms each decision, and the decisions concern companies. Analyst scoring brings employee-data rules (Art. 88) with it.</p></div>
+    <div class="card"><h3>OWASP Top 10 for LLM Applications</h3><p>Three risks bite here. <b>Prompt injection</b>: vendor documents are untrusted input to the evidence reader. <b>Excessive agency</b>: the approval step in every proposal is the control. <b>Overreliance</b>: confidence, citations and mandatory reasons push against it.</p></div>
+    <div class="card"><h3>MITRE ATLAS</h3><p>The scan is an attack surface. An adversary could plant false signals to make a vendor look worse (or better). Signal source, corroboration and the confidence figure are the defences to show.</p></div>
+    <div class="card"><h3>ISO/IEC 42001</h3><p>The management-system standard is how the "outside the UI" rows would be evidenced: risk process, data governance, documentation, testing. Worth citing when a customer asks for proof.</p></div>
+    <div class="card"><h3>Canada, AIDA</h3><p>The reference list calls it proposed. Bill C-27 lapsed in January 2025 and no federal AI statute is in force. Canadian customers still expect the same oversight, so the design does not change, but the list should say "lapsed".</p></div>
+    <div class="card"><h3>US state law</h3><p>Colorado's AI Act and similar laws focus on consequential decisions about people. That again points at the analyst-scoring feature, not at vendor scoring.</p></div>
+  </div>
+
+  <h2>What to design next</h2>
+  <p class="lede">Ordered by how much of the map each one closes.</p>
+  <ol class="next">
+    <li><div><b>An activity log.</b> A single history of what the AI proposed, what a person approved, declined or overrode, and why. Closes Art. 12 and MANAGE 4.1, and gives the override-rate signal.<span>Fits the unbuilt Remediation &amp; Tasks section, or a History tab in the task drawer.</span></div></li>
+    <li><div><b>"This is wrong" on every AI output.</b> A thumbs-down that opens a short reason on signals, evidence exceptions, triage calls and chat answers. Closes MEASURE 3.3 and the overreliance risk.</div></li>
+    <li><div><b>Decide the team score.</b> Show team-level measures only, or design the individual score as high-risk: notice to analysts, a way to contest it, and a human review step.<span>The first is the smaller change and removes the Annex III(4) question.</span></div></li>
+    <li><div><b>Why this score.</b> A breakdown on the Portfolio Risk Score card itself, not only in the chat, showing tier weights, age and the top contributors. Closes Art. 13 and MEASURE 2.9 for the headline number.</div></li>
+    <li><div><b>About Tessera AI.</b> One page: intended purpose, what it cannot do, accuracy, and how to override. Linked from the chat footer. Closes Art. 13, Art. 4, MAP 1.1 and MAP 2.2.</div></li>
+    <li><div><b>Guard the standing rule.</b> Auto-assign needs an owner, a review date and a log of what it did, so a switched-on rule does not become invisible.<span>Closes MANAGE 2.4.</span></div></li>
+  </ol>
+
+  <div class="links">
+    <a href="README.md">Compliance reference list →</a>
+    <a href="../design-system/index.html">Design system: AI patterns →</a>
+    <a href="../prototypes/app-shell/index.html">Open the dashboard →</a>
+  </div>
+</main>
+
+<script>
+(function () {
+  var LABEL = { built: 'Built in the UI', partial: 'Partial', gap: 'Gap', process: 'Outside the UI' };
+
+  /* eu / nist / other are the reference chips. Status is about what the prototype shows today. */
+  var FEATURES = [
+    { name: 'Scan and categorise signals', where: 'Dashboard mosaic and task list · Monitoring & Alerts signal flow', status: 'partial',
+      does: 'Matches public signals (leaked keys, breach dumps, CVEs, exposed services) to a vendor, scores the impact, categorises it, and opens an investigation task if it is high risk.',
+      control: 'The task arrives unassigned, so a person decides whether it is real and who works it. Each task shows its source, category, AI confidence and SLA.',
+      gap: 'No "wrong vendor" or "false positive" control, so errors cannot be reported. Breach dumps contain personal data: keep the indicator, not the records.',
+      eu: ['Art. 10', 'Art. 13', 'Art. 15'], nist: ['MEASURE 2.5', 'MEASURE 3.3', 'MANAGE 4.1'], other: ['GDPR Art. 5(1)(c)', 'MITRE ATLAS'] },
+    { name: 'Risk score and impact points', where: 'Dashboard KPI cards, task list, concentration list', status: 'partial',
+      does: 'Turns every open task into points on a portfolio score, weighted by vendor tier and how long it has been open.',
+      control: 'The calculation is visible: each task shows its points, and the sparkle chat names the top contributors and explains the trend.',
+      gap: 'The explanation lives only in the chat. There is no "why this score" panel on the card, and no record of when weights change.',
+      eu: ['Art. 13', 'Art. 14(4)(c)'], nist: ['MEASURE 2.9', 'MAP 2.2'], other: [] },
+    { name: 'Evidence review', where: 'Priya’s dashboard, "Evidence to review" · task drawer', status: 'built',
+      does: 'Pre-reads vendor documents (SOC 2, pen test summaries, ISO certificates) and lists the exceptions it found, with page numbers and a confidence figure.',
+      control: 'Every exception cites its page so the reviewer can check it. Priya marks a document reviewed, and nothing is accepted automatically. Confidence is shown to counter over-trust.',
+      gap: 'No way to say "this exception is wrong". Vendor documents are untrusted input, so a real model needs protection against instructions hidden in them.',
+      eu: ['Art. 13', 'Art. 14(4)(b)', 'Art. 14(4)(c)', 'Art. 15'], nist: ['MEASURE 2.5', 'MEASURE 2.9', 'MEASURE 3.3'], other: ['OWASP: prompt injection'] },
+    { name: 'Regulatory calls', where: 'Priya’s dashboard, "Regulatory calls"', status: 'built',
+      does: 'Applies DORA, NIS2 or EU AI Act criteria to a vendor and proposes a classification, with how many criteria are met.',
+      control: 'Priya confirms, or overrides. An override needs a reason, and the reason is kept for the audit record.',
+      gap: 'The record exists only as page state: no history view, and no override rate, which is an early signal that the AI is drifting. A wrong call here carries a cost for the customer’s own compliance.',
+      eu: ['Art. 12', 'Art. 14(4)(a)', 'Art. 14(4)(d)'], nist: ['GOVERN 3.2', 'MANAGE 4.1', 'MEASURE 3.3'], other: ['DORA register', 'NIS2 supplier scope'] },
+    { name: 'Intake triage', where: 'Marcus’s dashboard, "Intake queue"', status: 'partial',
+      does: 'Sorts new vendor intakes and renewals into routine or "send to Priya", gives the reason, and lists missing documents.',
+      control: 'The reason shows on every row. Marcus clears, chases, or sends it on, and a countdown puts a person’s decision ahead of the deadline.',
+      gap: 'The AI can wave a vendor through as "routine". Nothing samples cleared items for a second look, so a systematic miss would go unnoticed.',
+      eu: ['Art. 14(4)(b)', 'Art. 15'], nist: ['GOVERN 3.2', 'MEASURE 2.5', 'MANAGE 4.1'], other: [] },
+    { name: 'Owner suggestion and auto-assign', where: 'Dashboard task list · assign popover · chat "Auto-assign" rule', status: 'partial',
+      does: 'Suggests who should take a task (critical or EU to Priya, Canada to Dana, US to Marcus unless he is at capacity) and says why.',
+      control: 'Each suggestion shows its reason, and assigning is a person’s click. Auto-assign is an opt-in standing rule that the manager switches on and off.',
+      gap: 'Once on, auto-assign acts without per-task approval and allocates work between employees. It has no expiry, no review prompt and no log. The rules use region, tier and capacity, not personal traits, which keeps it clear of Annex III(4)(b).',
+      eu: ['Art. 14(4)(e)', 'Annex III(4)(b)'], nist: ['GOVERN 3.2', 'MANAGE 2.4'], other: [] },
+    { name: 'Chat proposals that act', where: 'Tessera AI chat · assign, nudge, escalate, rebalance, scan', status: 'built',
+      does: 'Proposes an action and lists exactly what would change: who gets which task, which vendors are contacted, which queues move.',
+      control: 'Nothing happens until Dana approves. "Not now" leaves everything untouched. Every proposal names the people and vendors affected.',
+      gap: 'No persistent log of what was proposed, approved or declined, and no undo. In the prototype nothing leaves the page, but a real vendor send needs its own confirmation.',
+      eu: ['Art. 12', 'Art. 14(4)(d)', 'Art. 14(4)(e)'], nist: ['GOVERN 3.2', 'MANAGE 2.4', 'MANAGE 4.1'], other: ['OWASP: excessive agency'] },
+    { name: 'Chat answers and drafts', where: 'Tessera AI chat · every sparkle', status: 'partial',
+      does: 'Answers questions about the card it was opened from, and drafts text: vendor notes, an audit committee summary, a capacity request.',
+      control: 'The chat is labelled Tessera AI, carries the sparkle, and says it can make mistakes. Drafts are copy-only text that a person edits and sends. Answers are built from the figures on the page.',
+      gap: 'Answers do not yet cite the records they used, and there is no "report a problem" control. Check whether drafted text needs marking as AI-generated once copied out.',
+      eu: ['Art. 50(1)', 'Art. 50(2)', 'Art. 13'], nist: ['MEASURE 2.9', 'MEASURE 3.3'], other: [] },
+    { name: 'Team score and coaching', where: 'Dashboard "Team" block · chat "Why did Marcus’s score drop?" and the note to Marcus', status: 'gap',
+      does: 'Scores each analyst from on-time closure, time to verify, follow-ups and reopens, and drafts coaching notes from the result.',
+      control: 'The chat frames a drop as capacity rather than effort, and the score is explained by its four parts.',
+      gap: 'This is the one place the system evaluates people at work. If individual scores drive decisions it can be high-risk under Annex III(4)(b), and deployers must first inform workers and their representatives (Art. 26(7)). GDPR Art. 88 and works-council rules may apply. Decide: team-level measures only, or design it as high-risk.',
+      eu: ['Annex III(4)(b)', 'Art. 26(7)', 'Art. 14'], nist: ['MAP 1.1', 'MEASURE 2.11'], other: ['GDPR Art. 88'] }
+  ];
+
+  /* status: built | partial | gap | process */
+  var EU = [
+    ['Art. 4', 'AI literacy', 'Staff who use the system understand it well enough to use it.', 'The chat explains method and limits inside each card. There is no product-level guide.', 'partial'],
+    ['Art. 6, Annex III', 'Classification', 'Decide whether the system is high-risk.', 'Vendor scoring, scanning and evidence review assess companies and are not listed. The Team block is (Annex III(4)(b)). Needs a recorded decision.', 'gap'],
+    ['Art. 9', 'Risk management system', 'A continuous, documented risk process across the life of the system.', 'Not a screen. Evidenced by process, and by ISO/IEC 42001 if adopted.', 'process'],
+    ['Art. 10', 'Data and data governance', 'Training and input data are relevant, representative and governed.', 'Not a screen. Scan sources and personal data in breach dumps need a written data policy.', 'process'],
+    ['Art. 11', 'Technical documentation', 'Documentation that shows conformity, kept up to date.', 'Not a screen. This repository is the design half of it.', 'process'],
+    ['Art. 12', 'Record-keeping', 'Events are logged automatically over the system’s life so outcomes can be traced.', 'Approvals, overrides and their reasons are captured in state. No history view, and nothing persists across a refresh.', 'partial'],
+    ['Art. 13', 'Transparency to deployers', 'Users can interpret the output: purpose, accuracy, limits.', 'Confidence, source, page citations and reasons are shown per item. There is no "About Tessera AI" page.', 'partial'],
+    ['Art. 14(4)(a)', 'Oversight: understand limits', 'The overseer understands what the system can and cannot do.', 'Each proposal states its basis (criteria met, reason for the suggestion).', 'partial'],
+    ['Art. 14(4)(b)', 'Oversight: automation bias', 'The overseer stays aware of the tendency to over-trust the output.', 'Confidence figures, page citations, and a required "reviewed" action on evidence. Intake "routine" calls are not sampled.', 'partial'],
+    ['Art. 14(4)(c)', 'Oversight: interpret output', 'The output can be read correctly.', 'Every AI item carries a plain-language reason. The score is explained in chat, not on the card.', 'partial'],
+    ['Art. 14(4)(d)', 'Oversight: decide not to use, override', 'A person can disregard, override or reverse the output.', 'Override with a mandatory reason on regulatory calls. "Not now" on every proposal.', 'built'],
+    ['Art. 14(4)(e)', 'Oversight: stop', 'A person can intervene or stop the system.', 'Approve / Not now on proposals, and auto-assign switches off. No per-feature stop control.', 'partial'],
+    ['Art. 15', 'Accuracy, robustness, cybersecurity', 'Declared accuracy, resilience to errors and to attack.', 'Confidence is displayed. Testing and adversarial resilience (prompt injection, planted signals) are process.', 'process'],
+    ['Art. 26(7)', 'Workers informed', 'Before a high-risk system is used at work, tell workers and their representatives.', 'No notice exists for analysts about the Team score.', 'gap'],
+    ['Art. 50', 'Transparency: people interacting with AI', 'People are told they are interacting with an AI system.', 'The chat is labelled Tessera AI with the sparkle, and warns it can make mistakes. Drafted text is not marked.', 'partial']
+  ];
+
+  var NIST = [
+    ['GOVERN 3.2', 'Roles for human-AI oversight', 'Policies define who oversees the AI and in what configuration.', 'Dana approves actions, Priya makes regulatory calls, Marcus triages intake. The personas document each role.', 'built'],
+    ['MAP 1.1', 'Intended purpose and context', 'The purpose, users and setting are documented.', 'Persona docs and the company profile carry this. No in-product statement.', 'partial'],
+    ['MAP 2.2', 'Knowledge limits and oversight', 'Limits of the system and how people oversee it are documented.', 'Stated in the chat footer and in answers. Not collected in one place.', 'partial'],
+    ['MAP 3.5', 'Human oversight processes', 'Oversight processes are defined and documented.', 'Approval on proposals, override with reason, mark-reviewed on evidence.', 'built'],
+    ['MEASURE 2.5', 'Valid and reliable', 'Show the system does what it should.', 'Not a screen. Needs a test set and published accuracy.', 'process'],
+    ['MEASURE 2.9', 'Explained and interpreted', 'Output is explained and read in context.', 'Reasons and citations on items. Score explanation only in chat.', 'partial'],
+    ['MEASURE 2.11', 'Fairness and bias', 'Bias is evaluated and results documented.', 'Not evaluated for the analyst score, which is the one place it matters.', 'gap'],
+    ['MEASURE 3.3', 'Feedback from users', 'Users can report problems and appeal outcomes.', 'Override exists on regulatory calls only. No "this is wrong" on signals, exceptions, triage or chat.', 'gap'],
+    ['MANAGE 2.4', 'Supersede or disengage', 'The system can be switched off if it misbehaves.', '"Not now", and auto-assign toggle. No per-feature off switch or kill switch.', 'partial'],
+    ['MANAGE 4.1', 'Post-deployment monitoring', 'Capture user input, appeals and overrides, and act on them.', 'Overrides and reasons are captured. No log view and no override-rate monitoring.', 'partial']
+  ];
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function pill(s) { return '<span class="st st--' + s + '">' + LABEL[s] + '</span>'; }
+  function chips(list, cls) { return list.map(function (c) { return '<span class="chip' + (cls ? ' ' + cls : '') + '">' + esc(c) + '</span>'; }).join(''); }
+  function row(label, list, cls) { return list.length ? '<div class="maprow"><b>' + label + '</b>' + chips(list, cls) + '</div>' : ''; }
+
+  var host = document.getElementById('feats');
+  host.innerHTML = FEATURES.map(function (f) {
+    return '<article class="feat" data-status="' + f.status + '">' +
+      '<div class="feat__head"><h3>' + esc(f.name) + '</h3>' + pill(f.status) + '<p class="feat__where">' + esc(f.where) + '</p></div>' +
+      '<div class="feat__cols"><div><h4>What the AI does</h4><p>' + esc(f.does) + '</p></div><div><h4>Human control today</h4><p>' + esc(f.control) + '</p></div><div><h4>Gap</h4><p>' + esc(f.gap) + '</p></div></div>' +
+      '<div class="feat__maps">' + row('EU AI Act', f.eu) + row('NIST AI RMF', f.nist) + row('Also', f.other, 'chip--other') + '</div></article>';
+  }).join('');
+
+  function table(rows) {
+    return rows.map(function (r) {
+      return '<tr><td class="ref">' + esc(r[0]) + '<small>' + esc(r[1]) + '</small></td><td>' + esc(r[2]) + '</td><td>' + esc(r[3]) + '</td><td>' + pill(r[4]) + '</td></tr>';
+    }).join('');
+  }
+  document.getElementById('euRows').innerHTML = table(EU);
+  document.getElementById('nistRows').innerHTML = table(NIST);
+
+  /* Filter the feature cards by status */
+  var fbar = document.getElementById('filters'), count = document.getElementById('count');
+  var tally = { all: FEATURES.length };
+  FEATURES.forEach(function (f) { tally[f.status] = (tally[f.status] || 0) + 1; });
+  ['all', 'built', 'partial', 'gap'].forEach(function (k) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.dataset.f = k; b.setAttribute('aria-pressed', k === 'all' ? 'true' : 'false');
+    b.textContent = (k === 'all' ? 'All' : LABEL[k]) + ' · ' + (tally[k] || 0);
+    fbar.appendChild(b);
+  });
+  function apply(k) {
+    var shown = 0;
+    [].forEach.call(host.children, function (el) { var ok = k === 'all' || el.dataset.status === k; el.hidden = !ok; if (ok) shown++; });
+    [].forEach.call(fbar.children, function (b) { b.setAttribute('aria-pressed', String(b.dataset.f === k)); });
+    count.textContent = 'Showing ' + shown + ' of ' + FEATURES.length;
+  }
+  fbar.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) apply(b.dataset.f); });
+  apply('all');
+})();
+</script>
+</body>
+</html>

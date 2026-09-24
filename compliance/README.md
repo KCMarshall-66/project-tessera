@@ -6,12 +6,14 @@ Tessera is a fictional company, but its product logic, personas, and use cases s
 
 ## 1. AI governance & risk
 
+For how Tessera's own AI features trace to the two frameworks below, see the [AI compliance map](ai-compliance-map.html).
+
 | Jurisdiction | Framework | Relevance to Tessera |
 |---|---|---|
 | EU | **EU AI Act** (Regulation 2024/1689) | Risk-tiered obligations for AI systems; Tessera's own AI features (risk scoring, document analysis, auto-flagging) may qualify as "high-risk" if used in ways that affect access to services — product needs transparency, human-oversight, and documentation features. |
 | US | **NIST AI Risk Management Framework (AI RMF 1.0)** | Voluntary Govern/Map/Measure/Manage structure — a natural mental model for how Tessera's own AI risk-scoring features should be explainable and auditable. |
 | US | State AI laws (e.g. **Colorado AI Act**, **NYC Local Law 144** on automated employment decisions) | Emerging patchwork of AI-specific disclosure/bias-testing obligations customers may ask Tessera to help track for their *own* AI-vendor exposure. |
-| Canada | **Artificial Intelligence and Data Act (AIDA)**, part of Bill C-27 (proposed) | Canadian customers will expect Tessera to anticipate obligations for "high-impact" AI systems, incl. vendor AI systems. |
+| Canada | **Artificial Intelligence and Data Act (AIDA)**, part of Bill C-27 (proposed) | Bill C-27 lapsed in January 2025 and no federal AI statute is in force. Canadian customers will still expect Tessera to anticipate obligations for "high-impact" AI systems, incl. vendor AI systems. |
 
 ## 2. Cybersecurity
 
